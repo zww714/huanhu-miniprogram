@@ -1,0 +1,7 @@
+export default definePageConfig({
+  navigationBarTitleText: '技能认证',
+  navigationBarTextStyle: 'black',
+  navigationBarBackgroundColor: '#FFFFFF',
+  backgroundColor: '#F8FAFC',
+  usingComponents: {},
+})

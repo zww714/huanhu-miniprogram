@@ -1,0 +1,7 @@
+export default definePageConfig({
+  navigationBarTitleText: '发现',
+  navigationBarTextStyle: 'black',
+  navigationBarBackgroundColor: '#FFFFFF',
+  backgroundColor: '#F8FAFC',
+  usingComponents: {},
+})

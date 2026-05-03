@@ -1,0 +1,18 @@
+Line 7: "const CATEGORIES = ['全部', '科研', '升学', '兴趣', '工作']"
+Line 8: "const CAT_ICONS: Record<string, string> = { '科研': '🔬', '升学': '🎗', '兴趣': '🎹', '工作': '🥈' }"
+Line 30: "    const catMap: Record<string, string> = { '科研': '科研', '升学': '升学', '兴趣': '兴趣', '工作': '工作' }"
+Line 39: "          <Text style={{ fontSize: '20px', fontWeight: '700', color: '#2563EB' }}>发现</Text>"
+Line 40: "          <View onClick={() => Taro.showToast({ title: '通知', icon: 'none' })}>"
+Line 41: "            <Text style={{ fontSize: '20px' }}>🔔</Text>"
+Line 47: "          <Text style={{ fontSize: '14px', color: '#94A3B8' }}>🔍</Text>"
+Line 48: "          <Text style={{ fontSize: '14px', color: '#94A3B8', flex: 1 }}>鎼滅储浣犳劅兴趣鐨勫唴瀹?..</Text>"
+Line 74: '            {/* ══ Top: User avatar + name + one-line intro ══ */}'
+Line 90: '                  {post.author.college} 路 {post.author.grade}'
+Line 95: '            {/* ══ Tags ══ */}'
+Line 107: '            {/* ══ Title + Excerpt ══ */}'
+Line 117: '            {/* ══ Cover Image (gradient) ══ */}'
+Line 125: "                  {post.mainCategory === '科研' ? '🔬' : post.mainCategory === '兴趣' ? '🎹' : post.mainCategory === '升学' ? '🎗"
+Line 130: '            {/* ══ Bottom: Likes + Comments ══ */}'
+Line 137: "                  <Text style={{ fontSize: '14px' }}>❤️</Text>"
+Line 141: "                  <Text style={{ fontSize: '14px' }}>💬</Text>"
+Line 145: "              <Text style={{ fontSize: '12px', color: '#94A3B8' }}>查看详情 →/Text>"

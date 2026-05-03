@@ -1,0 +1,53 @@
+export default defineAppConfig({
+  pages: [
+    'pages/index/index',
+    'pages/discover/index',
+    'pages/messages/index',
+    'pages/profile/index',
+    'pages/post-detail/index',
+    'pages/publish/index',
+    'pages/verify/index',
+    'pages/skill-detail/index',
+    'pages/user-detail/index',
+  ],
+  window: {
+    navigationBarTitleText: '换乎ZJU版',
+    navigationBarTextStyle: 'black',
+    navigationBarBackgroundColor: '#FFFFFF',
+    backgroundColor: '#F8FAFC',
+    backgroundTextStyle: 'light',
+  },
+  tabBar: {
+    color: '#94A3B8',
+    selectedColor: '#2563EB',
+    backgroundColor: '#FFFFFF',
+    borderStyle: 'black',
+    list: [
+      {
+        pagePath: 'pages/index/index',
+        text: '首页',
+        iconPath: 'assets/icons/home.png',
+        selectedIconPath: 'assets/icons/home-active.png',
+      },
+      {
+        pagePath: 'pages/discover/index',
+        text: '发现',
+        iconPath: 'assets/icons/discover.png',
+        selectedIconPath: 'assets/icons/discover-active.png',
+      },
+      {
+        pagePath: 'pages/messages/index',
+        text: '消息',
+        iconPath: 'assets/icons/messages.png',
+        selectedIconPath: 'assets/icons/messages-active.png',
+      },
+      {
+        pagePath: 'pages/profile/index',
+        text: '我的',
+        iconPath: 'assets/icons/profile.png',
+        selectedIconPath: 'assets/icons/profile-active.png',
+      },
+    ],
+  },
+  usingComponents: {},
+})

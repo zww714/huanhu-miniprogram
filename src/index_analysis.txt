@@ -1,0 +1,53 @@
+Line 7: "const TABS = ['鎶€鑳戒氦鎹?, '鍏磋叮鎼\ue15e瓙', '绀惧尯娲诲姩']"
+Line 8: "const ACTIVITY_CATEGORIES = ['鍏ㄩ儴', '鎶€鑳戒氦鎹?, '鍏磋叮', '蹇楁効', '鍏朵粬']"
+Line 9: "const PARTNER_CATEGORIES = ['鍏ㄩ儴', '瀛︿範', '杩愬姩', '娓告垙', '闊充箰', '鏃呰\ue511', '鎽勫奖', '鍏朵粬']"
+Line 12: "  trending: '馃搱', chef: '馃嵆', gamepad: '馃幃', camera: '馃摲'"
+Line 22: "  const handleStartChat = () => Taro.showToast({ title: '鍙戣捣鑱旂郴', icon: 'none' })"
+Line 23: "  const handleJoinGroup = () => Taro.showToast({ title: '宸插姞鍏ュ叴瓒ｇ粍', icon: 'success' })"
+Line 24: "  const handleJoin = () => Taro.showToast({ title: '鎶ュ悕鎴愬姛', icon: 'success' })"
+Line 42: '  // ========= 鎶€鑳戒氦鎹?Tab ========='
+Line 143: '            鍜屽叏鏍″悓瀛︿氦鎹㈡妧鑳?          </Text>'
+Line 151: '            鍒嗕韩浣犵殑鐗归暱锛屽\ue11f涔犳劅鍏磋叮鐨勭煡璇?          </Text>'
+Line 203: '                      鉁?                    </Text>'
+Line 220: '                      {user.match}% 鍖归厤'
+Line 231: '                  {user.college} 路 {user.major}'
+Line 261: '                鎴戜細'
+Line 301: '                鎯冲\ue11f'
+Line 352: '                  鍙戣捣鑱旂郴'
+Line 362: '  // ========= 鍏磋叮鎼\ue15e瓙 Tab ========='
+Line 429: '            鎵惧埌鍏磋叮鐩告姇鐨勬惌瀛?          </Text>'
+Line 437: '            涓€璧锋帰绱㈢儹鐖憋紝璁╂牎鍥\ue160敓娲绘洿鏈夎叮锛?          </Text>'
+Line 445: "            {['鐪熷疄鍚屽ソ', '杞绘澗鍖归厤', '浜掔浉闄\ue043即'].map((p) => ("
+Line 474: '            馃敟 鐑\ue162棬鍏磋叮缁?          </Text>'
+Line 476: '            鏇村\ue63f &gt;'
+Line 512: "                    {ICONS[g.icon] || '馃數'}"
+Line 526: '                  {g.followers}浜哄叧娉?                </Text>'
+Line 546: '            馃懃 鎵炬惌瀛?          </Text>'
+Line 548: '            鏇村\ue63f &gt;'
+Line 603: '                        鉁?                      </Text>'
+Line 629: '                    鍖归厤搴?                  </Text>'
+Line 647: '                    瀵绘壘锛?                  </Text>'
+Line 681: '                    鑱旂郴TA'
+Line 693: '  // ========= 绀惧尯娲诲姩 Tab ========='
+Line 755: '              鎺㈢储ZJU鏍″洯娲诲姩'
+Line 758: '              鍙戠幇绮惧僵娲诲姩锛岄亣瑙佹湁瓒ｇ殑鐏甸瓊'
+Line 761: "              onClick={function() { Taro.showToast({ title: '鏌ョ湅鍏ㄩ儴娲诲姩', icon: 'none' }) }}"
+Line 772: '                绔嬪嵆鎶ュ悕 &gt;'
+Line 778: '        {/* 鐑\ue162棬娲诲姩 - 姘村钩婊氬姩鍥炬爣 */}'
+Line 782: '              馃敟 鐑\ue162棬娲诲姩'
+Line 784: "            <Text style={{ fontSize: '13px', color: '#64748B' }}>鏇村\ue63f &gt;</Text>"
+Line 792: "                    onClick={function() { Taro.showToast({ title: g.name + '娲诲姩', icon: 'none' }) }}"
+Line 832: '        {/* 鍏ㄩ儴娲诲姩鏍囬\ue57d */}'
+Line 835: '            鍏ㄩ儴娲诲姩'
+Line 878: "                        <Text style={{ fontSize: '11px', color: 'rgba(255,255,255,0.8)' }}>馃晲 {act.time}</Text>"
+Line 879: "                        <Text style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)' }}>路</Text>"
+Line 880: "                        <Text style={{ fontSize: '11px', color: 'rgba(255,255,255,0.8)' }}>馃搷 {act.location}</Text>"
+Line 903: "                      onClick={function() { Taro.showToast({ title: isFull ? '宸叉姤婊? : '鎶ュ悕鎴愬姛', icon: isFull ? 'error' :"
+Line 912: "                        {isFull ? '宸叉弧' : '鎶ュ悕'}"
+Line 918: "                      {act.participants}/{act.maxParticipants || '鈭?}浜哄凡鎶ュ悕"
+Line 937: '        {/* 鎼滅储鏍?- 椤甸潰鏈€椤堕儴 */}'
+Line 951: "          <Text style={{ fontSize: '16px' }}>馃攳</Text>"
+Line 953: '            鎼滅储璇剧▼銆佹妧鑳芥垨鍚屽\ue11f...'
+Line 957: '        {/* 椤堕儴涓夊ぇ Tab */}'
+Line 992: '        {/* 鍐呭\ue190鍖哄煙 */}'
+Line 998: '      {/* 鎮\ue101诞鍙戝竷鎸夐挳 */}'
