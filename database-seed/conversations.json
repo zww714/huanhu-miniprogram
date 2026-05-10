@@ -1,0 +1,53 @@
+[
+  {
+    "_id": "conv_chen_xiong",
+    "participants": [
+      "user_chen",
+      "user_xiong"
+    ],
+    "lastMessage": "好的，那我们明天下午在图书馆见！",
+    "lastMessageTime": "2026-05-10T06:32:00.000Z",
+    "unreadCount": {
+      "user_chen": 3,
+      "user_xiong": 0
+    },
+    "category": "技能交换",
+    "seedTag": "huanhu-initial-v1",
+    "createdAt": "2026-05-10T09:59:58.469Z",
+    "updatedAt": "2026-05-10T09:59:58.469Z"
+  },
+  {
+    "_id": "conv_chen_orange",
+    "participants": [
+      "user_chen",
+      "user_orange"
+    ],
+    "lastMessage": "你的 Python 项目进展怎么样了？",
+    "lastMessageTime": "2026-05-10T04:05:00.000Z",
+    "unreadCount": {
+      "user_chen": 1,
+      "user_orange": 0
+    },
+    "category": "技能交换",
+    "seedTag": "huanhu-initial-v1",
+    "createdAt": "2026-05-10T09:59:58.469Z",
+    "updatedAt": "2026-05-10T09:59:58.469Z"
+  },
+  {
+    "_id": "conv_chen_photo",
+    "participants": [
+      "user_chen",
+      "user_photo"
+    ],
+    "lastMessage": "周末一起去拍照吗？",
+    "lastMessageTime": "2026-05-09T10:20:00.000Z",
+    "unreadCount": {
+      "user_chen": 0,
+      "user_photo": 0
+    },
+    "category": "兴趣搭子",
+    "seedTag": "huanhu-initial-v1",
+    "createdAt": "2026-05-10T09:59:58.469Z",
+    "updatedAt": "2026-05-10T09:59:58.469Z"
+  }
+]

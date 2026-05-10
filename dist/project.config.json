@@ -1,5 +1,6 @@
 {
   "miniprogramRoot": "./",
+  "cloudfunctionRoot": "cloudfunctions/",
   "projectname": "换乎ZJU版",
   "description": "换乎ZJU版 - 技能交换微信小程序",
   "appid": "wx9fe54c8fa871a2de",

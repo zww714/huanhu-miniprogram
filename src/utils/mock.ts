@@ -332,3 +332,95 @@ export const SKILL_DETAIL = {
     { type: 'cert', name: '计算机等级考试三级', desc: '数据库技术方向' },
   ],
 }
+
+
+// ========== MY PROFILE DATA ==========
+export const MY_PROFILE = {
+  name: '张三',
+  user_id: '10086',
+  avatar: '',
+  verified: true,
+  school: '浙江大学',
+  college: '计算机学院',
+  grade: '研一',
+  bio: '擅长 Python 和数据分析，想找摄影搭子',
+  stats: { skills: 5, posts: 12, followers: 86, following: 42 },
+}
+
+// ========== MY SKILLS ==========
+export const MY_SKILLS = [
+  { name: 'AI工具', level: 5, desc: '熟练使用各种AI工具辅助科研与开发', tags: ['ChatGPT', 'Copilot', 'Midjourney'] },
+  { name: 'Python', level: 4, desc: '熟练使用 Python 进行数据分析、机器学习与 Web 开发', tags: ['数据分析', 'Django', 'TensorFlow'] },
+  { name: '数据分析', level: 3, desc: '具备数据清洗、可视化和建模能力', tags: ['Pandas', 'Matplotlib', 'SQL'] },
+  { name: '英语交流', level: 2, desc: '流利的英语口语和写作能力', tags: ['雅思', '学术写作'] },
+  { name: '前端开发', level: 1, desc: '了解React、Vue等前端框架', tags: ['React', 'Vue', '小程序'] },
+]
+
+// ========== MY LEARN WANTS ==========
+export const MY_LEARN_WANTS = [
+  { name: '摄影', target: '想学人像摄影和后期修图' },
+  { name: '产品设计', target: '想学产品思维和UI设计' },
+  { name: '羽毛球', target: '想找水平相近的球友一起进步' },
+]
+
+// ========== MY INTERESTS ==========
+export const MY_INTERESTS = ['科研', 'AI', '徒步', '摄影', '桌游']
+
+// ========== MY REVIEWS ==========
+export const MY_REVIEWS = [
+  {
+    id: 'r1', reviewer: '王同学', reviewerAvatar: '',
+    rating: 5, tags: ['认真', '准时', '讲得清楚'],
+    content: 'Python 讲得很清楚，案例也很实用，帮我解决了数据分析的大问题。',
+    skill: 'Python 编程',
+    time: '3天前',
+  },
+  {
+    id: 'r2', reviewer: '李学姐', reviewerAvatar: '',
+    rating: 5, tags: ['有耐心', '专业'],
+    content: 'AI工具的使用心得分享非常详细，学到了很多实用技巧。',
+    skill: 'AI工具',
+    time: '1周前',
+  },
+  {
+    id: 'r3', reviewer: '材料人', reviewerAvatar: '',
+    rating: 4, tags: ['及时'],
+    content: '帮我解答了Python数据分析的问题，回复很及时。',
+    skill: 'Python 编程',
+    time: '2周前',
+  },
+]
+
+// ========== USER DETAIL (for other users viewing) ==========
+export const USER_DETAIL_PROFILE = {
+  name: '陈同学',
+  user_id: '20001',
+  avatar: '',
+  verified: true,
+  school: '浙江大学',
+  college: '物理学院',
+  grade: '博士在读',
+  bio: '擅长用 AI 和编程工具帮助同学快速上手科研与项目实践',
+  stats: { skills: 5, posts: 12, followers: 86, following: 42 },
+  is_following: false,
+  can_message: true,
+  skills: [
+    { name: 'AI工具', level: 5, desc: '熟练使用各种AI工具辅助科研与开发', tags: ['ChatGPT', 'Copilot', '科研提效'] },
+    { name: 'Python', level: 4, desc: '熟练使用 Python 进行数据分析、机器学习与 Web 开发', tags: ['数据分析', 'TensorFlow', 'Django'] },
+    { name: '数据分析', level: 3, desc: '具备数据清洗、可视化和建模能力', tags: ['Pandas', 'Matplotlib', 'SQL'] },
+    { name: '英语交流', level: 2, desc: '流利的英语口语和写作能力，通过雅思7.0', tags: ['雅思', '学术写作', '口语'] },
+    { name: 'MATLAB', level: 1, desc: '基础的MATLAB编程和仿真能力', tags: ['仿真', '信号处理'] },
+  ],
+  learn_wants: ['摄影', '产品设计', '羽毛球'],
+  interests: ['科研', 'AI', '徒步', '摄影', '桌游'],
+  posts: [
+    { id: 'up1', title: 'NLP课程笔记：Transformer原理详解', type: '课程笔记', time: '3天前', likes: 34, comments: 8 },
+    { id: 'up2', title: '推荐几个好用的科研效率工具', type: '工具推荐', time: '1周前', likes: 62, comments: 15 },
+    { id: 'up3', title: '研一新生怎么建立文献阅读体系', type: '经验分享', time: '2周前', likes: 48, comments: 12 },
+    { id: 'up4', title: '我常用的Python数据分析模板', type: '经验分享', time: '3周前', likes: 55, comments: 10 },
+  ],
+  reviews: [
+    { id: 'ur1', reviewer: '王同学', reviewerAvatar: '', rating: 5, tags: ['准时', '讲得清楚'], content: '帮我理清了 Python 数据分析的思路', skill: 'Python', time: '3天前' },
+    { id: 'ur2', reviewer: '李学姐', reviewerAvatar: '', rating: 5, tags: ['专业', '有耐心'], content: 'AI工具分享非常实用', skill: 'AI工具', time: '1周前' },
+  ],
+}

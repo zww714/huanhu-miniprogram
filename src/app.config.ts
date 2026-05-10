@@ -3,6 +3,7 @@ export default defineAppConfig({
     'pages/index/index',
     'pages/discover/index',
     'pages/messages/index',
+    'pages/chat/index',
     'pages/profile/index',
     'pages/post-detail/index',
     'pages/publish/index',

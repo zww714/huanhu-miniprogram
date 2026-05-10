@@ -1,0 +1,79 @@
+[
+  {
+    "_id": "post_python",
+    "userId": "user_chen",
+    "title": "如何用 Python 高效完成数据分析？",
+    "excerpt": "分享我在科研中常用的几个 Python 库，包括 pandas、numpy 和 matplotlib 的使用技巧。",
+    "content": "从数据清洗、探索分析到可视化，我整理了一套适合科研新手快速上手的 Python 数据分析流程。",
+    "cover": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    "categoryTag": "科研·技能交换",
+    "mainCategory": "科研",
+    "tags": [
+      "编程",
+      "数据分析",
+      "Python"
+    ],
+    "likes": 128,
+    "comments": 32,
+    "seedTag": "huanhu-initial-v1",
+    "createdAt": "2026-05-10T09:59:58.467Z",
+    "updatedAt": "2026-05-10T09:59:58.467Z"
+  },
+  {
+    "_id": "post_photo",
+    "userId": "user_photo",
+    "title": "浙大的春天太美了，求摄影搭子",
+    "excerpt": "最近樱花和郁金香都开了，想找喜欢摄影的同学一起扫校园。",
+    "content": "我比较擅长人像摄影，也可以互拍。周末下午紫金港出发，欢迎一起。",
+    "cover": "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+    "categoryTag": "兴趣·搭子",
+    "mainCategory": "兴趣",
+    "tags": [
+      "摄影",
+      "兴趣搭子"
+    ],
+    "likes": 256,
+    "comments": 45,
+    "seedTag": "huanhu-initial-v1",
+    "createdAt": "2026-05-10T09:59:58.467Z",
+    "updatedAt": "2026-05-10T09:59:58.467Z"
+  },
+  {
+    "_id": "post_math",
+    "userId": "user_orange",
+    "title": "考研数学复习经验分享",
+    "excerpt": "从基础到强化，三个月数学一 140 分的复习路线。",
+    "content": "重点聊资料选择、错题整理和冲刺阶段的时间分配，希望能帮到正在备考的同学。",
+    "cover": "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+    "categoryTag": "升学·经验",
+    "mainCategory": "升学",
+    "tags": [
+      "考研",
+      "数学"
+    ],
+    "likes": 512,
+    "comments": 89,
+    "seedTag": "huanhu-initial-v1",
+    "createdAt": "2026-05-10T09:59:58.467Z",
+    "updatedAt": "2026-05-10T09:59:58.467Z"
+  },
+  {
+    "_id": "post_ai",
+    "userId": "user_xiong",
+    "title": "求推荐好用的 AI 写作工具",
+    "excerpt": "最近在写论文综述，想找一些能辅助文献整理和写作的工具。",
+    "content": "目前了解 ChatGPT、Claude、Notion AI，想听听大家在学术写作中的真实使用体验。",
+    "cover": "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
+    "categoryTag": "科研·求助",
+    "mainCategory": "科研",
+    "tags": [
+      "AI",
+      "论文写作"
+    ],
+    "likes": 67,
+    "comments": 23,
+    "seedTag": "huanhu-initial-v1",
+    "createdAt": "2026-05-10T09:59:58.467Z",
+    "updatedAt": "2026-05-10T09:59:58.467Z"
+  }
+]

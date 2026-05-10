@@ -32,7 +32,7 @@ export default function SkillDetail() {
         <View onClick={() => Taro.navigateBack()}>
           <Text style={{ fontSize: '20px', color: '#64748B' }}>鈫</Text>
         </View>
-        <Text style={{ fontSize: '16px', fontWeight: '600', color: '#1E293B' }}>鎶能鑳借璇</Text>
+        <Text style={{ fontSize: '16px', fontWeight: '600', color: '#1E293B' }}>鎶能鑳借璇</Text>
         <View style={{ display: 'flex', gap: '12px' }}>
           <Text style={{ fontSize: '16px', color: '#64748B' }}>鈫</Text>
           <Text style={{ fontSize: '18px', color: '#64748B' }}>鈰</Text>
@@ -62,7 +62,7 @@ export default function SkillDetail() {
             {[
               { label: '椤圭洰', value: stats.projects },
               { label: '璁よ瘉', value: stats.endorsements },
-              { label: '娴忚', value: stats.views },
+              { label: '娴忚', value: stats.views },
             ].map((s) => (
               <View key={s.label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                 <Text style={{ fontSize: '22px', fontWeight: '700', color: '#2563EB' }}>
