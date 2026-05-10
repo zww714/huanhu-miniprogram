@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
-import { ScrollView, Text, View } from '@tarojs/components'
+import { Input, ScrollView, Text, View } from '@tarojs/components'
 import { getActivities, getPartners, getUsers } from '../../utils/api'
 import './index.css'
 
@@ -137,6 +137,7 @@ export default function Index() {
   const [filterIndex, setFilterIndex] = useState(0)
   const [activityCategory, setActivityCategory] = useState(0)
   const [partnerCategory, setPartnerCategory] = useState(0)
+  const [searchQuery, setSearchQuery] = useState('')
   const [skillUsers, setSkillUsers] = useState<SkillUser[]>([])
   const [partners, setPartners] = useState<PartnerUser[]>([])
   const [activities, setActivities] = useState<Activity[]>([])
@@ -179,28 +180,64 @@ export default function Index() {
 
   const filteredSkillUsers = useMemo(() => {
     const filter = SKILL_FILTERS[filterIndex]
-    if (!filter || filter === '全部' || filter === '热门') return skillUsers
-    return skillUsers.filter((user) =>
-      userSkills(user).some((skill) => skill.name.includes(filter))
-    )
-  }, [filterIndex, skillUsers])
+    const keyword = searchQuery.trim().toLowerCase()
+    return skillUsers.filter((user) => {
+      const skills = userSkills(user)
+      const wants = userWants(user)
+      const matchesFilter = !filter || filter === '全部' || filter === '热门'
+        ? true
+        : skills.some((skill) => skill.name.includes(filter))
+      const searchable = [
+        user.name,
+        user.college,
+        user.major,
+        user.grade,
+        user.bio,
+        ...skills.map((skill) => skill.name),
+        ...wants,
+      ].filter(Boolean).join(' ').toLowerCase()
+      return matchesFilter && (!keyword || searchable.includes(keyword))
+    })
+  }, [filterIndex, searchQuery, skillUsers])
 
   const filteredPartners = useMemo(() => {
     const category = PARTNER_CATEGORIES[partnerCategory]
-    if (!category || category === '全部') return partners
     return partners.filter((user) => {
+      const keyword = searchQuery.trim().toLowerCase()
       const labels = [...(user.tags || []), ...(user.interests || [])]
-      return labels.some((label) => label.includes(category))
+      const matchesCategory = !category || category === '全部'
+        ? true
+        : labels.some((label) => label.includes(category))
+      const searchable = [
+        user.name,
+        user.college,
+        user.major,
+        user.grade,
+        user.bio,
+        user.lookingFor,
+        ...labels,
+      ].filter(Boolean).join(' ').toLowerCase()
+      return matchesCategory && (!keyword || searchable.includes(keyword))
     })
-  }, [partnerCategory, partners])
+  }, [partnerCategory, partners, searchQuery])
 
   const filteredActivities = useMemo(() => {
     const category = ACTIVITY_CATEGORIES[activityCategory]
-    if (!category || category === '全部') return activities
-    return activities.filter((activity) => activity.category === category)
-  }, [activityCategory, activities])
+    const keyword = searchQuery.trim().toLowerCase()
+    return activities.filter((activity) => {
+      const matchesCategory = !category || category === '全部' ? true : activity.category === category
+      const searchable = [
+        activity.title,
+        activity.organizer,
+        activity.time,
+        activity.location,
+        activity.category,
+        ...(activity.tags || []),
+      ].filter(Boolean).join(' ').toLowerCase()
+      return matchesCategory && (!keyword || searchable.includes(keyword))
+    })
+  }, [activityCategory, activities, searchQuery])
 
-  const handleSearch = () => Taro.switchTab({ url: '/pages/discover/index' })
   const handleStartChat = (user: SkillUser | PartnerUser) => {
     const id = getRecordId(user) || encodeURIComponent(user.name)
     Taro.navigateTo({
@@ -460,11 +497,16 @@ export default function Index() {
   return (
     <View style={{ height: '100vh', position: 'relative', backgroundColor: '#F8FAFC' }}>
       <ScrollView scrollY showScrollbar={false} style={{ height: '100vh' }}>
-        <View onClick={handleSearch} style={{ margin: '10px 16px 4px', padding: '10px 14px', backgroundColor: '#FFF', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #E2E8F0' }}>
+        <View style={{ margin: '10px 16px 4px', padding: '10px 14px', backgroundColor: '#FFF', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #E2E8F0' }}>
           <Text style={{ fontSize: '16px' }}>🔍</Text>
-          <Text style={{ fontSize: '14px', color: '#94A3B8', flex: 1 }}>
-            搜索课程、技能或同学......
-          </Text>
+          <Input
+            value={searchQuery}
+            placeholder='搜索课程、技能或同学......'
+            confirmType='search'
+            onInput={(event) => setSearchQuery(String(event.detail.value || ''))}
+            style={{ flex: 1, height: '22px', fontSize: '14px', color: '#1E293B' }}
+            placeholderStyle='color: #94A3B8; font-size: 14px;'
+          />
         </View>
 
         <View style={{ display: 'flex', backgroundColor: '#FFF', padding: '8px 16px', borderBottom: '1px solid #E2E8F0', position: 'sticky', top: 0, zIndex: 10 }}>

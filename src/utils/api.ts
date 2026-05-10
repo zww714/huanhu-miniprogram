@@ -80,6 +80,19 @@ async function addCloudDocument(collectionName: string, data: Record<string, any
   })
 }
 
+async function getAllCloudDocuments(collectionName: string, limit = 100) {
+  await initCloud()
+  return new Promise<any[]>((resolve, reject) => {
+    wx.cloud.database()
+      .collection(collectionName)
+      .limit(limit)
+      .get({
+        success: (res) => resolve(res.data || []),
+        fail: reject,
+      })
+  })
+}
+
 async function uploadCloudFile(localPath: string, folder = 'post-images') {
   await initCloud()
   const ext = localPath.includes('.') ? localPath.split('.').pop() : 'jpg'
@@ -228,6 +241,83 @@ export async function login() {
   }
   await delay()
   return MY_PROFILE
+}
+
+const LOGIN_USER_KEY = 'huanhuLoginUser'
+const SMS_CODE_KEY = 'huanhuSmsCode'
+
+export async function saveWechatProfile(params: {
+  nickName?: string
+  avatarUrl?: string
+}) {
+  const user = await login()
+  const nextProfile = {
+    name: params.nickName || user?.name || '微信用户',
+    avatar: params.avatarUrl || user?.avatar || '',
+  }
+
+  if (USE_CLOUD && user?._id) {
+    await updateCloudDocument('users', user._id, nextProfile)
+    const updated = await getCloudDocument('users', user._id)
+    wx.setStorageSync(LOGIN_USER_KEY, updated)
+    return updated
+  }
+
+  const localUser = { ...(user || {}), ...nextProfile }
+  wx.setStorageSync(LOGIN_USER_KEY, localUser)
+  return localUser
+}
+
+export async function sendSmsCode(phone: string) {
+  const cleanPhone = phone.trim()
+  if (!/^1\d{10}$/.test(cleanPhone)) {
+    throw new Error('请输入正确的手机号')
+  }
+
+  const code = String(Math.floor(100000 + Math.random() * 900000))
+  wx.setStorageSync(SMS_CODE_KEY, {
+    phone: cleanPhone,
+    code,
+    expiresAt: Date.now() + 5 * 60 * 1000,
+  })
+
+  // 开发阶段用 toast 显示验证码；接入真实短信服务时替换这里。
+  return { code, expiresIn: 300 }
+}
+
+export async function phoneCodeLogin(params: {
+  phone: string
+  code: string
+}) {
+  const saved = wx.getStorageSync(SMS_CODE_KEY)
+  const phone = params.phone.trim()
+  const code = params.code.trim()
+
+  if (!saved || saved.phone !== phone || saved.code !== code || Date.now() > saved.expiresAt) {
+    throw new Error('验证码错误或已过期')
+  }
+
+  const user = await login()
+  const nextProfile = {
+    phone,
+    phoneVerified: true,
+    name: user?.name || `用户${phone.slice(-4)}`,
+  }
+
+  if (USE_CLOUD && user?._id) {
+    await updateCloudDocument('users', user._id, nextProfile)
+    const updated = await getCloudDocument('users', user._id)
+    wx.setStorageSync(LOGIN_USER_KEY, updated)
+    return updated
+  }
+
+  const localUser = { ...(user || {}), ...nextProfile }
+  wx.setStorageSync(LOGIN_USER_KEY, localUser)
+  return localUser
+}
+
+export function getSavedLoginUser() {
+  return wx.getStorageSync(LOGIN_USER_KEY)
 }
 
 // ----- 用户详情 -----
@@ -553,6 +643,193 @@ export async function getConversations() {
   }
   await delay()
   return CONVERSATIONS
+}
+
+// ----- 云端聊天 -----
+const CHAT_USER_KEY = 'huanhuChatCurrentUser'
+const LOCAL_MESSAGES_KEY = 'huanhuChatMessages'
+const LOCAL_CONVERSATIONS_KEY = 'huanhuLocalConversations'
+
+function getLocalChatUser() {
+  const saved = wx.getStorageSync(CHAT_USER_KEY)
+  if (saved?.id) return saved
+
+  const user = {
+    id: `local_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    name: '我',
+  }
+  wx.setStorageSync(CHAT_USER_KEY, user)
+  return user
+}
+
+export async function getCurrentChatUser() {
+  if (USE_CLOUD) {
+    try {
+      const userData = await login()
+      if (userData?._id) {
+        const user = {
+          id: userData._id,
+          name: userData.name || '我',
+        }
+        wx.setStorageSync(CHAT_USER_KEY, user)
+        return user
+      }
+    } catch (e) {
+      console.warn('[API] getCurrentChatUser login failed, use local id', e)
+    }
+  }
+  return getLocalChatUser()
+}
+
+function buildConversationId(a: string, b: string) {
+  return [a, b].sort().join('__')
+}
+
+function formatChatTime(timestamp = Date.now()) {
+  const date = new Date(timestamp)
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+}
+
+function getLocalMessageStore(): Record<string, any[]> {
+  const data = wx.getStorageSync(LOCAL_MESSAGES_KEY)
+  return data && typeof data === 'object' ? data : {}
+}
+
+function saveLocalMessages(conversationId: string, messages: any[]) {
+  const store = getLocalMessageStore()
+  store[conversationId] = messages
+  wx.setStorageSync(LOCAL_MESSAGES_KEY, store)
+}
+
+function upsertLocalConversation(conversation: any) {
+  const data = wx.getStorageSync(LOCAL_CONVERSATIONS_KEY)
+  const list = Array.isArray(data) ? data : []
+  wx.setStorageSync(LOCAL_CONVERSATIONS_KEY, [
+    conversation,
+    ...list.filter((item) => item.id !== conversation.id),
+  ])
+}
+
+function normalizeChatMessage(message: any, currentUserId: string) {
+  return {
+    id: message.id || message._id || String(message.createdAtMs),
+    text: message.text || '',
+    sender: message.senderId === currentUserId ? 'me' : 'other',
+    senderId: message.senderId,
+    senderName: message.senderName,
+    time: message.time || formatChatTime(message.createdAtMs),
+    createdAtMs: Number(message.createdAtMs || 0),
+  }
+}
+
+export async function getChatMessages(params: { targetId: string }) {
+  const currentUser = await getCurrentChatUser()
+  const conversationId = buildConversationId(currentUser.id, params.targetId)
+
+  if (USE_CLOUD) {
+    try {
+      const messages = await getAllCloudDocuments('messages', 100)
+      return messages
+        .filter((message) => message.conversationId === conversationId)
+        .map((message) => normalizeChatMessage(message, currentUser.id))
+        .sort((a, b) => a.createdAtMs - b.createdAtMs)
+    } catch (e) {
+      console.warn('[API] getChatMessages cloud failed, fallback local', e)
+    }
+  }
+
+  const store = getLocalMessageStore()
+  return (store[conversationId] || []).map((message) => normalizeChatMessage(message, currentUser.id))
+}
+
+export async function sendChatMessage(params: {
+  targetId: string
+  targetName: string
+  category?: string
+  text: string
+}) {
+  const currentUser = await getCurrentChatUser()
+  const conversationId = buildConversationId(currentUser.id, params.targetId)
+  const createdAtMs = Date.now()
+  const message = {
+    conversationId,
+    participants: [currentUser.id, params.targetId],
+    senderId: currentUser.id,
+    senderName: currentUser.name || '我',
+    targetId: params.targetId,
+    targetName: params.targetName,
+    text: params.text,
+    time: formatChatTime(createdAtMs),
+    createdAtMs,
+    category: params.category || '聊天',
+  }
+
+  if (USE_CLOUD) {
+    try {
+      const res = await addCloudDocument('messages', message)
+      return normalizeChatMessage({ ...message, id: res._id, _id: res._id }, currentUser.id)
+    } catch (e) {
+      console.warn('[API] sendChatMessage cloud failed, fallback local', e)
+    }
+  }
+
+  const store = getLocalMessageStore()
+  const next = [...(store[conversationId] || []), message]
+  saveLocalMessages(conversationId, next)
+  upsertLocalConversation({
+    id: params.targetId,
+    name: params.targetName,
+    lastMessage: params.text,
+    timestamp: message.time,
+    unread: 0,
+    category: params.category || '聊天',
+  })
+  return normalizeChatMessage(message, currentUser.id)
+}
+
+export async function getChatConversations() {
+  const currentUser = await getCurrentChatUser()
+  const localData = wx.getStorageSync(LOCAL_CONVERSATIONS_KEY)
+  const localConversations = Array.isArray(localData) ? localData : []
+
+  if (USE_CLOUD) {
+    try {
+      const messages = await getAllCloudDocuments('messages', 200)
+      const grouped: Record<string, any> = {}
+
+      messages
+        .filter((message) => Array.isArray(message.participants) && message.participants.includes(currentUser.id))
+        .forEach((message) => {
+          const otherId = message.participants.find((id: string) => id !== currentUser.id) || message.targetId
+          const otherName = message.senderId === currentUser.id ? message.targetName : message.senderName
+          const current = grouped[otherId]
+          if (!current || Number(message.createdAtMs || 0) > Number(current.createdAtMs || 0)) {
+            grouped[otherId] = {
+              id: otherId,
+              name: otherName || '同学',
+              lastMessage: message.text || '',
+              timestamp: message.time || formatChatTime(message.createdAtMs),
+              unread: message.senderId === currentUser.id ? 0 : 1,
+              category: message.category || '聊天',
+              createdAtMs: Number(message.createdAtMs || 0),
+            }
+          }
+        })
+
+      const cloudConversations = Object.values(grouped)
+        .sort((a: any, b: any) => Number(b.createdAtMs || 0) - Number(a.createdAtMs || 0))
+      const cloudIds = new Set(cloudConversations.map((item: any) => item.id))
+
+      return [
+        ...cloudConversations,
+        ...localConversations.filter((item: any) => !cloudIds.has(item.id)),
+      ]
+    } catch (e) {
+      console.warn('[API] getChatConversations cloud failed, fallback local', e)
+    }
+  }
+
+  return localConversations
 }
 
 // ----- 我的资料 -----

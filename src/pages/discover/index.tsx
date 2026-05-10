@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
-import { Image, ScrollView, Text, View } from '@tarojs/components'
+import { Image, Input, ScrollView, Text, View } from '@tarojs/components'
 import { getPosts } from '../../utils/api'
 import './index.css'
 
@@ -66,6 +66,7 @@ function getAuthor(post: Post) {
 
 export default function Discover() {
   const [activeCat, setActiveCat] = useState(0)
+  const [searchQuery, setSearchQuery] = useState('')
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -101,10 +102,25 @@ export default function Discover() {
   const handlePublish = () => Taro.navigateTo({ url: '/pages/publish/index?mode=post' })
 
   const filtered = useMemo(() => {
-    if (activeCat === 0) return posts
+    const keyword = searchQuery.trim().toLowerCase()
     const category = CATEGORIES[activeCat]
-    return posts.filter((post) => post.mainCategory === category)
-  }, [activeCat, posts])
+    return posts.filter((post) => {
+      const author = getAuthor(post)
+      const matchesCategory = activeCat === 0 ? true : post.mainCategory === category
+      const searchable = [
+        post.title,
+        post.excerpt,
+        post.content,
+        post.categoryTag,
+        post.mainCategory,
+        author.name,
+        author.college,
+        author.grade,
+        ...(post.tags || []),
+      ].filter(Boolean).join(' ').toLowerCase()
+      return matchesCategory && (!keyword || searchable.includes(keyword))
+    })
+  }, [activeCat, posts, searchQuery])
 
   return (
     <View style={{ minHeight: '100vh', backgroundColor: '#F8FAFC' }}>
@@ -118,7 +134,14 @@ export default function Discover() {
 
         <View style={{ margin: '0 16px 8px', padding: '8px 14px', backgroundColor: '#F1F5F9', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Text style={{ fontSize: '14px', color: '#94A3B8' }}>🔍</Text>
-          <Text style={{ fontSize: '14px', color: '#94A3B8', flex: 1 }}>搜索帖子、同学或兴趣标签...</Text>
+          <Input
+            value={searchQuery}
+            placeholder='搜索帖子、同学或兴趣标签...'
+            confirmType='search'
+            onInput={(event) => setSearchQuery(String(event.detail.value || ''))}
+            style={{ flex: 1, height: '22px', fontSize: '14px', color: '#1E293B' }}
+            placeholderStyle='color: #94A3B8; font-size: 14px;'
+          />
         </View>
 
         <ScrollView scrollX enableFlex style={{ whiteSpace: 'nowrap' }}>

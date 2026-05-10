@@ -1,10 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { Input, ScrollView, Text, View } from '@tarojs/components'
+import { getChatMessages, sendChatMessage } from '../../utils/api'
 import './index.css'
-
-const LOCAL_CONVERSATIONS_KEY = 'huanhuLocalConversations'
-const LOCAL_MESSAGES_KEY = 'huanhuChatMessages'
 
 type ChatMessage = {
   id: string
@@ -13,100 +11,67 @@ type ChatMessage = {
   time: string
 }
 
-type Conversation = {
-  id: string
-  name: string
-  lastMessage: string
-  timestamp: string
-  unread: number
-  category?: string
-}
-
-function nowTime() {
-  const date = new Date()
-  const hour = String(date.getHours()).padStart(2, '0')
-  const minute = String(date.getMinutes()).padStart(2, '0')
-  return `${hour}:${minute}`
-}
-
-function getMessageStore(): Record<string, ChatMessage[]> {
-  const data = Taro.getStorageSync(LOCAL_MESSAGES_KEY)
-  return data && typeof data === 'object' ? data : {}
-}
-
-function saveMessages(conversationId: string, messages: ChatMessage[]) {
-  const store = getMessageStore()
-  store[conversationId] = messages
-  Taro.setStorageSync(LOCAL_MESSAGES_KEY, store)
-}
-
-function getConversations(): Conversation[] {
-  const data = Taro.getStorageSync(LOCAL_CONVERSATIONS_KEY)
-  return Array.isArray(data) ? data : []
-}
-
-function upsertConversation(conversation: Conversation) {
-  const list = getConversations()
-  const next = [
-    conversation,
-    ...list.filter((item) => item.id !== conversation.id),
-  ]
-  Taro.setStorageSync(LOCAL_CONVERSATIONS_KEY, next)
-}
-
 export default function Chat() {
-  const [conversationId, setConversationId] = useState('')
+  const [targetId, setTargetId] = useState('')
   const [targetName, setTargetName] = useState('同学')
   const [category, setCategory] = useState('聊天')
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
+  const [sending, setSending] = useState(false)
+
+  const loadMessages = async (nextTargetId = targetId) => {
+    if (!nextTargetId) return
+    try {
+      const data = await getChatMessages({ targetId: nextTargetId })
+      setMessages(data)
+    } catch (e) {
+      console.warn('[Chat] load messages failed', e)
+    }
+  }
 
   useLoad((options) => {
     const id = decodeURIComponent(String(options?.id || 'default_user'))
     const name = decodeURIComponent(String(options?.name || '同学'))
     const nextCategory = decodeURIComponent(String(options?.category || '聊天'))
-    const store = getMessageStore()
-    const history = store[id] || []
 
-    setConversationId(id)
+    setTargetId(id)
     setTargetName(name)
     setCategory(nextCategory)
-    setMessages(history)
-
-    upsertConversation({
-      id,
-      name,
-      lastMessage: history[history.length - 1]?.text || '已建立聊天',
-      timestamp: history[history.length - 1]?.time || nowTime(),
-      unread: 0,
-      category: nextCategory,
-    })
+    loadMessages(id)
   })
 
-  const canSend = useMemo(() => !!input.trim() && !!conversationId, [conversationId, input])
+  useEffect(() => {
+    if (!targetId) return undefined
+    const timer = setInterval(() => {
+      loadMessages(targetId)
+    }, 2000)
+    return () => clearInterval(timer)
+  }, [targetId])
 
-  const handleSend = () => {
+  const canSend = useMemo(() => !!input.trim() && !!targetId && !sending, [input, sending, targetId])
+
+  const handleSend = async () => {
     const text = input.trim()
-    if (!text || !conversationId) return
+    if (!text || !targetId || sending) return
 
-    const message: ChatMessage = {
-      id: `${Date.now()}`,
-      text,
-      sender: 'me',
-      time: nowTime(),
-    }
-    const nextMessages = [...messages, message]
-    setMessages(nextMessages)
+    setSending(true)
     setInput('')
-    saveMessages(conversationId, nextMessages)
-    upsertConversation({
-      id: conversationId,
-      name: targetName,
-      lastMessage: text,
-      timestamp: message.time,
-      unread: 0,
-      category,
-    })
+    try {
+      const message = await sendChatMessage({
+        targetId,
+        targetName,
+        category,
+        text,
+      })
+      setMessages((current) => [...current, message])
+      setTimeout(() => loadMessages(targetId), 300)
+    } catch (e) {
+      console.warn('[Chat] send failed', e)
+      Taro.showToast({ title: '发送失败，请检查网络', icon: 'none' })
+      setInput(text)
+    } finally {
+      setSending(false)
+    }
   }
 
   return (
@@ -118,7 +83,7 @@ export default function Chat() {
         </View>
         <View style={{ flex: 1 }}>
           <Text style={{ fontSize: '16px', fontWeight: '600', color: '#1E293B' }}>{targetName}</Text>
-          <Text style={{ fontSize: '12px', color: '#94A3B8', marginTop: '2px' }}>{category}</Text>
+          <Text style={{ fontSize: '12px', color: '#94A3B8', marginTop: '2px' }}>{category} · 云端同步中</Text>
         </View>
       </View>
 
@@ -132,14 +97,7 @@ export default function Chat() {
           {messages.map((message) => {
             const mine = message.sender === 'me'
             return (
-              <View
-                id={`msg-${message.id}`}
-                key={message.id}
-                style={{
-                  display: 'flex',
-                  justifyContent: mine ? 'flex-end' : 'flex-start',
-                }}
-              >
+              <View id={`msg-${message.id}`} key={message.id} style={{ display: 'flex', justifyContent: mine ? 'flex-end' : 'flex-start' }}>
                 <View style={{ maxWidth: '72%', display: 'flex', flexDirection: 'column', alignItems: mine ? 'flex-end' : 'flex-start' }}>
                   <View style={{
                     padding: '9px 12px',
@@ -182,7 +140,7 @@ export default function Chat() {
             justifyContent: 'center',
           }}
         >
-          <Text style={{ fontSize: '14px', color: '#FFF', fontWeight: '600' }}>发送</Text>
+          <Text style={{ fontSize: '14px', color: '#FFF', fontWeight: '600' }}>{sending ? '...' : '发送'}</Text>
         </View>
       </View>
     </View>

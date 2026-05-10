@@ -2,9 +2,8 @@ import { useState } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
 import { CONVERSATIONS } from '../../utils/mock'
+import { getChatConversations } from '../../utils/api'
 import './index.css'
-
-const LOCAL_CONVERSATIONS_KEY = 'huanhuLocalConversations'
 
 const NAV_BUTTONS = [
   { name: '赞和收藏', key: 'likes', color: '#EF4444', icon: '♥' },
@@ -23,24 +22,29 @@ type Conversation = {
   category?: string
 }
 
-function getLocalConversations(): Conversation[] {
-  const data = Taro.getStorageSync(LOCAL_CONVERSATIONS_KEY)
-  return Array.isArray(data) ? data : []
-}
-
-function mergeConversations(localConversations: Conversation[]) {
-  const localIds = new Set(localConversations.map((item) => item.id))
-  const base = CONVERSATIONS
-    .filter((item) => !localIds.has(String(item.id)))
-    .map((item) => ({ ...item, id: String(item.id) }))
-  return [...localConversations, ...base]
+function normalizeBaseConversations() {
+  return CONVERSATIONS.map((item) => ({ ...item, id: String(item.id) }))
 }
 
 export default function Messages() {
   const [conversations, setConversations] = useState<Conversation[]>([])
 
   useDidShow(() => {
-    setConversations(mergeConversations(getLocalConversations()))
+    async function loadConversations() {
+      try {
+        const cloudConversations = await getChatConversations()
+        const cloudIds = new Set(cloudConversations.map((item: Conversation) => item.id))
+        setConversations([
+          ...cloudConversations,
+          ...normalizeBaseConversations().filter((item) => !cloudIds.has(item.id)),
+        ])
+      } catch (e) {
+        console.warn('[Messages] load conversations failed', e)
+        setConversations(normalizeBaseConversations())
+      }
+    }
+
+    loadConversations()
   })
 
   const navigate = (key: string) => {
