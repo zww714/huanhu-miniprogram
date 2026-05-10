@@ -21,6 +21,7 @@ type Post = {
     name: string
     college?: string
     grade?: string
+    bio?: string
   }
   likes?: number
   comments?: number
@@ -61,7 +62,22 @@ function getAuthor(post: Post) {
     name: '陈同学',
     college: '浙江大学',
     grade: '在读',
+    bio: '正在寻找一起交流的同学',
   }
+}
+
+function getAuthorBio(post: Post) {
+  const author = getAuthor(post)
+  if (author.bio) return author.bio
+  const content = post.excerpt || post.content || ''
+  return content ? content.slice(0, 18) : `${author.college || '浙江大学'}同学`
+}
+
+function getAuthorMeta(post: Post) {
+  const author = getAuthor(post)
+  return ['浙江大学', author.college, author.grade]
+    .filter(Boolean)
+    .join(' · ')
 }
 
 export default function Discover() {
@@ -181,12 +197,17 @@ export default function Discover() {
                   {getInitials(author.name)}
                 </Text>
               </View>
-              <View onClick={(e) => { e.stopPropagation(); handleUserClick(author.name) }} style={{ flex: 1 }}>
-                <Text style={{ fontSize: '14px', fontWeight: '600', color: '#1E293B' }}>
+              <View onClick={(e) => { e.stopPropagation(); handleUserClick(author.name) }} style={{ flex: 1, minWidth: 0 }}>
+                <View style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Text style={{ fontSize: '14px', fontWeight: '600', color: '#1E293B', flexShrink: 0 }}>
                   {author.name}
-                </Text>
-                <Text style={{ fontSize: '12px', color: '#94A3B8', marginTop: '1px' }}>
-                  {author.college || '浙江大学'} · {author.grade || '在读'}
+                  </Text>
+                  <Text style={{ fontSize: '12px', color: '#94A3B8', flex: 1 }} numberOfLines={1}>
+                    {getAuthorMeta(post)}
+                  </Text>
+                </View>
+                <Text style={{ display: 'block', fontSize: '12px', color: '#64748B', marginTop: '2px' }} numberOfLines={1}>
+                  {getAuthorBio(post)}
                 </Text>
               </View>
             </View>
@@ -203,10 +224,10 @@ export default function Discover() {
             </View>
 
             <View style={{ padding: '8px 16px 0' }}>
-              <Text style={{ fontSize: '16px', fontWeight: '600', color: '#1E293B', lineHeight: '1.4' }}>
+              <Text style={{ display: 'block', fontSize: '16px', fontWeight: '600', color: '#1E293B', lineHeight: '1.4' }}>
                 {post.title}
               </Text>
-              <Text style={{ fontSize: '13px', color: '#64748B', lineHeight: '1.5', marginTop: '4px' }} numberOfLines={2}>
+              <Text style={{ display: 'block', fontSize: '13px', color: '#64748B', lineHeight: '1.5', marginTop: '4px' }} numberOfLines={2}>
                 {post.excerpt || post.content}
               </Text>
             </View>

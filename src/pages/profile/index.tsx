@@ -9,10 +9,10 @@ import {
 } from '../../utils/mock'
 
 const QUICK_ENTRIES = [
-  { key: 'partners', icon: '🤝', label: '我的搭子' },
-  { key: 'activities', icon: '🏃', label: '我的活动' },
-  { key: 'favorites', icon: '⭐', label: '我的收藏' },
-  { key: 'settings', icon: '⚙️', label: '设置' },
+  { key: 'partners', icon: '🤝', label: '我的搭子', url: '/pages/my-partners/index' },
+  { key: 'activities', icon: '🏃', label: '我的活动', url: '/pages/my-activities/index' },
+  { key: 'favorites', icon: '⭐', label: '我的收藏', url: '/pages/my-favorites/index' },
+  { key: 'settings', icon: '⚙️', label: '设置', url: '/pages/settings/index' },
 ]
 
 const LEVEL_COLORS: Record<number, { bg: string; text: string; label: string }> = {
@@ -27,6 +27,7 @@ export default function Profile() {
   const [activeTab, setActiveTab] = useState('posts')
 
   const toast = (msg: string) => Taro.showToast({ title: msg, icon: 'none' })
+  const go = (url: string) => Taro.navigateTo({ url })
   const p = MY_PROFILE
   const maxLevel = Math.max(...MY_SKILLS.map(s => s.level))
   const displaySkills = MY_SKILLS.slice(0, 4)
@@ -46,7 +47,7 @@ export default function Profile() {
           </View>
           <Text style={{ fontSize: '13px', color: '#475569', marginBottom: '6px' }}>{p.school} · {p.college} · {p.grade}</Text>
           <Text style={{ fontSize: '13px', color: '#64748B', lineHeight: '18px', marginBottom: '14px', padding: '0 32px', textAlign: 'center' }}>{p.bio}</Text>
-          <View onClick={() => toast('编辑资料')} style={{ padding: '6px 24px', borderRadius: '20px', borderWidth: '1px', borderStyle: 'solid', borderColor: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <View onClick={() => go('/pages/edit-profile/index')} style={{ padding: '6px 24px', borderRadius: '20px', borderWidth: '1px', borderStyle: 'solid', borderColor: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Text style={{ fontSize: '13px', color: '#2563EB', fontWeight: '500' }}>{'编辑资料'}</Text>
           </View>
         </View>
@@ -54,8 +55,13 @@ export default function Profile() {
 
       <View style={{ margin: '8px 12px 0', backgroundColor: '#FFFFFF', borderRadius: '12px', padding: '16px 0' }}>
         <View style={{ display: 'flex', flexDirection: 'row' }}>
-          {[{ label: '技能', value: p.stats.skills }, { label: '发布', value: p.stats.posts }, { label: '粉丝', value: p.stats.followers }, { label: '关注', value: p.stats.following }].map((item, i) => (
-            <View key={item.label} onClick={() => toast(item.label)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', borderRight: i < 3 ? '1px solid #F1F5F9' : 'none' }}>
+          {[
+            { label: '技能', value: p.stats.skills, url: '/pages/my-skills/index' },
+            { label: '发布', value: p.stats.posts, url: '/pages/my-posts/index' },
+            { label: '粉丝', value: p.stats.followers, url: '/pages/my-followers/index' },
+            { label: '关注', value: p.stats.following, url: '/pages/my-following/index' },
+          ].map((item, i) => (
+            <View key={item.label} onClick={() => go(item.url)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', borderRight: i < 3 ? '1px solid #F1F5F9' : 'none' }}>
               <Text style={{ fontSize: '20px', fontWeight: '700', color: '#1E293B' }}>{item.value}</Text>
               <Text style={{ fontSize: '12px', color: '#94A3B8' }}>{item.label}</Text>
             </View>
@@ -66,7 +72,7 @@ export default function Profile() {
       <View style={{ margin: '8px 12px 0', backgroundColor: '#FFFFFF', borderRadius: '12px', padding: '16px' }}>
         <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
           <Text style={{ fontSize: '16px', fontWeight: '700', color: '#1E293B' }}>{'我会'}</Text>
-          <View onClick={() => toast('管理技能')} style={{ display: 'flex', alignItems: 'center', gap: '2px', padding: '2px 4px' }}>
+          <View onClick={() => go('/pages/edit-skills/index?type=can')} style={{ display: 'flex', alignItems: 'center', gap: '2px', padding: '2px 4px' }}>
             <Text style={{ fontSize: '13px', color: '#2563EB', fontWeight: '500' }}>{'编辑'}</Text>
             <Text style={{ fontSize: '11px', color: '#2563EB' }}>{'›'}</Text>
           </View>
@@ -105,7 +111,7 @@ export default function Profile() {
       <View style={{ margin: '8px 12px 0', backgroundColor: '#FFFFFF', borderRadius: '12px', padding: '16px' }}>
         <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
           <Text style={{ fontSize: '16px', fontWeight: '700', color: '#1E293B' }}>{'我想学'}</Text>
-          <View onClick={() => toast('管理想学')} style={{ display: 'flex', alignItems: 'center', gap: '2px', padding: '2px 4px' }}>
+          <View onClick={() => go('/pages/edit-skills/index?type=want')} style={{ display: 'flex', alignItems: 'center', gap: '2px', padding: '2px 4px' }}>
             <Text style={{ fontSize: '13px', color: '#2563EB', fontWeight: '500' }}>{'编辑'}</Text>
             <Text style={{ fontSize: '11px', color: '#2563EB' }}>{'›'}</Text>
           </View>
@@ -133,7 +139,7 @@ export default function Profile() {
       <View style={{ margin: '8px 12px 0', backgroundColor: '#FFFFFF', borderRadius: '12px', padding: '16px' }}>
         <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
           <Text style={{ fontSize: '16px', fontWeight: '700', color: '#1E293B' }}>{'兴趣标签'}</Text>
-          <View onClick={() => toast('管理兴趣标签')} style={{ display: 'flex', alignItems: 'center', gap: '2px', padding: '2px 4px' }}>
+          <View onClick={() => toast('兴趣标签编辑稍后接入')} style={{ display: 'flex', alignItems: 'center', gap: '2px', padding: '2px 4px' }}>
             <Text style={{ fontSize: '13px', color: '#2563EB', fontWeight: '500' }}>{'编辑'}</Text>
             <Text style={{ fontSize: '11px', color: '#2563EB' }}>{'›'}</Text>
           </View>
@@ -155,7 +161,7 @@ export default function Profile() {
       <View style={{ margin: '8px 12px 0', backgroundColor: '#FFFFFF', borderRadius: '12px', overflow: 'hidden' }}>
         <View style={{ display: 'flex', flexWrap: 'wrap' }}>
           {QUICK_ENTRIES.map((entry, i) => (
-            <View key={entry.key} onClick={() => toast(entry.label)} style={{ width: '25%', padding: '18px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', borderRight: (i + 1) % 4 === 0 ? 'none' : '1px solid #F1F5F9' }}>
+            <View key={entry.key} onClick={() => go(entry.url)} style={{ width: '25%', padding: '18px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', borderRight: (i + 1) % 4 === 0 ? 'none' : '1px solid #F1F5F9' }}>
               <Text style={{ fontSize: '22px' }}>{entry.icon}</Text>
               <Text style={{ fontSize: '13px', color: '#475569', fontWeight: '500' }}>{entry.label}</Text>
             </View>

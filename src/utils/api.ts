@@ -729,17 +729,19 @@ export async function getChatMessages(params: { targetId: string }) {
   if (USE_CLOUD) {
     try {
       const messages = await getAllCloudDocuments('messages', 100)
-      return messages
+      const cloudMessages = messages
         .filter((message) => message.conversationId === conversationId)
         .map((message) => normalizeChatMessage(message, currentUser.id))
         .sort((a, b) => a.createdAtMs - b.createdAtMs)
+      if (cloudMessages.length) return cloudMessages
     } catch (e) {
       console.warn('[API] getChatMessages cloud failed, fallback local', e)
     }
   }
 
   const store = getLocalMessageStore()
-  return (store[conversationId] || []).map((message) => normalizeChatMessage(message, currentUser.id))
+  const localMessages = (store[conversationId] || []).map((message) => normalizeChatMessage(message, currentUser.id))
+  return localMessages
 }
 
 export async function sendChatMessage(params: {

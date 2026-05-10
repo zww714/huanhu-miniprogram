@@ -253,6 +253,22 @@ export default function Index() {
     const query = id ? `id=${encodeURIComponent(id)}` : `name=${encodeURIComponent(user.name)}`
     Taro.navigateTo({ url: `/pages/user-detail/index?${query}` })
   }
+  const handleActivityRegister = (activity: Activity, isFull: boolean) => {
+    if (isFull) {
+      Taro.showToast({ title: '活动已满', icon: 'none' })
+      return
+    }
+    const query = [
+      `id=${encodeURIComponent(activity.id || activity._id || activity.title)}`,
+      `title=${encodeURIComponent(activity.title)}`,
+      `organizer=${encodeURIComponent(activity.organizer || '')}`,
+      `time=${encodeURIComponent(activity.time)}`,
+      `location=${encodeURIComponent(activity.location)}`,
+      `participants=${encodeURIComponent(String(activity.participants || 0))}`,
+      `maxParticipants=${encodeURIComponent(String(activity.maxParticipants || ''))}`,
+    ].join('&')
+    Taro.navigateTo({ url: `/pages/activity-register/index?${query}` })
+  }
 
   const renderStars = (level = 0) =>
     Array(5).fill(0).map((_, i) => (
@@ -475,7 +491,7 @@ export default function Index() {
                     ))}
                   </View>
                   <View
-                    onClick={() => Taro.showToast({ title: isFull ? '已满' : '报名成功', icon: isFull ? 'error' : 'success' })}
+                    onClick={() => handleActivityRegister(activity, isFull)}
                     style={{ padding: '5px 14px', borderRadius: '100px', backgroundColor: isFull ? '#F1F5F9' : '#2563EB', flexShrink: 0 }}
                   >
                     <Text style={{ fontSize: '12px', color: isFull ? '#94A3B8' : '#FFF', fontWeight: '500' }}>{isFull ? '已满' : '报名'}</Text>

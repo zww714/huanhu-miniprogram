@@ -6,9 +6,9 @@ import { getChatConversations } from '../../utils/api'
 import './index.css'
 
 const NAV_BUTTONS = [
-  { name: '赞和收藏', key: 'likes', color: '#EF4444', icon: '♥' },
-  { name: '新增关注', key: 'follows', color: '#10B981', icon: '+' },
-  { name: '评论和@', key: 'comments', color: '#3B82F6', icon: '@' },
+  { name: '赞和收藏', key: 'likes', color: '#EF4444', icon: '♥', url: '/pages/message-likes/index' },
+  { name: '新增关注', key: 'follows', color: '#10B981', icon: '+', url: '/pages/message-follows/index' },
+  { name: '评论和@', key: 'comments', color: '#3B82F6', icon: '@', url: '/pages/message-comments/index' },
 ]
 
 type Conversation = {
@@ -23,7 +23,15 @@ type Conversation = {
 }
 
 function normalizeBaseConversations() {
-  return CONVERSATIONS.map((item) => ({ ...item, id: String(item.id) }))
+  return CONVERSATIONS
+    .filter((item) => item.name === '系统通知')
+    .map((item) => ({
+      ...item,
+      id: String(item.id),
+      unread: 0,
+      lastMessage: '查看平台通知、活动提醒和账号消息',
+      category: '系统通知',
+    }))
 }
 
 export default function Messages() {
@@ -47,16 +55,16 @@ export default function Messages() {
     loadConversations()
   })
 
-  const navigate = (key: string) => {
-    const titles: Record<string, string> = {
-      likes: '赞和收藏',
-      follows: '新增关注',
-      comments: '评论和@',
-    }
-    Taro.showToast({ title: titles[key], icon: 'none' })
-  }
+  const navigate = (url: string) => Taro.navigateTo({ url })
 
   const goChat = (conv: Conversation) => {
+    if (conv.name === '系统通知' || conv.category === '系统通知') {
+      Taro.navigateTo({ url: '/pages/message-system/index' })
+      return
+    }
+    setConversations((current) =>
+      current.map((item) => item.id === conv.id ? { ...item, unread: 0 } : item)
+    )
     Taro.navigateTo({
       url: `/pages/chat/index?id=${encodeURIComponent(conv.id)}&name=${encodeURIComponent(conv.name)}&category=${encodeURIComponent(conv.category || '聊天')}`,
     })
@@ -70,7 +78,7 @@ export default function Messages() {
 
       <View style={{ display: 'flex', gap: '8px', padding: '4px 16px 12px', backgroundColor: '#FFF' }}>
         {NAV_BUTTONS.map((btn) => (
-          <View key={btn.key} onClick={() => navigate(btn.key)}
+          <View key={btn.key} onClick={() => navigate(btn.url)}
             style={{
               flex: 1, padding: '14px 4px', borderRadius: '12px',
               display: 'flex', flexDirection: 'column', alignItems: 'center',
