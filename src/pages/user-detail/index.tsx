@@ -1,6 +1,7 @@
 import { View, Text, ScrollView } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import Taro, { useDidShow } from '@tarojs/taro'
 import { useState } from 'react'
+import { getPosts } from '../../utils/api'
 import './index.css'
 
 const user = {
@@ -43,27 +44,80 @@ const user = {
 }
 
 const tabs = [
-  { key: 'skills', label: '他的技能' },
-  { key: 'posts', label: '他的发布' },
-  { key: 'reviews', label: '收到的评价' },
+  { key: 'posts', label: '发布' },
+  { key: 'reviews', label: '评价' },
 ]
+
+type ProfilePost = {
+  id?: string
+  _id?: string
+  title: string
+  excerpt?: string
+  content?: string
+  categoryTag?: string
+  mainCategory?: string
+  tags?: string[]
+  likes?: number
+  comments?: number
+  userId?: string
+  author?: {
+    name?: string
+  }
+}
+
+function getPostId(post: ProfilePost) {
+  return String(post.id || post._id || post.title)
+}
+
+function mergePendingPost(posts: ProfilePost[]) {
+  const pending = Taro.getStorageSync('pendingPost')
+  if (!pending?.title) return posts
+
+  const pendingId = getPostId(pending)
+  const exists = posts.some((post) => getPostId(post) === pendingId)
+  return exists ? posts : [pending, ...posts]
+}
+
+function isUserPost(post: ProfilePost) {
+  return post.userId === 'user_chen' || post.author?.name === user.name
+}
 
 export default function UserDetail() {
   const [following, setFollowing] = useState(false)
-  const [activeTab, setActiveTab] = useState('skills')
+  const [activeTab, setActiveTab] = useState('posts')
+  const [posts, setPosts] = useState<ProfilePost[]>([])
+  const [loadingPosts, setLoadingPosts] = useState(true)
 
   const toast = (title: string) => Taro.showToast({ title, icon: 'none' })
   const handleBack = () => Taro.navigateBack()
+
+  useDidShow(() => {
+    let alive = true
+
+    async function loadPosts() {
+      setLoadingPosts(true)
+      try {
+        const data = await getPosts({ page: 0 })
+        if (!alive) return
+        setPosts(mergePendingPost((data || []).filter(isUserPost)))
+      } catch (e) {
+        console.warn('[UserDetail] load posts failed', e)
+        if (alive) setPosts(mergePendingPost([]))
+      } finally {
+        if (alive) setLoadingPosts(false)
+      }
+    }
+
+    loadPosts()
+    return () => {
+      alive = false
+    }
+  })
 
   return (
     <ScrollView scrollY className='user-page' showScrollbar={false} enhanced bounces={false}>
       <View className='nav-bar'>
         <Text className='back-icon' onClick={handleBack}>‹</Text>
-        <Text className='nav-title'>个人主页</Text>
-        <View className='capsule'>
-          <Text className='capsule-dot'>•••</Text>
-          <View className='capsule-ring' />
-        </View>
       </View>
 
       <View className='profile-head'>
@@ -84,7 +138,7 @@ export default function UserDetail() {
           <View
             className='stat-item'
             key={item.key}
-            onClick={() => item.key === 'skills' ? setActiveTab('skills') : toast(item.label)}
+            onClick={() => item.key === 'posts' ? setActiveTab('posts') : toast(item.label)}
           >
             <Text className='stat-value'>{item.value}</Text>
             <Text className='stat-label'>{item.label}</Text>
@@ -156,31 +210,39 @@ export default function UserDetail() {
           ))}
         </View>
 
-        {activeTab === 'skills' && (
-          <View className='skill-list'>
-            {user.skills.map(skill => (
-              <View className='skill-item' key={skill.name} onClick={() => toast(skill.name)}>
-                <View className={skill.icon === 'AI' ? 'skill-icon ai' : 'skill-icon python'}>
-                  <Text>{skill.icon}</Text>
+        {activeTab === 'posts' && (
+          <View className='profile-post-list'>
+            {!posts.length && (
+              <View className='empty-state'>
+                <Text>{loadingPosts ? '正在加载发布...' : '暂无公开发布'}</Text>
+              </View>
+            )}
+            {posts.map((post) => (
+              <View
+                className='profile-post-item'
+                key={getPostId(post)}
+                onClick={() => Taro.navigateTo({ url: `/pages/post-detail/index?id=${encodeURIComponent(getPostId(post))}` })}
+              >
+                <View className='profile-post-head'>
+                  <Text className='profile-post-title'>{post.title}</Text>
+                  <Text className='profile-post-type'>{post.categoryTag || `${post.mainCategory || '动态'} · 发布`}</Text>
                 </View>
-                <View className='skill-copy'>
-                  <Text className='skill-name'>{skill.name}</Text>
-                  <Text className='skill-desc'>{skill.desc}</Text>
-                  <View className='tag-row'>
-                    {skill.tags.map(tag => (
-                      <Text className='small-tag' key={tag}>{tag}</Text>
+                <Text className='profile-post-content' numberOfLines={2}>
+                  {post.excerpt || post.content || '暂无内容'}
+                </Text>
+                {!!post.tags?.length && (
+                  <View className='profile-post-tags'>
+                    {post.tags.slice(0, 3).map((tag) => (
+                      <Text className='profile-post-tag' key={tag}>{tag}</Text>
                     ))}
                   </View>
+                )}
+                <View className='profile-post-meta'>
+                  <Text>♥ {post.likes || 0}</Text>
+                  <Text>评论 {post.comments || 0}</Text>
                 </View>
-                <Text className={skill.featured ? 'level orange-level' : 'level'}>Lv.{skill.level}</Text>
               </View>
             ))}
-          </View>
-        )}
-
-        {activeTab === 'posts' && (
-          <View className='empty-state'>
-            <Text>暂无公开发布</Text>
           </View>
         )}
 
