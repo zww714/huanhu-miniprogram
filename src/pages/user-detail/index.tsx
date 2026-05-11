@@ -2,6 +2,7 @@ import { View, Text, ScrollView } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { useState } from 'react'
 import { getPosts } from '../../utils/api'
+import { SKILL_ID_BY_NAME } from '../../utils/mock'
 import './index.css'
 
 const user = {
@@ -48,6 +49,8 @@ const tabs = [
   { key: 'reviews', label: '评价' },
 ]
 
+const detailUserId = '10086'
+
 type ProfilePost = {
   id?: string
   _id?: string
@@ -90,6 +93,10 @@ export default function UserDetail() {
 
   const toast = (title: string) => Taro.showToast({ title, icon: 'none' })
   const handleBack = () => Taro.navigateBack()
+  const goSkillDetail = (skillName: string) => {
+    const skillId = SKILL_ID_BY_NAME[skillName] || encodeURIComponent(skillName)
+    Taro.navigateTo({ url: `/pages/skill-detail/index?userId=${encodeURIComponent(detailUserId)}&skillId=${encodeURIComponent(skillId)}` })
+  }
 
   useDidShow(() => {
     let alive = true
@@ -166,7 +173,7 @@ export default function UserDetail() {
         </View>
         <View className='chip-wrap'>
           {user.skillChips.map(skill => (
-            <View className={skill.featured ? 'skill-chip gold' : 'skill-chip'} key={skill.name}>
+            <View className={skill.featured ? 'skill-chip gold' : 'skill-chip'} key={skill.name} onClick={() => goSkillDetail(skill.name)}>
               <Text>{skill.name}</Text>
               <Text className='chip-level'>Lv.{skill.level}</Text>
               {skill.featured && <Text className='crown'>♛</Text>}

@@ -1,109 +1,156 @@
-import { useState, useRef, useEffect } from 'react'
-import Taro from '@tarojs/taro'
-import { View, Text, ScrollView } from '@tarojs/components'
-import { SKILL_DETAIL } from '../../utils/mock'
+import { useMemo, useState } from 'react'
+import Taro, { useLoad } from '@tarojs/taro'
+import { ScrollView, Text, View } from '@tarojs/components'
+import { SKILLS_DETAIL, type SkillDetail, type SkillProof } from '../../utils/mock'
 import './index.css'
 
-function AnimatedCounter({ target, suffix = '' }: { target: number; suffix?: string }) {
-  const [value, setValue] = useState(0)
-
-  useEffect(() => {
-    let start = 0
-    const steps = 24
-    const increment = target / steps
-    const interval = setInterval(() => {
-      start += 1
-      if (start >= steps) { setValue(target); clearInterval(interval) }
-      else { setValue(Math.floor(increment * start)) }
-    }, 40)
-    return () => clearInterval(interval)
-  }, [target])
-
-  return <Text>{value >= 1000 ? (value / 1000).toFixed(1) + 'k' : value}{suffix}</Text>
+const proofTypeText: Record<SkillProof['type'], string> = {
+  portfolio: '作品集',
+  project: '项目经历',
+  certificate: '证书',
+  link: '作品链接',
 }
 
-export default function SkillDetail() {
-  const { name, level, category, desc, stats, tags, proofItems } = SKILL_DETAIL
+function getLevelPercent(level: number) {
+  return `${Math.min(Math.max(level, 1), 5) * 20}%`
+}
+
+export default function SkillDetailPage() {
+  const [skillId, setSkillId] = useState('')
+  const [userId, setUserId] = useState('')
+
+  useLoad((options) => {
+    setSkillId(String(options?.skillId || options?.id || ''))
+    setUserId(String(options?.userId || ''))
+  })
+
+  const skill: SkillDetail | undefined = useMemo(() => {
+    return SKILLS_DETAIL.find((item) => {
+      const matchesSkill = item.id === skillId
+      const matchesUser = !userId || item.userId === userId
+      return matchesSkill && matchesUser
+    })
+  }, [skillId, userId])
+
+  const handleBack = () => Taro.navigateBack()
+  const handleMore = () => Taro.showToast({ title: '更多功能稍后开放', icon: 'none' })
+  const handleContact = () => {
+    if (!skill) return
+    Taro.navigateTo({
+      url: `/pages/chat/index?id=${encodeURIComponent(skill.userId)}&skillId=${encodeURIComponent(skill.id)}&name=${encodeURIComponent('TA')}&category=${encodeURIComponent(skill.name)}`,
+    })
+  }
+
+  if (!skill) {
+    return (
+      <View className='skill-page'>
+        <View className='skill-nav'>
+          <Text className='nav-action' onClick={handleBack}>‹</Text>
+          <Text className='nav-title'>技能详情</Text>
+          <Text className='nav-action' onClick={handleMore}>•••</Text>
+        </View>
+        <View className='empty-wrap'>
+          <Text className='empty-title'>没有找到该技能</Text>
+          <Text className='empty-desc'>可能是技能已被删除，或跳转参数缺少 skillId。</Text>
+        </View>
+      </View>
+    )
+  }
 
   return (
-    <View style={{ minHeight: '100vh', backgroundColor: '#F8FAFC' }}>
-      {/* Nav */}
-      <View style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', backgroundColor: '#FFF', borderBottom: '1px solid #F1F5F9' }}>
-        <View onClick={() => Taro.navigateBack()}>
-          <Text style={{ fontSize: '20px', color: '#64748B' }}>鈫</Text>
-        </View>
-        <Text style={{ fontSize: '16px', fontWeight: '600', color: '#1E293B' }}>鎶能鑳借璇</Text>
-        <View style={{ display: 'flex', gap: '12px' }}>
-          <Text style={{ fontSize: '16px', color: '#64748B' }}>鈫</Text>
-          <Text style={{ fontSize: '18px', color: '#64748B' }}>鈰</Text>
-        </View>
+    <View className='skill-page'>
+      <View className='skill-nav'>
+        <Text className='nav-action' onClick={handleBack}>‹</Text>
+        <Text className='nav-title'>{skill.name} 技能详情</Text>
+        <Text className='nav-action' onClick={handleMore}>•••</Text>
       </View>
 
-      <ScrollView>
-        <View style={{ padding: '16px 16px 40px' }}>
-        {/* Header Card */}
-        <View style={{ backgroundColor: '#FFF', borderRadius: '16px', padding: '24px', textAlign: 'center', marginBottom: '12px', border: '1px solid #E2E8F0' }}>
-          <View style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: '#FEF3C7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
-            <Text style={{ fontSize: '28px' }}>馃弳</Text>
+      <ScrollView scrollY className='skill-scroll' showScrollbar={false} enhanced bounces={false}>
+        <View className='hero-card'>
+          <View className='skill-icon'>
+            <Text>{skill.icon}</Text>
           </View>
-          <Text style={{ fontSize: '22px', fontWeight: '700', color: '#1E293B', marginBottom: '4px' }}>{name}</Text>
-          <View style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginBottom: '8px' }}>
-            <Text style={{ fontSize: '14px', color: '#D97706', fontWeight: '600' }}>{level}</Text>
-            <View style={{ padding: '2px 8px', backgroundColor: '#F1F5F9', borderRadius: '4px' }}>
-              <Text style={{ fontSize: '11px', color: '#64748B' }}>{category}</Text>
+          <View className='hero-main'>
+            <View className='hero-title-row'>
+              <Text className='skill-name'>{skill.name}</Text>
+              <Text className={skill.verified ? 'verify-badge' : 'verify-badge muted'}>
+                {skill.verified ? '已认证' : '未认证'}
+              </Text>
             </View>
+            <Text className='skill-level'>Lv.{skill.level} {skill.levelText}</Text>
+            <Text className='skill-category'>{skill.category}</Text>
+            <Text className='skill-summary'>{skill.summary}</Text>
           </View>
-          <Text style={{ fontSize: '13px', color: '#64748B', lineHeight: '1.5' }}>{desc}</Text>
         </View>
 
-        {/* Stats */}
-        <View style={{ backgroundColor: '#FFF', borderRadius: '16px', padding: '20px', marginBottom: '12px', border: '1px solid #E2E8F0' }}>
-          <View style={{ display: 'flex', justifyContent: 'space-around' }}>
-            {[
-              { label: '椤圭洰', value: stats.projects },
-              { label: '璁よ瘉', value: stats.endorsements },
-              { label: '娴忚', value: stats.views },
-            ].map((s) => (
-              <View key={s.label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                <Text style={{ fontSize: '22px', fontWeight: '700', color: '#2563EB' }}>
-                  <AnimatedCounter target={s.value} />
-                </Text>
-                <Text style={{ fontSize: '12px', color: '#94A3B8' }}>{s.label}</Text>
+        <View className='info-card'>
+          <Text className='section-title'>能力等级</Text>
+          <View className='level-row'>
+            <Text className='level-main'>Lv.{skill.level}</Text>
+            <Text className='level-text'>{skill.levelText}</Text>
+          </View>
+          <View className='progress-track'>
+            <View className='progress-fill' style={{ width: getLevelPercent(skill.level) }} />
+          </View>
+          <Text className='ability-desc'>{skill.abilityDescription}</Text>
+        </View>
+
+        <View className='info-card'>
+          <Text className='section-title'>我可以帮你</Text>
+          <View className='help-list'>
+            {skill.canHelp.map((item) => (
+              <View className='help-item' key={item}>
+                <Text className='help-dot'>✓</Text>
+                <Text className='help-text'>{item}</Text>
               </View>
             ))}
           </View>
         </View>
 
-        {/* Tags */}
-        <View style={{ backgroundColor: '#FFF', borderRadius: '16px', padding: '16px', marginBottom: '12px', border: '1px solid #E2E8F0' }}>
-          <Text style={{ fontSize: '15px', fontWeight: '600', color: '#1E293B', marginBottom: '10px' }}>鎶能鑳芥爣绛</Text>
-          <View style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-            {tags.map((t) => (
-              <View key={t} style={{ backgroundColor: '#EFF6FF', borderRadius: '100px', padding: '5px 12px' }}>
-                <Text style={{ fontSize: '13px', color: '#2563EB' }}>{t}</Text>
-              </View>
+        <View className='info-card'>
+          <Text className='section-title'>技能证明 / 作品</Text>
+          {skill.proofs.length ? (
+            <View className='proof-list'>
+              {skill.proofs.map((proof) => (
+                <View className='proof-item' key={`${proof.type}-${proof.title}`}>
+                  <View className='proof-icon'>
+                    <Text>{proofTypeText[proof.type].slice(0, 2)}</Text>
+                  </View>
+                  <View className='proof-body'>
+                    <View className='proof-head'>
+                      <Text className='proof-title'>{proof.title}</Text>
+                      <Text className='proof-type'>{proofTypeText[proof.type]}</Text>
+                    </View>
+                    <Text className='proof-desc'>{proof.desc}</Text>
+                    {!!proof.url && <Text className='proof-link'>{proof.url}</Text>}
+                  </View>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <View className='proof-empty'>
+              <Text>暂无证明材料，可以先通过聊天进一步了解 TA 的能力。</Text>
+            </View>
+          )}
+        </View>
+
+        <View className='info-card'>
+          <Text className='section-title'>相关标签</Text>
+          <View className='tag-wrap'>
+            {skill.tags.map((tag) => (
+              <Text className='skill-tag' key={tag}>{tag}</Text>
             ))}
           </View>
         </View>
 
-        {/* Proof Items */}
-        <View style={{ backgroundColor: '#FFF', borderRadius: '16px', padding: '16px', marginBottom: '12px', border: '1px solid #E2E8F0' }}>
-          <Text style={{ fontSize: '15px', fontWeight: '600', color: '#1E293B', marginBottom: '10px' }}>璇佹槑鏉愭枡</Text>
-          {proofItems.map((item, i) => (
-            <View key={i} style={{ display: 'flex', gap: '12px', padding: '12px 0', borderBottom: i < proofItems.length - 1 ? '1px solid #F1F5F9' : 'none' }}>
-              <View style={{ width: '40px', height: '40px', borderRadius: '10px', backgroundColor: item.type === 'project' ? '#EFF6FF' : '#F0FDF4', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Text style={{ fontSize: '20px' }}>{item.type === 'project' ? '馃搧' : '馃摐'}</Text>
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: '14px', fontWeight: '600', color: '#1E293B' }}>{item.name}</Text>
-                <Text style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>{item.desc}</Text>
-              </View>
-              <Text style={{ fontSize: '14px', color: '#CBD5E1', alignSelf: 'center' }}>鈥</Text>
-            </View>
-          ))}
-        </View>
-      </View>
+        <View className='bottom-space' />
       </ScrollView>
+
+      <View className='bottom-bar'>
+        <View className='contact-btn' onClick={handleContact}>
+          <Text>联系TA</Text>
+        </View>
+      </View>
     </View>
   )
 }

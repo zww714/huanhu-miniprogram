@@ -5,7 +5,7 @@ import './index.css'
 
 import {
   MY_PROFILE, MY_SKILLS, MY_LEARN_WANTS,
-  MY_INTERESTS, MY_REVIEWS
+  MY_INTERESTS, MY_REVIEWS, SKILL_ID_BY_NAME
 } from '../../utils/mock'
 
 const QUICK_ENTRIES = [
@@ -29,7 +29,8 @@ export default function Profile() {
   const toast = (msg: string) => Taro.showToast({ title: msg, icon: 'none' })
   const go = (url: string) => Taro.navigateTo({ url })
   const goSkillDetail = (skillName: string) => {
-    Taro.navigateTo({ url: `/pages/skill-detail/index?name=${encodeURIComponent(skillName)}` })
+    const skillId = SKILL_ID_BY_NAME[skillName] || encodeURIComponent(skillName)
+    Taro.navigateTo({ url: `/pages/skill-detail/index?userId=${encodeURIComponent(MY_PROFILE.user_id)}&skillId=${encodeURIComponent(skillId)}` })
   }
   const p = MY_PROFILE
   const maxLevel = Math.max(...MY_SKILLS.map(s => s.level))

@@ -334,6 +334,113 @@ export const SKILL_DETAIL = {
 }
 
 
+export type SkillProof = {
+  type: 'portfolio' | 'project' | 'certificate' | 'link'
+  title: string
+  desc: string
+  url?: string
+}
+
+export type SkillDetail = {
+  id: string
+  userId: string
+  name: string
+  level: number
+  levelText: string
+  category: string
+  icon: string
+  verified: boolean
+  summary: string
+  abilityDescription: string
+  canHelp: string[]
+  proofs: SkillProof[]
+  tags: string[]
+}
+
+export const SKILLS_DETAIL: SkillDetail[] = [
+  {
+    id: 'ai-tools',
+    userId: '10086',
+    name: 'AI工具',
+    level: 5,
+    levelText: '专家级应用',
+    category: '效率工具',
+    icon: 'AI',
+    verified: true,
+    summary: '熟练使用各类 AI 工具辅助科研、写作、学习与开发。',
+    abilityDescription: '可以根据具体学习和科研场景设计 AI 工作流，帮助同学更高效地完成资料整理、Prompt 优化、代码辅助和论文写作流程。',
+    canHelp: ['AI 工具使用入门', 'Prompt 优化', 'AI 辅助科研', 'AI 辅助编程', 'AI 论文写作流程'],
+    proofs: [
+      { type: 'project', title: '科研文献整理流程', desc: '整理过一套从文献筛选、摘要提取到研究问题生成的 AI 辅助流程。' },
+      { type: 'portfolio', title: 'Prompt 模板合集', desc: '沉淀了课程学习、论文写作和代码调试场景的常用 Prompt 模板。' },
+    ],
+    tags: ['Prompt', '论文写作', '科研效率', '代码辅助'],
+  },
+  {
+    id: 'python',
+    userId: '10086',
+    name: 'Python 编程',
+    level: 4,
+    levelText: '熟练掌握',
+    category: '编程开发',
+    icon: 'Py',
+    verified: true,
+    summary: '熟练使用 Python 进行数据分析、机器学习与 Web 开发。',
+    abilityDescription: '可以独立完成 Python 脚本、数据分析、简单机器学习和 Web 项目开发，也能帮助同学拆解课程作业和项目入门思路。',
+    canHelp: ['Python 入门答疑', '数据分析作业辅导', 'Flask / Django 项目入门', '机器学习基础项目交流'],
+    proofs: [
+      { type: 'project', title: '校园数据分析平台', desc: '基于 Django + ECharts 的学生数据可视化平台。' },
+      { type: 'certificate', title: '计算机等级考试三级', desc: '数据库技术方向，具备基础工程能力。' },
+      { type: 'link', title: 'GitHub 练习项目', desc: '包含脚本自动化、数据清洗和 Flask 入门项目。', url: 'https://github.com/example/python-demo' },
+    ],
+    tags: ['数据分析', 'Django', 'Flask', 'TensorFlow', '自动化脚本'],
+  },
+  {
+    id: 'data-analysis',
+    userId: '10086',
+    name: '数据分析',
+    level: 3,
+    levelText: '可以独立完成基础任务',
+    category: '数据处理',
+    icon: 'DA',
+    verified: false,
+    summary: '具备数据清洗、可视化和基础建模能力。',
+    abilityDescription: '可以帮助梳理数据分析思路，完成 Excel / Python 数据清洗、基础统计分析、图表制作和课程作业展示。',
+    canHelp: ['Excel / Python 数据清洗', '数据可视化', 'ECharts 图表', '课程作业数据分析思路'],
+    proofs: [
+      { type: 'project', title: '课程数据可视化作业', desc: '使用 Python 清洗数据，并用 ECharts 输出交互式图表。' },
+    ],
+    tags: ['Pandas', 'Matplotlib', 'SQL', 'ECharts', '可视化'],
+  },
+  {
+    id: 'english-communication',
+    userId: '10086',
+    name: '英语交流',
+    level: 2,
+    levelText: '基础熟悉',
+    category: '语言交流',
+    icon: 'EN',
+    verified: false,
+    summary: '具备较流畅的英语口语和写作表达能力。',
+    abilityDescription: '可以进行日常英语口语陪练、写作表达修改和基础表达纠错，也可以交流留学申请材料准备经验。',
+    canHelp: ['英语口语陪练', '写作表达修改', '日常英语表达纠错', '留学申请交流'],
+    proofs: [],
+    tags: ['口语', '写作', '表达纠错', '留学'],
+  },
+]
+
+export const SKILL_ID_BY_NAME: Record<string, string> = {
+  'AI工具': 'ai-tools',
+  'AI宸ュ叿': 'ai-tools',
+  Python: 'python',
+  'Python 编程': 'python',
+  'Python 缂栫▼': 'python',
+  '数据分析': 'data-analysis',
+  '鏁版嵁鍒嗘瀽': 'data-analysis',
+  '英语交流': 'english-communication',
+  '鑻辫浜ゆ祦': 'english-communication',
+}
+
 // ========== MY PROFILE DATA ==========
 export const MY_PROFILE = {
   name: '张三',

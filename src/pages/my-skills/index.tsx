@@ -1,11 +1,12 @@
 import Taro from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
-import { MY_LEARN_WANTS, MY_SKILLS } from '../../utils/mock'
+import { MY_LEARN_WANTS, MY_PROFILE, MY_SKILLS, SKILL_ID_BY_NAME } from '../../utils/mock'
 import './index.css'
 
 export default function MySkills() {
   const goSkillDetail = (skillName: string) => {
-    Taro.navigateTo({ url: `/pages/skill-detail/index?name=${encodeURIComponent(skillName)}` })
+    const skillId = SKILL_ID_BY_NAME[skillName] || encodeURIComponent(skillName)
+    Taro.navigateTo({ url: `/pages/skill-detail/index?userId=${encodeURIComponent(MY_PROFILE.user_id)}&skillId=${encodeURIComponent(skillId)}` })
   }
 
   return (
