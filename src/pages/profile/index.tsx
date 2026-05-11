@@ -28,6 +28,9 @@ export default function Profile() {
 
   const toast = (msg: string) => Taro.showToast({ title: msg, icon: 'none' })
   const go = (url: string) => Taro.navigateTo({ url })
+  const goSkillDetail = (skillName: string) => {
+    Taro.navigateTo({ url: `/pages/skill-detail/index?name=${encodeURIComponent(skillName)}` })
+  }
   const p = MY_PROFILE
   const maxLevel = Math.max(...MY_SKILLS.map(s => s.level))
   const displaySkills = MY_SKILLS.slice(0, 4)
@@ -81,7 +84,7 @@ export default function Profile() {
           const lc = LEVEL_COLORS[skill.level] || LEVEL_COLORS[1]
           const isMaxLevel = skill.level === maxLevel && maxLevel >= 4
           return (
-            <View key={i} onClick={() => toast(skill.name)} style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: '10px 12px', marginBottom: i < displaySkills.length - 1 ? '8px' : '0', backgroundColor: '#F8FAFC', borderRadius: '10px', borderWidth: isMaxLevel ? '1px' : '0px', borderStyle: 'solid', borderColor: isMaxLevel ? '#FDE68A' : 'transparent' }}>
+            <View key={i} onClick={() => goSkillDetail(skill.name)} style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: '10px 12px', marginBottom: i < displaySkills.length - 1 ? '8px' : '0', backgroundColor: '#F8FAFC', borderRadius: '10px', borderWidth: isMaxLevel ? '1px' : '0px', borderStyle: 'solid', borderColor: isMaxLevel ? '#FDE68A' : 'transparent' }}>
               <View style={{ width: '44px', height: '28px', borderRadius: '6px', backgroundColor: lc.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '10px', flexShrink: 0 }}>
                 <Text style={{ fontSize: '11px', fontWeight: '700', color: lc.text }}>{lc.label}</Text>
               </View>
@@ -96,7 +99,7 @@ export default function Profile() {
           )
         })}
         {MY_SKILLS.length > 4 && (
-          <View style={{ display: 'flex', alignItems: 'center', padding: '8px 0' }}>
+          <View onClick={() => go('/pages/my-skills/index')} style={{ display: 'flex', alignItems: 'center', padding: '8px 0' }}>
             <Text style={{ fontSize: '13px', color: '#64748B' }}>{'查看更多…'}</Text>
           </View>
         )}
