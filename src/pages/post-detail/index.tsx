@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { Image, Input, ScrollView, Text, View } from '@tarojs/components'
-import { COMMENTS } from '../../utils/mock'
+import { POST_COMMENTS, type Comment, type CommentReply } from '../../utils/mock'
 import { getPosts } from '../../utils/api'
 import './index.css'
 
@@ -16,8 +16,13 @@ type Post = {
   categoryTag?: string
   mainCategory?: string
   tags?: string[]
+  authorId?: string
+  userId?: string
   author?: {
+    id?: string
+    userId?: string
     name: string
+    avatar?: string
     college?: string
     grade?: string
     verified?: boolean
@@ -27,12 +32,25 @@ type Post = {
   createdAt?: string
 }
 
+type ReplyTarget = {
+  commentId: string
+  userId: string
+  userName: string
+}
+
+const currentUser = {
+  userId: '10086',
+  userName: '陈同学',
+  userAvatar: '',
+}
+
 const fallbackPost: Post = {
   id: 'fallback',
   title: '帖子详情',
   content: '暂时没有找到这条帖子，请返回发现页重新打开。',
   tags: ['发现'],
-  author: { name: '陈同学', college: '浙江大学', grade: '在读' },
+  authorId: '10086',
+  author: { id: '10086', userId: '10086', name: '陈同学', college: '浙江大学', grade: '在读', avatar: '' },
   likes: 0,
   comments: 0,
 }
@@ -42,7 +60,24 @@ function getRecordId(post: Post) {
 }
 
 function getAuthor(post: Post) {
-  return post.author || { name: '陈同学', college: '浙江大学', grade: '在读' }
+  return post.author || { id: post.authorId || post.userId || '10086', userId: post.authorId || post.userId || '10086', name: '陈同学', college: '浙江大学', grade: '在读', avatar: '' }
+}
+
+function getAuthorId(post: Post) {
+  const author = getAuthor(post)
+  return author.userId || author.id || post.authorId || post.userId || ''
+}
+
+function getUserName(comment: Comment) {
+  return comment.userName || comment.author?.name || '同学'
+}
+
+function getUserAvatar(comment: Comment) {
+  return comment.userAvatar || comment.author?.avatar || ''
+}
+
+function getCommentLikes(comment: Comment) {
+  return Number(comment.likeCount ?? comment.likes ?? 0)
 }
 
 function isImageCover(cover?: string) {
@@ -52,7 +87,7 @@ function isImageCover(cover?: string) {
 function formatTime(value?: string) {
   if (!value) return '刚刚'
   const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return '刚刚'
+  if (Number.isNaN(date.getTime())) return value
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
   const hour = String(date.getHours()).padStart(2, '0')
@@ -60,13 +95,26 @@ function formatTime(value?: string) {
   return `${month}-${day} ${hour}:${minute}`
 }
 
+function Avatar({ name, avatar, onClick }: { name: string; avatar?: string; onClick: () => void }) {
+  return (
+    <View className='avatar' onClick={onClick}>
+      {avatar ? (
+        <Image src={avatar} mode='aspectFill' className='avatar-img' />
+      ) : (
+        <Text>{name.charAt(0) || '同'}</Text>
+      )}
+    </View>
+  )
+}
+
 export default function PostDetail() {
   const [post, setPost] = useState<Post>(fallbackPost)
   const [liked, setLiked] = useState(false)
   const [bookmarked, setBookmarked] = useState(false)
   const [likeCount, setLikeCount] = useState(0)
-  const [comments, setComments] = useState(COMMENTS)
+  const [comments, setComments] = useState<Comment[]>(POST_COMMENTS)
   const [commentText, setCommentText] = useState('')
+  const [replyTarget, setReplyTarget] = useState<ReplyTarget | null>(null)
 
   useLoad(async (options) => {
     const id = decodeURIComponent(String(options?.id || ''))
@@ -92,146 +140,209 @@ export default function PostDetail() {
   })
 
   const author = getAuthor(post)
+  const authorId = getAuthorId(post)
   const body = (post.content || post.excerpt || '').split('\n').filter(Boolean)
   const images = post.images?.length ? post.images : isImageCover(post.cover) ? [post.cover!] : []
+  const commentTotal = comments.reduce((total, comment) => total + 1 + (comment.replies?.length || 0), 0)
 
   const handleBack = () => Taro.navigateBack()
-  const handleUserClick = (name: string) => Taro.navigateTo({ url: `/pages/user-detail/index?name=${encodeURIComponent(name)}` })
+  const goUser = (userId?: string, name?: string) => {
+    if (!userId) {
+      Taro.showToast({ title: '用户信息不存在', icon: 'none' })
+      return
+    }
+    const query = [`userId=${encodeURIComponent(userId)}`]
+    if (name) query.push(`name=${encodeURIComponent(name)}`)
+    Taro.navigateTo({ url: `/pages/user-detail/index?${query.join('&')}` })
+  }
+
+  const startReply = (comment: Comment) => {
+    const userId = comment.userId || ''
+    const userName = getUserName(comment)
+    if (!userId) {
+      Taro.showToast({ title: '用户信息不存在', icon: 'none' })
+      return
+    }
+    setReplyTarget({ commentId: comment.id, userId, userName })
+  }
 
   const handleLike = () => {
     setLiked(!liked)
     setLikeCount((count) => liked ? Math.max(0, count - 1) : count + 1)
   }
 
+  const handleCommentLike = (commentId: string) => {
+    setComments((current) => current.map((comment) => {
+      if (comment.id !== commentId) return comment
+      const nextLiked = !comment.liked
+      const nextCount = nextLiked ? getCommentLikes(comment) + 1 : Math.max(0, getCommentLikes(comment) - 1)
+      return { ...comment, liked: nextLiked, likeCount: nextCount, likes: nextCount }
+    }))
+  }
+
   const handleSendComment = () => {
     const text = commentText.trim()
-    if (!text) return
-    setComments([
-      {
+    if (!text) {
+      Taro.showToast({ title: '请输入内容', icon: 'none' })
+      return
+    }
+
+    if (replyTarget) {
+      const reply: CommentReply = {
+        id: `reply_${Date.now()}`,
+        commentId: replyTarget.commentId,
+        userId: currentUser.userId,
+        userName: currentUser.userName,
+        userAvatar: currentUser.userAvatar,
+        replyToUserId: replyTarget.userId,
+        replyToUserName: replyTarget.userName,
+        content: text,
+        createdAt: '刚刚',
+      }
+      setComments((current) => current.map((comment) => (
+        comment.id === replyTarget.commentId
+          ? { ...comment, replies: [...(comment.replies || []), reply] }
+          : comment
+      )))
+    } else {
+      const comment: Comment = {
         id: `local_${Date.now()}`,
-        author: { name: '我' },
+        postId: getRecordId(post),
+        userId: currentUser.userId,
+        userName: currentUser.userName,
+        userAvatar: currentUser.userAvatar,
+        author: { name: currentUser.userName, avatar: currentUser.userAvatar },
         content: text,
         time: '刚刚',
+        createdAt: '刚刚',
         likes: 0,
-      },
-      ...comments,
-    ])
-    Taro.showToast({ title: '评论成功', icon: 'success' })
+        likeCount: 0,
+        liked: false,
+        replies: [],
+      }
+      setComments((current) => [comment, ...current])
+    }
+
     setCommentText('')
+    setReplyTarget(null)
+    Taro.showToast({ title: replyTarget ? '回复成功' : '评论成功', icon: 'success' })
   }
 
   return (
-    <View style={{ minHeight: '100vh', backgroundColor: '#F8FAFC' }}>
-      <View style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', backgroundColor: '#FFF', borderBottom: '1px solid #F1F5F9', position: 'sticky', top: 0, zIndex: 10 }}>
-        <View onClick={handleBack} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <Text style={{ fontSize: '22px', color: '#1E293B' }}>‹</Text>
-        </View>
-        <Text style={{ fontSize: '16px', fontWeight: '600', color: '#1E293B' }}>帖子详情</Text>
-        <View style={{ width: '22px' }} />
+    <View className='post-page'>
+      <View className='top-nav'>
+        <Text className='back' onClick={handleBack}>‹</Text>
+        <Text className='nav-title'>帖子详情</Text>
+        <View className='nav-placeholder' />
       </View>
 
-      <ScrollView scrollY style={{ height: 'calc(100vh - 52px)' }}>
-        <View style={{ padding: '16px', paddingBottom: '88px' }}>
-          <View style={{ backgroundColor: '#FFF', borderRadius: '14px', padding: '16px', border: '1px solid #E2E8F0' }}>
-            <View style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-              <View onClick={() => handleUserClick(author.name)} style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Text style={{ fontSize: '16px', color: '#FFF', fontWeight: '600' }}>{author.name[0] || '同'}</Text>
-              </View>
-              <View style={{ flex: 1 }}>
-                <View style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <Text style={{ fontSize: '15px', fontWeight: '600', color: '#1E293B' }}>{author.name}</Text>
-                  {author.verified && <Text style={{ fontSize: '12px', color: '#2563EB' }}>✓</Text>}
+      <ScrollView scrollY className='post-scroll' showScrollbar={false}>
+        <View className='page-body'>
+          <View className='post-card'>
+            <View className='author-row'>
+              <Avatar name={author.name} avatar={author.avatar} onClick={() => goUser(authorId, author.name)} />
+              <View className='author-main'>
+                <View className='author-name-row'>
+                  <Text className='author-name' onClick={() => goUser(authorId, author.name)}>{author.name}</Text>
+                  {author.verified && <Text className='verified'>✓</Text>}
                 </View>
-                <Text style={{ fontSize: '12px', color: '#94A3B8' }}>{author.college || '浙江大学'} · {author.grade || '在读'}</Text>
+                <Text className='author-meta'>{author.college || '浙江大学'} · {author.grade || '在读'}</Text>
               </View>
-              <Text style={{ fontSize: '11px', color: '#94A3B8' }}>{formatTime(post.createdAt)}</Text>
+              <Text className='time-text'>{formatTime(post.createdAt)}</Text>
             </View>
 
-            <View style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '12px' }}>
+            <View className='tag-row'>
               {(post.tags || [post.mainCategory || '发现']).map((tag) => (
-                <View key={tag} style={{ backgroundColor: '#EFF6FF', borderRadius: '100px', padding: '3px 10px' }}>
-                  <Text style={{ fontSize: '12px', color: '#2563EB' }}>{tag}</Text>
-                </View>
+                <Text key={tag} className='post-tag'>{tag}</Text>
               ))}
             </View>
 
-            <Text style={{ fontSize: '18px', fontWeight: '700', color: '#1E293B', lineHeight: '26px', marginBottom: '12px' }}>
-              {post.title}
-            </Text>
-
+            <Text className='post-title'>{post.title}</Text>
             {body.map((paragraph, index) => (
-              <Text key={index} style={{ fontSize: '15px', color: '#334155', lineHeight: '25px', marginBottom: '8px' }}>
-                {paragraph}
-              </Text>
+              <Text key={index} className='post-paragraph'>{paragraph}</Text>
             ))}
 
             {images.map((image) => (
-              <Image
-                key={image}
-                src={image}
-                mode="aspectFill"
-                style={{ width: '100%', height: '180px', borderRadius: '10px', marginTop: '12px', backgroundColor: '#E2E8F0' }}
-              />
+              <Image key={image} src={image} mode='aspectFill' className='post-image' />
             ))}
 
             {!images.length && post.cover && !isImageCover(post.cover) && (
-              <View style={{ height: '140px', borderRadius: '10px', marginTop: '12px', background: post.cover }} />
+              <View className='cover-block' style={{ background: post.cover }} />
             )}
 
-            <View style={{ display: 'flex', gap: '20px', marginTop: '20px', marginBottom: '4px', padding: '12px 0', borderTop: '1px solid #E2E8F0', borderBottom: '1px solid #E2E8F0' }}>
-              <View onClick={handleLike} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <Text style={{ fontSize: '18px', color: liked ? '#EF4444' : '#94A3B8' }}>{liked ? '♥' : '♡'}</Text>
-                <Text style={{ fontSize: '13px', color: liked ? '#EF4444' : '#94A3B8' }}>{likeCount}</Text>
+            <View className='post-actions'>
+              <View className='action' onClick={handleLike}>
+                <Text className={liked ? 'action-icon active-red' : 'action-icon'}>♡</Text>
+                <Text className={liked ? 'action-text active-red' : 'action-text'}>{likeCount}</Text>
               </View>
-              <View style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <Text style={{ fontSize: '18px', color: '#94A3B8' }}>💬</Text>
-                <Text style={{ fontSize: '13px', color: '#94A3B8' }}>{comments.length}</Text>
+              <View className='action'>
+                <Text className='action-icon'>💬</Text>
+                <Text className='action-text'>{commentTotal}</Text>
               </View>
-              <View onClick={() => { setBookmarked(!bookmarked); Taro.showToast({ title: bookmarked ? '已取消收藏' : '已收藏', icon: 'none' }) }}
-                style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <Text style={{ fontSize: '18px', color: bookmarked ? '#2563EB' : '#94A3B8' }}>{bookmarked ? '★' : '☆'}</Text>
-                <Text style={{ fontSize: '13px', color: bookmarked ? '#2563EB' : '#94A3B8' }}>收藏</Text>
+              <View className='action' onClick={() => { setBookmarked(!bookmarked); Taro.showToast({ title: bookmarked ? '已取消收藏' : '已收藏', icon: 'none' }) }}>
+                <Text className={bookmarked ? 'action-icon active-blue' : 'action-icon'}>☆</Text>
+                <Text className={bookmarked ? 'action-text active-blue' : 'action-text'}>收藏</Text>
               </View>
             </View>
           </View>
 
-          <View style={{ marginTop: '12px', backgroundColor: '#FFF', borderRadius: '14px', padding: '16px', border: '1px solid #E2E8F0' }}>
-            <Text style={{ fontSize: '16px', fontWeight: '600', color: '#1E293B', marginBottom: '10px' }}>
-              评论 ({comments.length})
-            </Text>
+          <View className='comment-card'>
+            <Text className='comment-title'>评论 ({commentTotal})</Text>
 
-            {comments.map((comment) => (
-              <View key={comment.id} style={{ display: 'flex', gap: '10px', marginBottom: '14px' }}>
-                <View style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#E2E8F0', flexShrink: 0 }} />
-                <View style={{ flex: 1 }}>
-                  <View style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Text style={{ fontSize: '13px', fontWeight: '600', color: '#1E293B' }}>{comment.author.name}</Text>
-                    <Text style={{ fontSize: '11px', color: '#94A3B8' }}>{comment.time}</Text>
+            {comments.map((comment) => {
+              const userName = getUserName(comment)
+              return (
+                <View key={comment.id} className='comment-item'>
+                  <Avatar name={userName} avatar={getUserAvatar(comment)} onClick={() => goUser(comment.userId, userName)} />
+                  <View className='comment-main'>
+                    <View className='comment-head'>
+                      <Text className='comment-name' onClick={() => goUser(comment.userId, userName)}>{userName}</Text>
+                      <Text className='comment-time'>{comment.createdAt || comment.time}</Text>
+                    </View>
+                    <Text className='comment-content' onClick={() => startReply(comment)}>{comment.content}</Text>
+                    <View className='comment-actions'>
+                      <Text className={comment.liked ? 'comment-like active-red' : 'comment-like'} onClick={() => handleCommentLike(comment.id)}>赞 {getCommentLikes(comment)}</Text>
+                      <Text className='reply-btn' onClick={() => startReply(comment)}>回复</Text>
+                    </View>
+
+                    {!!comment.replies?.length && (
+                      <View className='reply-list'>
+                        {comment.replies.map((reply) => (
+                          <View className='reply-item' key={reply.id}>
+                            <Text className='reply-user' onClick={() => goUser(reply.userId, reply.userName)}>{reply.userName}</Text>
+                            <Text className='reply-copy'> 回复 </Text>
+                            <Text className='reply-user' onClick={() => goUser(reply.replyToUserId, reply.replyToUserName)}>{reply.replyToUserName}</Text>
+                            <Text className='reply-copy'>：{reply.content}</Text>
+                            <Text className='reply-time'>{reply.createdAt}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    )}
                   </View>
-                  <Text style={{ fontSize: '14px', color: '#334155', marginTop: '2px', lineHeight: '21px' }}>{comment.content}</Text>
-                  <Text style={{ fontSize: '11px', color: '#94A3B8', marginTop: '4px' }}>赞 {comment.likes}</Text>
                 </View>
-              </View>
-            ))}
+              )
+            })}
           </View>
         </View>
       </ScrollView>
 
-      <View style={{
-        position: 'fixed', bottom: 0, left: 0, right: 0, backgroundColor: '#FFF',
-        borderTop: '1px solid #E2E8F0', padding: '8px 16px',
-        display: 'flex', alignItems: 'center', gap: '8px',
-        paddingBottom: 'calc(8px + env(safe-area-inset-bottom, 0px))',
-      }}>
-        <Input
-          placeholder="写下你的评论..."
-          value={commentText}
-          onInput={(e) => setCommentText(e.detail.value)}
-          style={{ flex: 1, padding: '8px 12px', backgroundColor: '#F1F5F9', borderRadius: '8px', fontSize: '14px' }}
-        />
-        <View onClick={handleSendComment}
-          style={{ padding: '8px 14px', backgroundColor: commentText.trim() ? '#2563EB' : '#E2E8F0', borderRadius: '8px' }}>
-          <Text style={{ fontSize: '14px', color: commentText.trim() ? '#FFF' : '#94A3B8' }}>发送</Text>
+      <View className='input-bar'>
+        {replyTarget && (
+          <View className='replying-row'>
+            <Text>正在回复 {replyTarget.userName}</Text>
+            <Text className='cancel-reply' onClick={() => setReplyTarget(null)}>取消</Text>
+          </View>
+        )}
+        <View className='input-row'>
+          <Input
+            placeholder={replyTarget ? `回复 ${replyTarget.userName}...` : '写评论...'}
+            value={commentText}
+            onInput={(e) => setCommentText(e.detail.value)}
+            className='comment-input'
+          />
+          <View className={commentText.trim() ? 'send-btn active' : 'send-btn'} onClick={handleSendComment}>
+            <Text>发送</Text>
+          </View>
         </View>
       </View>
     </View>

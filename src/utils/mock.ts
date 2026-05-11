@@ -126,12 +126,30 @@ export interface Conversation {
 
 export interface Comment {
   id: string
+  postId?: string
+  userId?: string
+  userName?: string
+  userAvatar?: string
   author: { name: string; avatar?: string }
   content: string
   time: string
   likes: number
   liked?: boolean
-  replies?: Comment[]
+  likeCount?: number
+  createdAt?: string
+  replies?: CommentReply[]
+}
+
+export interface CommentReply {
+  id: string
+  commentId: string
+  userId: string
+  userName: string
+  userAvatar?: string
+  replyToUserId: string
+  replyToUserName: string
+  content: string
+  createdAt: string
 }
 
 // ========== SKILL USERS ==========
@@ -283,6 +301,66 @@ export const COMMENTS: Comment[] = [
   { id: 'c1', author: { name: '科研小达人' }, content: '非常实用的分享！请问可以推荐一些具体的 workflow 吗？', time: '1小时前', likes: 12 },
   { id: 'c2', author: { name: '代码小白' }, content: '我也在用，确实能节省很多时间', time: '45分钟前', likes: 8 },
   { id: 'c3', author: { name: '材料人' }, content: '有没有专门做材料科学方向的 prompt 推荐？', time: '30分钟前', likes: 5 },
+]
+
+export const POST_COMMENTS: Comment[] = [
+  {
+    id: 'c1',
+    postId: 'fallback',
+    userId: 'u_research',
+    userName: '科研小达人',
+    userAvatar: '',
+    author: { name: '科研小达人', avatar: '' },
+    content: '非常实用的分享！请问可以推荐一些具体的 workflow 吗？',
+    time: '1小时前',
+    createdAt: '1小时前',
+    likes: 12,
+    likeCount: 12,
+    liked: false,
+    replies: [
+      {
+        id: 'r1',
+        commentId: 'c1',
+        userId: '10086',
+        userName: '陈同学',
+        userAvatar: '',
+        replyToUserId: 'u_research',
+        replyToUserName: '科研小达人',
+        content: '可以，我后面整理一个模板发出来。',
+        createdAt: '30分钟前',
+      },
+    ],
+  },
+  {
+    id: 'c2',
+    postId: 'fallback',
+    userId: 'u_code',
+    userName: '代码小白',
+    userAvatar: '',
+    author: { name: '代码小白', avatar: '' },
+    content: '我也在用，确实能节省很多时间。',
+    time: '45分钟前',
+    createdAt: '45分钟前',
+    likes: 8,
+    likeCount: 8,
+    liked: false,
+    replies: [],
+  },
+  {
+    id: 'c3',
+    postId: 'fallback',
+    userId: 'u_material',
+    userName: '材料人',
+    userAvatar: '',
+    author: { name: '材料人', avatar: '' },
+    content: '有没有专门做材料科学方向的 prompt 推荐？',
+    time: '30分钟前',
+    createdAt: '30分钟前',
+    likes: 5,
+    likeCount: 5,
+    liked: false,
+    replies: [],
+  },
 ]
 
 // ========== SKILLS (Profile) ==========
