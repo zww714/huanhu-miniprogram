@@ -25,6 +25,7 @@ export default defineAppConfig({
     'pages/activity-register/index',
     'pages/verify/index',
     'pages/skill-detail/index',
+    'pages/skill-proof-detail/index',
     'pages/user-detail/index',
   ],
   window: {

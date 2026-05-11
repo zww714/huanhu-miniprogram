@@ -413,10 +413,44 @@ export const SKILL_DETAIL = {
 
 
 export type SkillProof = {
+  id?: string
   type: 'portfolio' | 'project' | 'certificate' | 'link'
   title: string
   desc: string
   url?: string
+}
+
+export type SkillProofDetail = {
+  id: string
+  skillId: string
+  userId: string
+  title: string
+  type: SkillProof['type']
+  status: 'approved' | 'pending' | 'draft'
+  description: string
+  relatedSkill: string
+  level: number
+  submitterName: string
+  submitterAvatar: string
+  createdAt: string
+  updatedAt: string
+  images: string[]
+  links: { title: string; url: string }[]
+  tags: string[]
+  detail: {
+    projectName?: string
+    projectIntro?: string
+    role?: string
+    tools?: string[]
+    result?: string
+    workName?: string
+    workIntro?: string
+    scenes?: string[]
+    certificateName?: string
+    issuer?: string
+    certificateNo?: string
+    issuedAt?: string
+  }
 }
 
 export type SkillDetail = {
@@ -449,8 +483,8 @@ export const SKILLS_DETAIL: SkillDetail[] = [
     abilityDescription: '可以根据具体学习和科研场景设计 AI 工作流，帮助同学更高效地完成资料整理、Prompt 优化、代码辅助和论文写作流程。',
     canHelp: ['AI 工具使用入门', 'Prompt 优化', 'AI 辅助科研', 'AI 辅助编程', 'AI 论文写作流程'],
     proofs: [
-      { type: 'project', title: '科研文献整理流程', desc: '整理过一套从文献筛选、摘要提取到研究问题生成的 AI 辅助流程。' },
-      { type: 'portfolio', title: 'Prompt 模板合集', desc: '沉淀了课程学习、论文写作和代码调试场景的常用 Prompt 模板。' },
+      { id: 'proof-ai-research-flow', type: 'project', title: '科研文献整理流程', desc: '整理过一套从文献筛选、摘要提取到研究问题生成的 AI 辅助流程。' },
+      { id: 'proof-ai-prompt-templates', type: 'portfolio', title: 'Prompt 模板合集', desc: '沉淀了课程学习、论文写作和代码调试场景的常用 Prompt 模板。' },
     ],
     tags: ['Prompt', '论文写作', '科研效率', '代码辅助'],
   },
@@ -467,9 +501,9 @@ export const SKILLS_DETAIL: SkillDetail[] = [
     abilityDescription: '可以独立完成 Python 脚本、数据分析、简单机器学习和 Web 项目开发，也能帮助同学拆解课程作业和项目入门思路。',
     canHelp: ['Python 入门答疑', '数据分析作业辅导', 'Flask / Django 项目入门', '机器学习基础项目交流'],
     proofs: [
-      { type: 'project', title: '校园数据分析平台', desc: '基于 Django + ECharts 的学生数据可视化平台。' },
-      { type: 'certificate', title: '计算机等级考试三级', desc: '数据库技术方向，具备基础工程能力。' },
-      { type: 'link', title: 'GitHub 练习项目', desc: '包含脚本自动化、数据清洗和 Flask 入门项目。', url: 'https://github.com/example/python-demo' },
+      { id: 'proof-python-campus-data', type: 'project', title: '校园数据分析平台', desc: '基于 Django + ECharts 的学生数据可视化平台。' },
+      { id: 'proof-python-cert', type: 'certificate', title: '计算机等级考试三级', desc: '数据库技术方向，具备基础工程能力。' },
+      { id: 'proof-python-github', type: 'link', title: 'GitHub 练习项目', desc: '包含脚本自动化、数据清洗和 Flask 入门项目。', url: 'https://github.com/example/python-demo' },
     ],
     tags: ['数据分析', 'Django', 'Flask', 'TensorFlow', '自动化脚本'],
   },
@@ -486,7 +520,7 @@ export const SKILLS_DETAIL: SkillDetail[] = [
     abilityDescription: '可以帮助梳理数据分析思路，完成 Excel / Python 数据清洗、基础统计分析、图表制作和课程作业展示。',
     canHelp: ['Excel / Python 数据清洗', '数据可视化', 'ECharts 图表', '课程作业数据分析思路'],
     proofs: [
-      { type: 'project', title: '课程数据可视化作业', desc: '使用 Python 清洗数据，并用 ECharts 输出交互式图表。' },
+      { id: 'proof-data-coursework', type: 'project', title: '课程数据可视化作业', desc: '使用 Python 清洗数据，并用 ECharts 输出交互式图表。' },
     ],
     tags: ['Pandas', 'Matplotlib', 'SQL', 'ECharts', '可视化'],
   },
@@ -518,6 +552,193 @@ export const SKILL_ID_BY_NAME: Record<string, string> = {
   '英语交流': 'english-communication',
   '鑻辫浜ゆ祦': 'english-communication',
 }
+
+export const CURRENT_USER = {
+  id: '10086',
+  name: '陈同学',
+  avatar: '',
+}
+
+export const SKILL_PROOFS: SkillProofDetail[] = [
+  {
+    id: 'proof-ai-research-flow',
+    skillId: 'ai-tools',
+    userId: '10086',
+    title: '科研文献整理流程',
+    type: 'project',
+    status: 'approved',
+    description: '这份材料展示了如何使用 AI 完成文献筛选、摘要提取、研究问题归纳和阅读笔记整理，能够证明 TA 具备 AI 辅助科研流程设计能力。',
+    relatedSkill: 'AI工具',
+    level: 5,
+    submitterName: '陈同学',
+    submitterAvatar: '',
+    createdAt: '2026-05-08',
+    updatedAt: '2026-05-10',
+    images: [],
+    links: [
+      { title: '流程说明文档', url: 'https://example.com/ai-research-workflow' },
+    ],
+    tags: ['科研效率', '论文写作', 'Prompt', '文献整理'],
+    detail: {
+      projectName: '科研文献整理流程',
+      projectIntro: '面向课程论文和研究选题的 AI 辅助文献处理流程，覆盖检索关键词、摘要提取、主题聚类和阅读笔记生成。',
+      role: '流程设计与 Prompt 模板整理',
+      tools: ['ChatGPT', 'Kimi', 'Zotero', 'Markdown'],
+      result: '将一次主题调研的初步整理时间从数小时缩短到约 40 分钟，并沉淀为可复用模板。',
+    },
+  },
+  {
+    id: 'proof-ai-prompt-templates',
+    skillId: 'ai-tools',
+    userId: '10086',
+    title: 'Prompt 模板合集',
+    type: 'portfolio',
+    status: 'pending',
+    description: '这份作品集整理了学习、论文写作和代码调试场景中的常用 Prompt，可以证明 TA 有较系统的 AI 工具使用经验。',
+    relatedSkill: 'AI工具',
+    level: 5,
+    submitterName: '陈同学',
+    submitterAvatar: '',
+    createdAt: '2026-05-06',
+    updatedAt: '2026-05-09',
+    images: [],
+    links: [
+      { title: 'Prompt 模板预览', url: 'https://example.com/prompt-templates' },
+    ],
+    tags: ['Prompt', '代码辅助', '学习效率', '论文写作'],
+    detail: {
+      workName: 'Prompt 模板合集',
+      workIntro: '按使用场景整理的 Prompt 作品集，包括文献综述、论文润色、代码解释、调试定位和学习计划生成。',
+      scenes: ['课程学习', '论文写作', '代码调试', '科研资料整理'],
+    },
+  },
+  {
+    id: 'proof-python-campus-data',
+    skillId: 'python',
+    userId: '10086',
+    title: '校园数据分析平台',
+    type: 'project',
+    status: 'approved',
+    description: '通过 Django 和 ECharts 完成数据展示平台，证明 TA 具备 Python Web 入门、数据处理和可视化能力。',
+    relatedSkill: 'Python 编程',
+    level: 4,
+    submitterName: '陈同学',
+    submitterAvatar: '',
+    createdAt: '2026-04-28',
+    updatedAt: '2026-05-02',
+    images: [],
+    links: [
+      { title: '项目仓库', url: 'https://github.com/example/campus-data' },
+    ],
+    tags: ['Python', 'Django', 'ECharts', '数据分析'],
+    detail: {
+      projectName: '校园数据分析平台',
+      projectIntro: '用于展示课程样例数据和学生数据统计的 Web 可视化平台。',
+      role: '负责数据清洗、接口整理和图表页面搭建',
+      tools: ['Python', 'Django', 'ECharts', 'Pandas'],
+      result: '完成基础数据导入、指标统计和图表展示，可用于课程演示。',
+    },
+  },
+  {
+    id: 'proof-python-cert',
+    skillId: 'python',
+    userId: '10086',
+    title: '计算机等级考试三级',
+    type: 'certificate',
+    status: 'draft',
+    description: '用于补充说明基础计算机能力和数据库方向学习经历。',
+    relatedSkill: 'Python 编程',
+    level: 4,
+    submitterName: '陈同学',
+    submitterAvatar: '',
+    createdAt: '2026-04-20',
+    updatedAt: '2026-04-20',
+    images: [],
+    links: [],
+    tags: ['证书', '数据库', '基础能力'],
+    detail: {
+      certificateName: '全国计算机等级考试三级',
+      issuer: '教育考试机构',
+      certificateNo: 'MOCK-2026-0001',
+      issuedAt: '2026-04-20',
+    },
+  },
+  {
+    id: 'proof-python-github',
+    skillId: 'python',
+    userId: '10086',
+    title: 'GitHub 练习项目',
+    type: 'link',
+    status: 'approved',
+    description: '整理了脚本自动化、数据清洗和 Flask 入门练习项目，方便别人快速了解 TA 的 Python 实践基础。',
+    relatedSkill: 'Python 编程',
+    level: 4,
+    submitterName: '陈同学',
+    submitterAvatar: '',
+    createdAt: '2026-04-18',
+    updatedAt: '2026-05-01',
+    images: [],
+    links: [
+      { title: 'GitHub 练习项目', url: 'https://github.com/example/python-demo' },
+    ],
+    tags: ['Python', 'Flask', '自动化脚本', '数据清洗'],
+    detail: {
+      workName: 'GitHub 练习项目',
+      workIntro: '包含若干个 Python 练习项目，用于展示基础脚本、数据处理和轻量 Web 开发能力。',
+      scenes: ['课程练习', '项目入门', '代码示例'],
+    },
+  },
+  {
+    id: 'proof-data-coursework',
+    skillId: 'data-analysis',
+    userId: '10086',
+    title: '课程数据可视化作业',
+    type: 'project',
+    status: 'pending',
+    description: '使用 Python 清洗课程样例数据，并用 ECharts 输出交互式图表，展示基础数据分析思路。',
+    relatedSkill: '数据分析',
+    level: 3,
+    submitterName: '陈同学',
+    submitterAvatar: '',
+    createdAt: '2026-04-12',
+    updatedAt: '2026-04-25',
+    images: [],
+    links: [],
+    tags: ['Pandas', 'ECharts', '可视化', '课程作业'],
+    detail: {
+      projectName: '课程数据可视化作业',
+      projectIntro: '围绕课程样例数据完成清洗、统计和可视化展示。',
+      role: '负责数据清洗、指标梳理和图表实现',
+      tools: ['Python', 'Pandas', 'ECharts'],
+      result: '完成基础统计图表和可视化说明，可作为课程作业演示材料。',
+    },
+  },
+  {
+    id: 'proof-ai-other-workflow',
+    skillId: 'ai-tools',
+    userId: '20001',
+    title: '科研选题 AI 工作流',
+    type: 'project',
+    status: 'approved',
+    description: '用于测试非本人视角的证明材料：当前用户只能查看和联系 TA，不能编辑证明材料。',
+    relatedSkill: 'AI工具',
+    level: 5,
+    submitterName: '陈同学',
+    submitterAvatar: '',
+    createdAt: '2026-05-03',
+    updatedAt: '2026-05-09',
+    images: [],
+    links: [],
+    tags: ['科研选题', 'AI工作流', 'Prompt'],
+    detail: {
+      projectName: '科研选题 AI 工作流',
+      projectIntro: '帮助同学从兴趣关键词出发，快速整理研究问题、资料方向和初步阅读清单。',
+      role: '流程设计与场景演示',
+      tools: ['ChatGPT', 'Kimi', 'Markdown'],
+      result: '形成可复用的选题讨论模板，用于前期科研交流。',
+    },
+  },
+]
 
 // ========== MY PROFILE DATA ==========
 export const MY_PROFILE = {

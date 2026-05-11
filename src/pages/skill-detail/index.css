@@ -221,6 +221,10 @@ page {
   border-bottom: 1px solid #F1F5F9;
 }
 
+.proof-item.clickable {
+  cursor: pointer;
+}
+
 .proof-item:last-child {
   border-bottom: none;
 }
@@ -271,6 +275,14 @@ page {
   margin-top: 4px;
   color: #2563EB;
   font-size: 12px;
+}
+
+.proof-more {
+  display: block;
+  margin-top: 6px;
+  color: #2563EB;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .proof-empty {

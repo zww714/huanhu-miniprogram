@@ -40,6 +40,15 @@ export default function SkillDetailPage() {
       url: `/pages/chat/index?id=${encodeURIComponent(skill.userId)}&skillId=${encodeURIComponent(skill.id)}&name=${encodeURIComponent('TA')}&category=${encodeURIComponent(skill.name)}`,
     })
   }
+  const handleProofClick = (proof: SkillProof) => {
+    if (!skill || !proof.id) {
+      Taro.showToast({ title: '证明材料不存在', icon: 'none' })
+      return
+    }
+    Taro.navigateTo({
+      url: `/pages/skill-proof-detail/index?skillId=${encodeURIComponent(skill.id)}&proofId=${encodeURIComponent(proof.id)}&userId=${encodeURIComponent(skill.userId)}`,
+    })
+  }
 
   if (!skill) {
     return (
@@ -112,7 +121,7 @@ export default function SkillDetailPage() {
           {skill.proofs.length ? (
             <View className='proof-list'>
               {skill.proofs.map((proof) => (
-                <View className='proof-item' key={`${proof.type}-${proof.title}`}>
+                <View className='proof-item clickable' key={`${proof.type}-${proof.title}`} onClick={() => handleProofClick(proof)}>
                   <View className='proof-icon'>
                     <Text>{proofTypeText[proof.type].slice(0, 2)}</Text>
                   </View>
@@ -123,6 +132,7 @@ export default function SkillDetailPage() {
                     </View>
                     <Text className='proof-desc'>{proof.desc}</Text>
                     {!!proof.url && <Text className='proof-link'>{proof.url}</Text>}
+                    <Text className='proof-more'>查看详情 ›</Text>
                   </View>
                 </View>
               ))}
