@@ -33,7 +33,7 @@ export default function Profile() {
   const displaySkills = MY_SKILLS.slice(0, 4)
 
   return (
-    <ScrollView scrollY style={{ height: '100vh', backgroundColor: '#F8FAFC' }} showScrollbar={false} enhanced bounces={false}>
+    <ScrollView scrollY style={{ height: 'calc(100vh - 58px)', backgroundColor: '#F8FAFC' }} showScrollbar={false} enhanced bounces={false}>
       <View style={{ backgroundColor: '#FFFFFF', paddingTop: '40px', paddingBottom: '16px' }}>
         <View style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <View style={{ width: '72px', height: '72px', borderRadius: '50%', backgroundColor: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
@@ -169,7 +169,7 @@ export default function Profile() {
         </View>
       </View>
 
-      <View style={{ margin: '8px 12px 100px', backgroundColor: '#FFFFFF', borderRadius: '12px', overflow: 'hidden' }}>
+      <View style={{ margin: '8px 12px 24px', backgroundColor: '#FFFFFF', borderRadius: '12px', overflow: 'hidden' }}>
         <View style={{ display: 'flex', flexDirection: 'row', borderBottom: '1px solid #E2E8F0' }}>
           {[{ key: 'posts', label: '我的发布' }, { key: 'reviews', label: '收到的评价' }].map(tab => (
             <View key={tab.key} onClick={() => setActiveTab(tab.key)} style={{ flex: 1, padding: '14px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: activeTab === tab.key ? '2.5px solid #2563EB' : '2px solid transparent' }}>

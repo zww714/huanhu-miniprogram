@@ -511,8 +511,8 @@ export default function Index() {
   )
 
   return (
-    <View style={{ height: '100vh', position: 'relative', backgroundColor: '#F8FAFC' }}>
-      <ScrollView scrollY showScrollbar={false} style={{ height: '100vh' }}>
+    <View style={{ height: 'calc(100vh - 58px)', position: 'relative', backgroundColor: '#F8FAFC' }}>
+      <ScrollView scrollY showScrollbar={false} style={{ height: 'calc(100vh - 58px)' }}>
         <View style={{ margin: '10px 16px 4px', padding: '10px 14px', backgroundColor: '#FFF', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #E2E8F0' }}>
           <Text style={{ fontSize: '16px' }}>🔍</Text>
           <Input
