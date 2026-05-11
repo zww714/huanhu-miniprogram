@@ -772,6 +772,99 @@ export const MY_LEARN_WANTS = [
 // ========== MY INTERESTS ==========
 export const MY_INTERESTS = ['科研', 'AI', '徒步', '摄影', '桌游']
 
+export const MY_POSTS = [
+  {
+    id: '1',
+    title: '如何用 Python 高效完成数据分析？',
+    excerpt: '整理了我在课程作业和科研数据处理中常用的分析流程，适合刚开始接触 pandas 的同学。',
+    tags: ['Python', '数据分析'],
+    likes: 128,
+    comments: 32,
+    time: '2天前',
+  },
+  {
+    id: '4',
+    title: 'AI 工具如何辅助论文写作流程',
+    excerpt: '从文献整理、提纲生成到初稿润色，分享一套适合课程论文和组会汇报的 AI 使用方式。',
+    tags: ['AI', '论文写作'],
+    likes: 67,
+    comments: 23,
+    time: '1周前',
+  },
+]
+
+export const INTEREST_DETAILS: Record<string, {
+  name: string
+  intro: string
+  partners: { id: string; name: string; desc: string; tags: string[] }[]
+  posts: { id: string; title: string; excerpt: string; tags: string[]; likes: number; comments: number }[]
+  activities: { id: string; title: string; time: string; location: string; tags: string[] }[]
+}> = {
+  科研: {
+    name: '科研',
+    intro: '找到正在做科研训练、文献阅读和论文写作的同学，一起交流方法和工具。',
+    partners: [
+      { id: 'research-1', name: '研机达人', desc: '擅长文献管理和科研效率工具。', tags: ['文献整理', '论文写作'] },
+      { id: 'research-2', name: '材料人', desc: '想找同学一起讨论材料方向选题。', tags: ['组会', '选题'] },
+    ],
+    posts: [
+      { id: '4', title: 'AI 工具如何辅助论文写作流程', excerpt: '从文献整理到初稿润色的一套流程。', tags: ['AI', '论文写作'], likes: 67, comments: 23 },
+    ],
+    activities: [
+      { id: 'interest-research-a1', title: '文献阅读方法交流', time: '周五 19:00', location: '紫金港图书馆', tags: ['科研', '文献'] },
+    ],
+  },
+  AI: {
+    name: 'AI',
+    intro: '一起探索 AI 工具、Prompt、辅助科研和辅助编程的高效用法。',
+    partners: [
+      { id: 'ai-1', name: 'Prompt 练习生', desc: '正在整理课程学习和论文写作 Prompt。', tags: ['Prompt', '效率工具'] },
+    ],
+    posts: [
+      { id: '4', title: 'AI 工具如何辅助论文写作流程', excerpt: '适合课程论文和组会汇报的 AI 使用方式。', tags: ['AI', '论文写作'], likes: 67, comments: 23 },
+    ],
+    activities: [
+      { id: 'interest-ai-a1', title: 'AI 工具分享会', time: '周三 19:00', location: '北教 203', tags: ['AI', '科研效率'] },
+    ],
+  },
+  徒步: {
+    name: '徒步',
+    intro: '找到喜欢徒步和户外的同学，周末一起走走杭州的山和校园路线。',
+    partners: [
+      { id: 'hike-1', name: '周末路线控', desc: '喜欢轻徒步，常走北高峰和九溪路线。', tags: ['周末', '轻徒步'] },
+    ],
+    posts: [],
+    activities: [
+      { id: 'interest-hike-a1', title: '周末九溪轻徒步', time: '周六 09:00', location: '九溪入口集合', tags: ['徒步', '户外'] },
+    ],
+  },
+  摄影: {
+    name: '摄影',
+    intro: '找到喜欢摄影的同学，一起拍照、修图、交流器材。',
+    partners: [
+      { id: 'photo-1', name: '光影捕手', desc: '喜欢校园人像和街拍，想找同频搭子。', tags: ['人像', '修图'] },
+      { id: 'photo-2', name: '胶片同学', desc: '正在学习胶片和色彩风格。', tags: ['胶片', '扫街'] },
+    ],
+    posts: [
+      { id: '2', title: '浙大的春天太美了，求摄影搭子', excerpt: '想找喜欢摄影的同学一起扫校园。', tags: ['摄影', '搭子'], likes: 256, comments: 45 },
+    ],
+    activities: [
+      { id: 'interest-photo-a1', title: '紫金港校园摄影采风', time: '周日 15:00', location: '月牙楼集合', tags: ['摄影', '校园'] },
+    ],
+  },
+  桌游: {
+    name: '桌游',
+    intro: '找到喜欢桌游、剧本和轻社交的同学，一起组局放松一下。',
+    partners: [
+      { id: 'board-1', name: '桌游局长', desc: '偏好轻策略和合作类桌游。', tags: ['策略', '组局'] },
+    ],
+    posts: [],
+    activities: [
+      { id: 'interest-board-a1', title: '周五桌游小局', time: '周五 20:00', location: '学生活动中心', tags: ['桌游', '社交'] },
+    ],
+  },
+}
+
 // ========== MY REVIEWS ==========
 export const MY_REVIEWS = [
   {

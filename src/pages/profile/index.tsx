@@ -4,15 +4,20 @@ import { useState } from 'react'
 import './index.css'
 
 import {
-  MY_PROFILE, MY_SKILLS, MY_LEARN_WANTS,
-  MY_INTERESTS, MY_REVIEWS, SKILL_ID_BY_NAME
+  MY_PROFILE,
+  MY_SKILLS,
+  MY_LEARN_WANTS,
+  MY_INTERESTS,
+  MY_REVIEWS,
+  MY_POSTS,
+  SKILL_ID_BY_NAME,
 } from '../../utils/mock'
 
 const QUICK_ENTRIES = [
-  { key: 'partners', icon: '🤝', label: '我的搭子', url: '/pages/my-partners/index' },
-  { key: 'activities', icon: '🏃', label: '我的活动', url: '/pages/my-activities/index' },
-  { key: 'favorites', icon: '⭐', label: '我的收藏', url: '/pages/my-favorites/index' },
-  { key: 'settings', icon: '⚙️', label: '设置', url: '/pages/settings/index' },
+  { key: 'partners', icon: '🤝', label: '我的搭子', desc: '3 个', url: '/pages/my-partners/index' },
+  { key: 'activities', icon: '🏃', label: '我的活动', desc: '2 个', url: '/pages/my-activities/index' },
+  { key: 'favorites', icon: '⭐', label: '我的收藏', desc: '5 条', url: '/pages/my-favorites/index' },
+  { key: 'settings', icon: '⚙️', label: '设置', desc: '账号与隐私', url: '/pages/settings/index' },
 ]
 
 const LEVEL_COLORS: Record<number, { bg: string; text: string; label: string }> = {
@@ -25,198 +30,197 @@ const LEVEL_COLORS: Record<number, { bg: string; text: string; label: string }> 
 
 export default function Profile() {
   const [activeTab, setActiveTab] = useState('posts')
+  const [selectedSkillName, setSelectedSkillName] = useState(MY_SKILLS[0]?.name || '')
 
   const toast = (msg: string) => Taro.showToast({ title: msg, icon: 'none' })
   const go = (url: string) => Taro.navigateTo({ url })
   const goSkillDetail = (skillName: string) => {
+    setSelectedSkillName(skillName)
     const skillId = SKILL_ID_BY_NAME[skillName] || encodeURIComponent(skillName)
-    Taro.navigateTo({ url: `/pages/skill-detail/index?userId=${encodeURIComponent(MY_PROFILE.user_id)}&skillId=${encodeURIComponent(skillId)}` })
+    Taro.navigateTo({
+      url: `/pages/skill-detail/index?userId=${encodeURIComponent(MY_PROFILE.user_id)}&skillId=${encodeURIComponent(skillId)}`,
+    })
   }
+  const goInterestDetail = (interestName: string) => {
+    Taro.navigateTo({
+      url: `/pages/interest-detail/index?interestName=${encodeURIComponent(interestName)}`,
+    })
+  }
+  const goPostDetail = (postId: string) => {
+    Taro.navigateTo({ url: `/pages/post-detail/index?id=${encodeURIComponent(postId)}` })
+  }
+
   const p = MY_PROFILE
-  const maxLevel = Math.max(...MY_SKILLS.map(s => s.level))
   const displaySkills = MY_SKILLS.slice(0, 4)
 
   return (
-    <ScrollView scrollY style={{ height: 'calc(100vh - 58px)', backgroundColor: '#F8FAFC' }} showScrollbar={false} enhanced bounces={false}>
-      <View style={{ backgroundColor: '#FFFFFF', paddingTop: '40px', paddingBottom: '16px' }}>
-        <View style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <View style={{ width: '72px', height: '72px', borderRadius: '50%', backgroundColor: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
-            <Text style={{ fontSize: '28px', fontWeight: '700', color: '#FFFFFF' }}>{p.name.charAt(0)}</Text>
-          </View>
-          <View style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
-            <Text style={{ fontSize: '20px', fontWeight: '700', color: '#1E293B' }}>{p.name}</Text>
-            <View style={{ width: '18px', height: '18px', borderRadius: '50%', backgroundColor: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={{ fontSize: '11px', color: '#FFFFFF', fontWeight: '700' }}>{'✓'}</Text>
-            </View>
-          </View>
-          <Text style={{ fontSize: '13px', color: '#475569', marginBottom: '6px' }}>{p.school} · {p.college} · {p.grade}</Text>
-          <Text style={{ fontSize: '13px', color: '#64748B', lineHeight: '18px', marginBottom: '14px', padding: '0 32px', textAlign: 'center' }}>{p.bio}</Text>
-          <View onClick={() => go('/pages/edit-profile/index')} style={{ padding: '6px 24px', borderRadius: '20px', borderWidth: '1px', borderStyle: 'solid', borderColor: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ fontSize: '13px', color: '#2563EB', fontWeight: '500' }}>{'编辑资料'}</Text>
-          </View>
+    <ScrollView scrollY className='profile-scroll' showScrollbar={false} enhanced bounces={false}>
+      <View className='profile-header'>
+        <View className='avatar'>
+          <Text>{p.name.charAt(0)}</Text>
+        </View>
+        <View className='name-row'>
+          <Text className='profile-name'>{p.name}</Text>
+          <View className='verify-dot'><Text>✓</Text></View>
+        </View>
+        <Text className='profile-meta'>{p.school} · {p.college} · {p.grade}</Text>
+        <Text className='profile-bio'>{p.bio}</Text>
+        <View className='edit-profile-btn' onClick={() => go('/pages/edit-profile/index')}>
+          <Text>编辑资料</Text>
         </View>
       </View>
 
-      <View style={{ margin: '8px 12px 0', backgroundColor: '#FFFFFF', borderRadius: '12px', padding: '16px 0' }}>
-        <View style={{ display: 'flex', flexDirection: 'row' }}>
-          {[
-            { label: '技能', value: p.stats.skills, url: '/pages/my-skills/index' },
-            { label: '发布', value: p.stats.posts, url: '/pages/my-posts/index' },
-            { label: '粉丝', value: p.stats.followers, url: '/pages/my-followers/index' },
-            { label: '关注', value: p.stats.following, url: '/pages/my-following/index' },
-          ].map((item, i) => (
-            <View key={item.label} onClick={() => go(item.url)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', borderRight: i < 3 ? '1px solid #F1F5F9' : 'none' }}>
-              <Text style={{ fontSize: '20px', fontWeight: '700', color: '#1E293B' }}>{item.value}</Text>
-              <Text style={{ fontSize: '12px', color: '#94A3B8' }}>{item.label}</Text>
-            </View>
-          ))}
-        </View>
+      <View className='stats-card'>
+        {[
+          { label: '技能', value: p.stats.skills, url: '/pages/my-skills/index' },
+          { label: '发布', value: p.stats.posts, url: '/pages/my-posts/index' },
+          { label: '粉丝', value: p.stats.followers, url: '/pages/my-followers/index' },
+          { label: '关注', value: p.stats.following, url: '/pages/my-following/index' },
+        ].map((item, index) => (
+          <View key={item.label} className={`stat-item ${index < 3 ? 'with-line' : ''}`} onClick={() => go(item.url)}>
+            <Text className='stat-value'>{item.value}</Text>
+            <Text className='stat-label'>{item.label}</Text>
+          </View>
+        ))}
       </View>
 
-      <View style={{ margin: '8px 12px 0', backgroundColor: '#FFFFFF', borderRadius: '12px', padding: '16px' }}>
-        <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-          <Text style={{ fontSize: '16px', fontWeight: '700', color: '#1E293B' }}>{'我会'}</Text>
-          <View onClick={() => go('/pages/edit-skills/index?type=can')} style={{ display: 'flex', alignItems: 'center', gap: '2px', padding: '2px 4px' }}>
-            <Text style={{ fontSize: '13px', color: '#2563EB', fontWeight: '500' }}>{'编辑'}</Text>
-            <Text style={{ fontSize: '11px', color: '#2563EB' }}>{'›'}</Text>
+      <View className='section-card'>
+        <View className='section-head'>
+          <Text className='section-title'>我会</Text>
+          <View className='section-edit' onClick={() => go('/pages/edit-skills/index?type=can')}>
+            <Text>编辑 ›</Text>
           </View>
         </View>
-        {displaySkills.map((skill, i) => {
-          const lc = LEVEL_COLORS[skill.level] || LEVEL_COLORS[1]
-          const isMaxLevel = skill.level === maxLevel && maxLevel >= 4
-          return (
-            <View key={i} onClick={() => goSkillDetail(skill.name)} style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: '10px 12px', marginBottom: i < displaySkills.length - 1 ? '8px' : '0', backgroundColor: '#F8FAFC', borderRadius: '10px', borderWidth: isMaxLevel ? '1px' : '0px', borderStyle: 'solid', borderColor: isMaxLevel ? '#FDE68A' : 'transparent' }}>
-              <View style={{ width: '44px', height: '28px', borderRadius: '6px', backgroundColor: lc.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '10px', flexShrink: 0 }}>
-                <Text style={{ fontSize: '11px', fontWeight: '700', color: lc.text }}>{lc.label}</Text>
-              </View>
-              <View style={{ flex: 1 }}>
-                <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '4px' }}>
-                  <Text style={{ fontSize: '14px', fontWeight: '600', color: '#1E293B' }}>{skill.name}</Text>
-                  {isMaxLevel && <Text style={{ fontSize: '14px' }}>{'👑'}</Text>}
+        <View className='skill-list'>
+          {displaySkills.map((skill) => {
+            const lc = LEVEL_COLORS[skill.level] || LEVEL_COLORS[1]
+            const selected = selectedSkillName === skill.name
+            return (
+              <View
+                key={skill.name}
+                className={`skill-card ${selected ? 'selected' : ''}`}
+                onClick={() => goSkillDetail(skill.name)}
+              >
+                <View className='level-badge' style={{ backgroundColor: lc.bg }}>
+                  <Text style={{ color: lc.text }}>{lc.label}</Text>
                 </View>
-                <Text style={{ fontSize: '11px', color: '#94A3B8', marginTop: '1px' }}>{skill.desc}</Text>
+                <View className='skill-main'>
+                  <Text className='skill-name'>{skill.name}</Text>
+                  <Text className='skill-desc'>{skill.desc}</Text>
+                </View>
+                {selected && <Text className='skill-more'>查看详情 ›</Text>}
               </View>
-            </View>
-          )
-        })}
+            )
+          })}
+        </View>
         {MY_SKILLS.length > 4 && (
-          <View onClick={() => go('/pages/my-skills/index')} style={{ display: 'flex', alignItems: 'center', padding: '8px 0' }}>
-            <Text style={{ fontSize: '13px', color: '#64748B' }}>{'查看更多…'}</Text>
-          </View>
-        )}
-        {MY_SKILLS.length === 0 && (
-          <View style={{ padding: '20px 0', alignItems: 'center' }}>
-            <Text style={{ fontSize: '13px', color: '#94A3B8', textAlign: 'center' }}>{'还没有添加你会的技能'}</Text>
-            <Text style={{ fontSize: '13px', color: '#94A3B8', textAlign: 'center', marginTop: '2px' }}>{'添加后，其他同学可以更快找到你'}</Text>
+          <View className='more-link' onClick={() => go('/pages/my-skills/index')}>
+            <Text>查看更多...</Text>
           </View>
         )}
       </View>
 
-      <View style={{ margin: '8px 12px 0', backgroundColor: '#FFFFFF', borderRadius: '12px', padding: '16px' }}>
-        <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-          <Text style={{ fontSize: '16px', fontWeight: '700', color: '#1E293B' }}>{'我想学'}</Text>
-          <View onClick={() => go('/pages/edit-skills/index?type=want')} style={{ display: 'flex', alignItems: 'center', gap: '2px', padding: '2px 4px' }}>
-            <Text style={{ fontSize: '13px', color: '#2563EB', fontWeight: '500' }}>{'编辑'}</Text>
-            <Text style={{ fontSize: '11px', color: '#2563EB' }}>{'›'}</Text>
+      <View className='section-card'>
+        <View className='section-head'>
+          <Text className='section-title'>我想学</Text>
+          <View className='section-edit' onClick={() => go('/pages/edit-skills/index?type=want')}>
+            <Text>编辑 ›</Text>
           </View>
         </View>
-        <View style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '8px' }}>
-          {MY_LEARN_WANTS.slice(0, 6).map((item, i) => (
-            <View key={i} style={{ padding: '6px 14px', borderRadius: '20px', backgroundColor: '#FFF7ED', borderWidth: '1px', borderStyle: 'solid', borderColor: '#FED7AA' }}>
-              <Text style={{ fontSize: '13px', color: '#C2410C' }}>{item.name}</Text>
-            </View>
+        <View className='learn-wrap'>
+          {MY_LEARN_WANTS.slice(0, 6).map((item) => (
+            <Text className='learn-tag' key={item.name}>{item.name}</Text>
           ))}
         </View>
-        {MY_LEARN_WANTS.length > 6 && (
-          <View style={{ display: 'flex', alignItems: 'center', padding: '6px 0', marginTop: '4px' }}>
-            <Text style={{ fontSize: '13px', color: '#64748B' }}>{'查看更多…'}</Text>
-          </View>
-        )}
-        {MY_LEARN_WANTS.length === 0 && (
-          <View style={{ padding: '16px 0', alignItems: 'center' }}>
-            <Text style={{ fontSize: '13px', color: '#94A3B8', textAlign: 'center' }}>{'还没有添加想学的内容'}</Text>
-            <Text style={{ fontSize: '13px', color: '#94A3B8', textAlign: 'center', marginTop: '2px' }}>{'添加后，系统可以帮你推荐合适的同学'}</Text>
-          </View>
-        )}
       </View>
 
-      <View style={{ margin: '8px 12px 0', backgroundColor: '#FFFFFF', borderRadius: '12px', padding: '16px' }}>
-        <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-          <Text style={{ fontSize: '16px', fontWeight: '700', color: '#1E293B' }}>{'兴趣标签'}</Text>
-          <View onClick={() => toast('兴趣标签编辑稍后接入')} style={{ display: 'flex', alignItems: 'center', gap: '2px', padding: '2px 4px' }}>
-            <Text style={{ fontSize: '13px', color: '#2563EB', fontWeight: '500' }}>{'编辑'}</Text>
-            <Text style={{ fontSize: '11px', color: '#2563EB' }}>{'›'}</Text>
+      <View className='section-card'>
+        <View className='section-head'>
+          <Text className='section-title'>兴趣标签</Text>
+          <View className='section-edit' onClick={() => toast('兴趣标签编辑稍后接入')}>
+            <Text>编辑 ›</Text>
           </View>
         </View>
-        <View style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '8px' }}>
-          {MY_INTERESTS.map((tag, i) => (
-            <View key={i} style={{ padding: '6px 14px', borderRadius: '20px', backgroundColor: '#F0F9FF', borderWidth: '1px', borderStyle: 'solid', borderColor: '#BAE6FD' }}>
-              <Text style={{ fontSize: '13px', color: '#0369A1' }}>{tag}</Text>
-            </View>
-          ))}
-        </View>
-        {MY_INTERESTS.length === 0 && (
-          <View style={{ padding: '16px 0' }}>
-            <Text style={{ fontSize: '13px', color: '#94A3B8', textAlign: 'center' }}>{'添加兴趣标签，让同学更容易找到你'}</Text>
-          </View>
-        )}
-      </View>
-
-      <View style={{ margin: '8px 12px 0', backgroundColor: '#FFFFFF', borderRadius: '12px', overflow: 'hidden' }}>
-        <View style={{ display: 'flex', flexWrap: 'wrap' }}>
-          {QUICK_ENTRIES.map((entry, i) => (
-            <View key={entry.key} onClick={() => go(entry.url)} style={{ width: '25%', padding: '18px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', borderRight: (i + 1) % 4 === 0 ? 'none' : '1px solid #F1F5F9' }}>
-              <Text style={{ fontSize: '22px' }}>{entry.icon}</Text>
-              <Text style={{ fontSize: '13px', color: '#475569', fontWeight: '500' }}>{entry.label}</Text>
+        <View className='interest-wrap'>
+          {MY_INTERESTS.map((tag) => (
+            <View className='interest-tag' key={tag} onClick={() => goInterestDetail(tag)}>
+              <Text>{tag}</Text>
             </View>
           ))}
         </View>
       </View>
 
-      <View style={{ margin: '8px 12px 24px', backgroundColor: '#FFFFFF', borderRadius: '12px', overflow: 'hidden' }}>
-        <View style={{ display: 'flex', flexDirection: 'row', borderBottom: '1px solid #E2E8F0' }}>
-          {[{ key: 'posts', label: '我的发布' }, { key: 'reviews', label: '收到的评价' }].map(tab => (
-            <View key={tab.key} onClick={() => setActiveTab(tab.key)} style={{ flex: 1, padding: '14px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: activeTab === tab.key ? '2.5px solid #2563EB' : '2px solid transparent' }}>
-              <Text style={{ fontSize: '14px', fontWeight: activeTab === tab.key ? '600' : '400', color: activeTab === tab.key ? '#2563EB' : '#64748B' }}>{tab.label}</Text>
+      <View className='quick-grid-card'>
+        {QUICK_ENTRIES.map((entry) => (
+          <View key={entry.key} className='quick-item' onClick={() => go(entry.url)}>
+            <Text className='quick-icon'>{entry.icon}</Text>
+            <View className='quick-text'>
+              <Text className='quick-label'>{entry.label}</Text>
+              <Text className='quick-desc'>{entry.desc}</Text>
+            </View>
+          </View>
+        ))}
+      </View>
+
+      <View className='content-card'>
+        <View className='tab-row'>
+          {[{ key: 'posts', label: '我的发布' }, { key: 'reviews', label: '收到的评价' }].map((tab) => (
+            <View key={tab.key} className={`tab-item ${activeTab === tab.key ? 'active' : ''}`} onClick={() => setActiveTab(tab.key)}>
+              <Text>{tab.label}</Text>
             </View>
           ))}
         </View>
         {activeTab === 'posts' && (
-          <View style={{ padding: '20px 0' }}>
-            <Text style={{ fontSize: '13px', color: '#94A3B8', textAlign: 'center' }}>{'暂无内容，去发布一条动态吧'}</Text>
-          </View>
-        )}
-        {activeTab === 'reviews' && (
-          <View style={{ padding: '12px 14px' }}>
-            {MY_REVIEWS.map((review, i) => (
-              <View key={review.id} style={{ padding: '12px 0', borderBottom: i < MY_REVIEWS.length - 1 ? '1px solid #F1F5F9' : 'none' }}>
-                <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginBottom: '6px' }}>
-                  <View style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: '#E0E7FF', marginRight: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Text style={{ fontSize: '12px', color: '#4338CA' }}>{review.reviewer.charAt(0)}</Text>
+          <View className='post-list'>
+            {MY_POSTS.length ? (
+              MY_POSTS.slice(0, 2).map((post) => (
+                <View className='post-card' key={post.id} onClick={() => goPostDetail(post.id)}>
+                  <View className='post-title-row'>
+                    <Text className='post-title'>{post.title}</Text>
+                    <Text className='post-time'>{post.time}</Text>
                   </View>
-                  <Text style={{ fontSize: '13px', fontWeight: '500', color: '#1E293B', flex: 1 }}>{review.reviewer}</Text>
-                  <Text style={{ fontSize: '11px', color: '#94A3B8' }}>{review.time}</Text>
+                  <Text className='post-excerpt'>{post.excerpt}</Text>
+                  <View className='post-tags'>
+                    {post.tags.map((tag) => <Text className='post-tag' key={tag}>{tag}</Text>)}
+                  </View>
+                  <View className='post-meta'>
+                    <Text>♡ {post.likes}</Text>
+                    <Text>评论 {post.comments}</Text>
+                  </View>
                 </View>
-                <View style={{ display: 'flex', flexDirection: 'row', gap: '6px', marginBottom: '4px' }}>
-                  {review.tags.map((tag: string, ti: number) => (
-                    <View key={ti} style={{ padding: '2px 8px', borderRadius: '10px', backgroundColor: '#F0FDF4' }}>
-                      <Text style={{ fontSize: '11px', color: '#059669' }}>{tag}</Text>
-                    </View>
-                  ))}
+              ))
+            ) : (
+              <View className='empty-posts'>
+                <Text className='empty-title'>还没有发布内容</Text>
+                <Text className='empty-desc'>分享一个技能、兴趣或活动，让更多同学看到你</Text>
+                <View className='publish-btn' onClick={() => go('/pages/publish/index')}>
+                  <Text>去发布</Text>
                 </View>
-                <Text style={{ fontSize: '13px', color: '#475569', lineHeight: '20px', marginBottom: '4px' }}>{review.content}</Text>
-                <Text style={{ fontSize: '11px', color: '#93C5FD' }}>{'关联技能：' + review.skill}</Text>
-              </View>
-            ))}
-            {MY_REVIEWS.length === 0 && (
-              <View style={{ padding: '16px 0', alignItems: 'center' }}>
-                <Text style={{ fontSize: '13px', color: '#94A3B8', textAlign: 'center' }}>{'暂无评价'}</Text>
               </View>
             )}
           </View>
         )}
+        {activeTab === 'reviews' && (
+          <View className='review-list'>
+            {MY_REVIEWS.map((review) => (
+              <View key={review.id} className='review-card'>
+                <View className='review-head'>
+                  <View className='review-avatar'><Text>{review.reviewer.charAt(0)}</Text></View>
+                  <Text className='reviewer-name'>{review.reviewer}</Text>
+                  <Text className='review-time'>{review.time}</Text>
+                </View>
+                <View className='review-tags'>
+                  {review.tags.map((tag: string) => <Text className='review-tag' key={tag}>{tag}</Text>)}
+                </View>
+                <Text className='review-content'>{review.content}</Text>
+                <Text className='review-skill'>关联技能：{review.skill}</Text>
+              </View>
+            ))}
+          </View>
+        )}
       </View>
-      <View style={{ height: '40px' }} />
+
+      <View className='tabbar-space' />
     </ScrollView>
   )
 }

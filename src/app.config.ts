@@ -26,6 +26,7 @@ export default defineAppConfig({
     'pages/verify/index',
     'pages/skill-detail/index',
     'pages/skill-proof-detail/index',
+    'pages/interest-detail/index',
     'pages/user-detail/index',
   ],
   window: {
