@@ -17,21 +17,61 @@ page {
   align-items: center;
 }
 
-.avatar {
+.avatar-wrap {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  margin-bottom: 10px;
+}
+
+.avatar-wrap:active {
+  transform: scale(0.97);
+}
+
+.avatar,
+.avatar-image {
   width: 72px;
   height: 72px;
   border-radius: 50%;
+}
+
+.avatar {
   background: #2563EB;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.avatar-image {
+  display: block;
+  background: #E2E8F0;
 }
 
 .avatar text {
   font-size: 28px;
   font-weight: 800;
   color: #FFFFFF;
+}
+
+.avatar-edit-tip {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #2563EB;
+  border: 2px solid #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-edit-tip text {
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 800;
 }
 
 .name-row {

@@ -1,9 +1,10 @@
-import { View, Text, ScrollView } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import { View, Text, ScrollView, Image } from '@tarojs/components'
+import Taro, { useDidShow } from '@tarojs/taro'
 import { useState } from 'react'
 import './index.css'
 
 import {
+  AVATAR_STORAGE_KEY,
   MY_PROFILE,
   MY_SKILLS,
   MY_LEARN_WANTS,
@@ -11,6 +12,7 @@ import {
   MY_REVIEWS,
   MY_POSTS,
   SKILL_ID_BY_NAME,
+  SYSTEM_AVATARS,
 } from '../../utils/mock'
 
 const QUICK_ENTRIES = [
@@ -31,9 +33,59 @@ const LEVEL_COLORS: Record<number, { bg: string; text: string; label: string }> 
 export default function Profile() {
   const [activeTab, setActiveTab] = useState('posts')
   const [selectedSkillName, setSelectedSkillName] = useState(MY_SKILLS[0]?.name || '')
+  const [avatarUrl, setAvatarUrl] = useState(MY_PROFILE.avatar || '')
 
   const toast = (msg: string) => Taro.showToast({ title: msg, icon: 'none' })
   const go = (url: string) => Taro.navigateTo({ url })
+  const saveAvatar = (nextAvatar: string) => {
+    if (!nextAvatar) return
+    setAvatarUrl(nextAvatar)
+    Taro.setStorageSync(AVATAR_STORAGE_KEY, nextAvatar)
+  }
+  const updateProfileAvatar = (nextAvatar: string) => {
+    // Reserved for the real backend flow: upload avatar, then call updateProfile.
+    saveAvatar(nextAvatar)
+  }
+  const chooseAvatarImage = (sourceType: 'camera' | 'album') => {
+    const failTitle = sourceType === 'camera' ? '未能获取照片' : '未能选择图片'
+    const onSuccess = (tempFilePath?: string) => {
+      if (tempFilePath) updateProfileAvatar(tempFilePath)
+    }
+
+    if (Taro.chooseMedia) {
+      Taro.chooseMedia({
+        count: 1,
+        mediaType: ['image'],
+        sourceType: [sourceType],
+        success: (res) => onSuccess(res.tempFiles?.[0]?.tempFilePath),
+        fail: (err) => {
+          if (String(err?.errMsg || '').includes('cancel')) return
+          Taro.showToast({ title: failTitle, icon: 'none' })
+        },
+      })
+      return
+    }
+
+    Taro.chooseImage({
+      count: 1,
+      sourceType: [sourceType],
+      success: (res) => onSuccess(res.tempFilePaths?.[0]),
+      fail: (err) => {
+        if (String(err?.errMsg || '').includes('cancel')) return
+        Taro.showToast({ title: failTitle, icon: 'none' })
+      },
+    })
+  }
+  const handleAvatarTap = () => {
+    Taro.showActionSheet({
+      itemList: ['选择系统头像', '拍照', '从照片库选择'],
+      success: (res) => {
+        if (res.tapIndex === 0) go('/pages/avatar-select/index')
+        if (res.tapIndex === 1) chooseAvatarImage('camera')
+        if (res.tapIndex === 2) chooseAvatarImage('album')
+      },
+    })
+  }
   const goSkillDetail = (skillName: string) => {
     setSelectedSkillName(skillName)
     const skillId = SKILL_ID_BY_NAME[skillName] || encodeURIComponent(skillName)
@@ -52,12 +104,30 @@ export default function Profile() {
 
   const p = MY_PROFILE
   const displaySkills = MY_SKILLS.slice(0, 4)
+  const systemAvatar = SYSTEM_AVATARS.find((item) => item.id === avatarUrl)
+
+  useDidShow(() => {
+    const cachedAvatar = Taro.getStorageSync(AVATAR_STORAGE_KEY)
+    setAvatarUrl(cachedAvatar || MY_PROFILE.avatar || '')
+  })
 
   return (
     <ScrollView scrollY className='profile-scroll' showScrollbar={false} enhanced bounces={false}>
       <View className='profile-header'>
-        <View className='avatar'>
-          <Text>{p.name.charAt(0)}</Text>
+        <View className='avatar-wrap' onClick={handleAvatarTap}>
+          {avatarUrl && !systemAvatar ? (
+            <Image className='avatar-image' src={avatarUrl} mode='aspectFill' />
+          ) : (
+            <View
+              className='avatar'
+              style={{
+                backgroundColor: systemAvatar?.bg || '#2563EB',
+              }}
+            >
+              <Text style={{ color: systemAvatar?.color || '#FFFFFF' }}>{systemAvatar?.text || p.name.charAt(0)}</Text>
+            </View>
+          )}
+          <View className='avatar-edit-tip'><Text>换</Text></View>
         </View>
         <View className='name-row'>
           <Text className='profile-name'>{p.name}</Text>

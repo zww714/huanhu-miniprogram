@@ -559,6 +559,28 @@ export const CURRENT_USER = {
   avatar: '',
 }
 
+export const AVATAR_STORAGE_KEY = 'currentUserAvatar'
+
+export type SystemAvatar = {
+  id: string
+  name: string
+  kind: 'text' | 'emoji'
+  text: string
+  bg: string
+  color: string
+}
+
+export const SYSTEM_AVATARS: SystemAvatar[] = [
+  { id: 'system-blue-text', name: '蓝色文字头像', kind: 'text', text: '张', bg: '#2563EB', color: '#FFFFFF' },
+  { id: 'system-green-text', name: '绿色文字头像', kind: 'text', text: '浙', bg: '#10B981', color: '#FFFFFF' },
+  { id: 'system-orange-text', name: '橙色文字头像', kind: 'text', text: '学', bg: '#F97316', color: '#FFFFFF' },
+  { id: 'system-purple-text', name: '紫色文字头像', kind: 'text', text: '研', bg: '#7C3AED', color: '#FFFFFF' },
+  { id: 'system-panda', name: '熊猫头像', kind: 'emoji', text: '🐼', bg: '#F8FAFC', color: '#111827' },
+  { id: 'system-cat', name: '猫咪头像', kind: 'emoji', text: '🐱', bg: '#FFF7ED', color: '#111827' },
+  { id: 'system-robot', name: '机器人头像', kind: 'emoji', text: '🤖', bg: '#EFF6FF', color: '#111827' },
+  { id: 'system-campus', name: '校园风头像', kind: 'emoji', text: '🎓', bg: '#ECFEFF', color: '#111827' },
+]
+
 export const SKILL_PROOFS: SkillProofDetail[] = [
   {
     id: 'proof-ai-research-flow',
