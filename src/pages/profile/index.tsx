@@ -99,7 +99,7 @@ export default function Profile() {
     })
   }
   const goPostDetail = (postId: string) => {
-    Taro.navigateTo({ url: `/pages/post-detail/index?id=${encodeURIComponent(postId)}` })
+    Taro.navigateTo({ url: `/pages/post-detail/index?postId=${encodeURIComponent(postId)}&from=mine` })
   }
 
   const p = MY_PROFILE

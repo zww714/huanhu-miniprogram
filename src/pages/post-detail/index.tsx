@@ -1,7 +1,14 @@
 import { useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { Image, Input, ScrollView, Text, View } from '@tarojs/components'
-import { POST_COMMENTS, type Comment, type CommentReply } from '../../utils/mock'
+import {
+  CURRENT_USER,
+  MOCK_POSTS,
+  MY_POSTS,
+  POST_COMMENTS,
+  type Comment,
+  type CommentReply,
+} from '../../utils/mock'
 import { getPosts } from '../../utils/api'
 import './index.css'
 
@@ -18,6 +25,11 @@ type Post = {
   tags?: string[]
   authorId?: string
   userId?: string
+  visibility?: 'public' | 'private'
+  viewCount?: number
+  collectCount?: number
+  likeCount?: number
+  commentCount?: number
   author?: {
     id?: string
     userId?: string
@@ -39,9 +51,9 @@ type ReplyTarget = {
 }
 
 const currentUser = {
-  userId: '10086',
-  userName: '陈同学',
-  userAvatar: '',
+  userId: CURRENT_USER.id,
+  userName: CURRENT_USER.name,
+  userAvatar: CURRENT_USER.avatar,
 }
 
 const fallbackPost: Post = {
@@ -49,8 +61,8 @@ const fallbackPost: Post = {
   title: '帖子详情',
   content: '暂时没有找到这条帖子，请返回发现页重新打开。',
   tags: ['发现'],
-  authorId: '10086',
-  author: { id: '10086', userId: '10086', name: '陈同学', college: '浙江大学', grade: '在读', avatar: '' },
+  authorId: CURRENT_USER.id,
+  author: { id: CURRENT_USER.id, userId: CURRENT_USER.id, name: CURRENT_USER.name, college: '浙江大学', grade: '在读', avatar: CURRENT_USER.avatar },
   likes: 0,
   comments: 0,
 }
@@ -60,12 +72,19 @@ function getRecordId(post: Post) {
 }
 
 function getAuthor(post: Post) {
-  return post.author || { id: post.authorId || post.userId || '10086', userId: post.authorId || post.userId || '10086', name: '陈同学', college: '浙江大学', grade: '在读', avatar: '' }
+  return post.author || {
+    id: post.authorId || post.userId || CURRENT_USER.id,
+    userId: post.authorId || post.userId || CURRENT_USER.id,
+    name: post.authorId === CURRENT_USER.id ? CURRENT_USER.name : '同学',
+    college: '浙江大学',
+    grade: '在读',
+    avatar: '',
+  }
 }
 
 function getAuthorId(post: Post) {
   const author = getAuthor(post)
-  return author.userId || author.id || post.authorId || post.userId || ''
+  return post.authorId || post.userId || author.userId || author.id || ''
 }
 
 function getUserName(comment: Comment) {
@@ -109,38 +128,67 @@ function Avatar({ name, avatar, onClick }: { name: string; avatar?: string; onCl
 
 export default function PostDetail() {
   const [post, setPost] = useState<Post>(fallbackPost)
+  const [isMissing, setIsMissing] = useState(false)
   const [liked, setLiked] = useState(false)
   const [bookmarked, setBookmarked] = useState(false)
   const [likeCount, setLikeCount] = useState(0)
+  const [visibility, setVisibility] = useState<'public' | 'private'>('public')
   const [comments, setComments] = useState<Comment[]>(POST_COMMENTS)
   const [commentText, setCommentText] = useState('')
   const [replyTarget, setReplyTarget] = useState<ReplyTarget | null>(null)
 
   useLoad(async (options) => {
-    const id = decodeURIComponent(String(options?.id || ''))
+    const id = decodeURIComponent(String(options?.postId || options?.id || ''))
     const pending = Taro.getStorageSync('pendingPost')
+    const editedPosts = Taro.getStorageSync('editedPosts') || {}
+    const localPosts = Taro.getStorageSync('localMinePosts') || []
+
+    const applyPost = (found: Post) => {
+      const nextPost = { ...found, ...(editedPosts[id] || {}) }
+      setPost(nextPost)
+      setLikeCount(Number(nextPost.likeCount ?? nextPost.likes ?? 0))
+      setVisibility(nextPost.visibility || 'public')
+      setIsMissing(false)
+    }
 
     if (pending && (pending.id === id || pending._id === id)) {
-      setPost(pending)
-      setLikeCount(Number(pending.likes || 0))
+      applyPost(pending)
       return
     }
 
     try {
       const posts = await getPosts({ page: 0 })
       const found = posts.find((item: Post) => getRecordId(item) === id)
-      const nextPost = found || fallbackPost
-      setPost(nextPost)
-      setLikeCount(Number(nextPost.likes || 0))
+        || MOCK_POSTS.find((item) => item.id === id)
+        || localPosts.find((item: Post) => getRecordId(item) === id)
+        || MY_POSTS.find((item) => item.id === id)
+
+      if (found) {
+        applyPost(found)
+      } else {
+        setPost(fallbackPost)
+        setLikeCount(0)
+        setIsMissing(true)
+      }
     } catch (e) {
       console.warn('[PostDetail] load post failed', e)
-      setPost(fallbackPost)
-      setLikeCount(0)
+      const found = MOCK_POSTS.find((item) => item.id === id)
+        || localPosts.find((item: Post) => getRecordId(item) === id)
+        || MY_POSTS.find((item) => item.id === id)
+      if (found) {
+        applyPost(found)
+      } else {
+        setPost(fallbackPost)
+        setLikeCount(0)
+        setIsMissing(true)
+      }
     }
   })
 
   const author = getAuthor(post)
   const authorId = getAuthorId(post)
+  const postId = getRecordId(post)
+  const isOwner = !isMissing && authorId === CURRENT_USER.id
   const body = (post.content || post.excerpt || '').split('\n').filter(Boolean)
   const images = post.images?.length ? post.images : isImageCover(post.cover) ? [post.cover!] : []
   const commentTotal = comments.reduce((total, comment) => total + 1 + (comment.replies?.length || 0), 0)
@@ -154,6 +202,53 @@ export default function PostDetail() {
     const query = [`userId=${encodeURIComponent(userId)}`]
     if (name) query.push(`name=${encodeURIComponent(name)}`)
     Taro.navigateTo({ url: `/pages/user-detail/index?${query.join('&')}` })
+  }
+
+  const handleEditPost = () => Taro.navigateTo({ url: `/pages/publish/index?mode=edit&postId=${encodeURIComponent(postId)}` })
+  const handleManagePost = () => Taro.navigateTo({ url: `/pages/post-manage/index?postId=${encodeURIComponent(postId)}` })
+  const handleToggleVisibility = () => {
+    const nextVisibility = visibility === 'public' ? 'private' : 'public'
+    setVisibility(nextVisibility)
+    Taro.showToast({ title: nextVisibility === 'private' ? '已设为私密' : '已设为公开', icon: 'none' })
+  }
+  const handleDeletePost = () => {
+    Taro.showModal({
+      title: '删除帖子',
+      content: '确定要删除这条帖子吗？第一版只会从当前页面状态中移除。',
+      confirmText: '删除',
+      confirmColor: '#EF4444',
+      success: (res) => {
+        if (!res.confirm) return
+        setIsMissing(true)
+        Taro.showToast({ title: '已删除', icon: 'success' })
+        setTimeout(() => Taro.navigateBack(), 600)
+      },
+    })
+  }
+  const handleMore = () => {
+    if (isOwner) {
+      Taro.showActionSheet({
+        itemList: ['编辑帖子', '管理帖子', '删除帖子', visibility === 'public' ? '设为私密' : '设为公开'],
+        success: (res) => {
+          if (res.tapIndex === 0) handleEditPost()
+          if (res.tapIndex === 1) handleManagePost()
+          if (res.tapIndex === 2) handleDeletePost()
+          if (res.tapIndex === 3) handleToggleVisibility()
+        },
+      })
+      return
+    }
+    Taro.showActionSheet({
+      itemList: [bookmarked ? '取消收藏' : '收藏', '举报', '不感兴趣'],
+      success: (res) => {
+        if (res.tapIndex === 0) {
+          setBookmarked(!bookmarked)
+          Taro.showToast({ title: bookmarked ? '已取消收藏' : '已收藏', icon: 'none' })
+        }
+        if (res.tapIndex === 1) Taro.showToast({ title: '举报功能后续接入', icon: 'none' })
+        if (res.tapIndex === 2) Taro.showToast({ title: '已减少推荐', icon: 'none' })
+      },
+    })
   }
 
   const startReply = (comment: Comment) => {
@@ -178,6 +273,10 @@ export default function PostDetail() {
       const nextCount = nextLiked ? getCommentLikes(comment) + 1 : Math.max(0, getCommentLikes(comment) - 1)
       return { ...comment, liked: nextLiked, likeCount: nextCount, likes: nextCount }
     }))
+  }
+
+  const handleContactAuthor = () => {
+    Taro.navigateTo({ url: `/pages/chat/index?id=${encodeURIComponent(authorId)}&name=${encodeURIComponent(author.name)}&category=${encodeURIComponent('帖子交流')}` })
   }
 
   const handleSendComment = () => {
@@ -207,7 +306,7 @@ export default function PostDetail() {
     } else {
       const comment: Comment = {
         id: `local_${Date.now()}`,
-        postId: getRecordId(post),
+        postId,
         userId: currentUser.userId,
         userName: currentUser.userName,
         userAvatar: currentUser.userAvatar,
@@ -228,12 +327,28 @@ export default function PostDetail() {
     Taro.showToast({ title: replyTarget ? '回复成功' : '评论成功', icon: 'success' })
   }
 
+  if (isMissing) {
+    return (
+      <View className='post-page'>
+        <View className='top-nav'>
+          <Text className='back' onClick={handleBack}>‹</Text>
+          <Text className='nav-title'>帖子详情</Text>
+          <Text className='more-action' onClick={handleMore}>•••</Text>
+        </View>
+        <View className='empty-state'>
+          <Text className='empty-title'>暂时没有找到这条帖子</Text>
+          <Text className='empty-desc'>请返回上一页重新打开，或确认帖子 ID 是否存在。</Text>
+        </View>
+      </View>
+    )
+  }
+
   return (
     <View className='post-page'>
       <View className='top-nav'>
         <Text className='back' onClick={handleBack}>‹</Text>
         <Text className='nav-title'>帖子详情</Text>
-        <View className='nav-placeholder' />
+        <Text className='more-action' onClick={handleMore}>•••</Text>
       </View>
 
       <ScrollView scrollY className='post-scroll' showScrollbar={false}>
@@ -246,7 +361,7 @@ export default function PostDetail() {
                   <Text className='author-name' onClick={() => goUser(authorId, author.name)}>{author.name}</Text>
                   {author.verified && <Text className='verified'>✓</Text>}
                 </View>
-                <Text className='author-meta'>{author.college || '浙江大学'} · {author.grade || '在读'}</Text>
+                <Text className='author-meta'>{author.college || '浙江大学'} · {author.grade || '在读'} · {visibility === 'private' ? '私密' : '公开'}</Text>
               </View>
               <Text className='time-text'>{formatTime(post.createdAt)}</Text>
             </View>
@@ -283,7 +398,33 @@ export default function PostDetail() {
                 <Text className={bookmarked ? 'action-icon active-blue' : 'action-icon'}>☆</Text>
                 <Text className={bookmarked ? 'action-text active-blue' : 'action-text'}>收藏</Text>
               </View>
+              {!isOwner && (
+                <>
+                  <View className='action' onClick={handleContactAuthor}>
+                    <Text className='action-icon active-blue'>✉</Text>
+                    <Text className='action-text active-blue'>联系TA</Text>
+                  </View>
+                  <View className='action' onClick={() => Taro.showToast({ title: '举报功能后续接入', icon: 'none' })}>
+                    <Text className='action-icon'>!</Text>
+                    <Text className='action-text'>举报</Text>
+                  </View>
+                </>
+              )}
             </View>
+
+            {isOwner && (
+              <View className='owner-panel'>
+                <View className='owner-copy'>
+                  <Text className='owner-title'>这是你发布的帖子</Text>
+                  <Text className='owner-desc'>可以编辑内容、查看互动数据或调整公开状态。</Text>
+                </View>
+                <View className='owner-buttons'>
+                  <View className='owner-btn primary' onClick={handleEditPost}><Text>编辑帖子</Text></View>
+                  <View className='owner-btn' onClick={handleManagePost}><Text>管理</Text></View>
+                  <View className='owner-btn danger' onClick={handleDeletePost}><Text>删除</Text></View>
+                </View>
+              </View>
+            )}
           </View>
 
           <View className='comment-card'>

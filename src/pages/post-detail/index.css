@@ -24,7 +24,8 @@ page {
 }
 
 .back,
-.nav-placeholder {
+.nav-placeholder,
+.more-action {
   width: 32px;
   height: 32px;
   line-height: 32px;
@@ -33,6 +34,13 @@ page {
 .back {
   font-size: 30px;
   color: #1E293B;
+}
+
+.more-action {
+  text-align: center;
+  color: #334155;
+  font-size: 18px;
+  font-weight: 800;
 }
 
 .nav-title {
@@ -190,7 +198,8 @@ page {
 }
 
 .post-actions {
-  gap: 20px;
+  gap: 16px;
+  flex-wrap: wrap;
   margin-top: 20px;
   padding: 12px 0 2px;
   border-top: 1px solid #E2E8F0;
@@ -200,6 +209,70 @@ page {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+.owner-panel {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+}
+
+.owner-title {
+  display: block;
+  color: #1E293B;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.owner-desc {
+  display: block;
+  margin-top: 3px;
+  color: #64748B;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.owner-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.owner-btn {
+  flex: 1;
+  height: 34px;
+  border-radius: 9px;
+  background: #FFFFFF;
+  border: 1px solid #DBEAFE;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.owner-btn text {
+  color: #2563EB;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.owner-btn.primary {
+  background: #2563EB;
+  border-color: #2563EB;
+}
+
+.owner-btn.primary text {
+  color: #FFFFFF;
+}
+
+.owner-btn.danger {
+  border-color: #FECACA;
+  background: #FEF2F2;
+}
+
+.owner-btn.danger text {
+  color: #EF4444;
 }
 
 .action-icon {
@@ -357,4 +430,28 @@ page {
 
 .send-btn.active text {
   color: #FFFFFF;
+}
+
+.empty-state {
+  margin: 80px 24px 0;
+  padding: 28px 18px;
+  border-radius: 14px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  text-align: center;
+}
+
+.empty-title {
+  display: block;
+  color: #1E293B;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.empty-desc {
+  display: block;
+  margin-top: 8px;
+  color: #64748B;
+  font-size: 13px;
+  line-height: 20px;
 }

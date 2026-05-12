@@ -22,6 +22,7 @@ export default defineAppConfig({
     'pages/my-partners/index',
     'pages/my-favorites/index',
     'pages/post-detail/index',
+    'pages/post-manage/index',
     'pages/publish/index',
     'pages/activity-register/index',
     'pages/verify/index',

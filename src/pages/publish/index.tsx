@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { Image, Input, ScrollView, Text, Textarea, View } from '@tarojs/components'
 import { createActivity, createPost, publishPartnerProfile, publishSkillNeed } from '../../utils/api'
+import { MOCK_POSTS, MY_POSTS } from '../../utils/mock'
 import './index.css'
 
 type PublishMode = 'skill' | 'partner' | 'activity' | 'post'
@@ -50,8 +51,30 @@ export default function Publish() {
   const [postTagInput, setPostTagInput] = useState('')
   const [postImage, setPostImage] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [editPostId, setEditPostId] = useState('')
 
   useLoad((options) => {
+    if (options?.mode === 'edit') {
+      const postId = String(options?.postId || '')
+      const editedPosts = Taro.getStorageSync('editedPosts') || {}
+      const localPosts = Taro.getStorageSync('localMinePosts') || []
+      const found = MOCK_POSTS.find((item) => item.id === postId)
+        || localPosts.find((item: any) => item.id === postId || item._id === postId)
+        || MY_POSTS.find((item) => item.id === postId)
+      const post = found ? { ...found, ...(editedPosts[postId] || {}) } : null
+      setMode('post')
+      setIsEditMode(true)
+      setEditPostId(postId)
+      if (post) {
+        setPostTitle(post.title || '')
+        setPostContent(post.content || post.excerpt || '')
+        setPostCategory(post.mainCategory || '科研')
+        setPostTags(Array.isArray(post.tags) ? post.tags : [])
+        setPostImage(post.images?.[0] || (post.cover && !String(post.cover).startsWith('linear-gradient') ? post.cover : ''))
+      }
+      return
+    }
     if (options?.mode === 'partner' || options?.mode === 'activity' || options?.mode === 'skill' || options?.mode === 'post') {
       setMode(options.mode)
     }
@@ -62,7 +85,7 @@ export default function Publish() {
   const setCurrentName = type === 'can' ? setCanName : setWantName
   const setCurrentDesc = type === 'can' ? setCanDesc : setWantDesc
 
-  const pageTitle = mode === 'partner' ? '发布兴趣搭子' : mode === 'activity' ? '发布活动' : mode === 'post' ? '发布帖子' : '发布技能'
+  const pageTitle = isEditMode ? '编辑帖子' : mode === 'partner' ? '发布兴趣搭子' : mode === 'activity' ? '发布活动' : mode === 'post' ? '发布帖子' : '发布技能'
 
   const publishSkill = async () => {
     if (!currentName.trim()) {
@@ -147,6 +170,25 @@ export default function Publish() {
     }
     if (!postContent.trim()) {
       Taro.showToast({ title: '请输入帖子内容', icon: 'none' })
+      return
+    }
+
+    if (isEditMode) {
+      const editedPosts = Taro.getStorageSync('editedPosts') || {}
+      Taro.setStorageSync('editedPosts', {
+        ...editedPosts,
+        [editPostId]: {
+          title: postTitle.trim(),
+          content: postContent.trim(),
+          excerpt: postContent.trim().slice(0, 80),
+          tags: tags.length ? tags : [postCategory],
+          mainCategory: postCategory,
+          images: postImage ? [postImage] : [],
+          updatedAt: new Date().toISOString(),
+        },
+      })
+      Taro.showToast({ title: '保存成功', icon: 'success' })
+      setTimeout(() => Taro.navigateBack(), 500)
       return
     }
 
@@ -447,7 +489,7 @@ export default function Publish() {
         <Text onClick={() => Taro.navigateBack()} style={{ fontSize: '16px', color: '#64748B' }}>取消</Text>
         <Text style={{ fontSize: '17px', fontWeight: '600', color: '#1E293B' }}>{pageTitle}</Text>
         <Text onClick={handlePublish} style={{ fontSize: '16px', fontWeight: '600', color: submitting ? '#94A3B8' : '#2563EB' }}>
-          {submitting ? '发布中' : '发布'}
+          {submitting ? (isEditMode ? '保存中' : '发布中') : (isEditMode ? '保存' : '发布')}
         </Text>
       </View>
 

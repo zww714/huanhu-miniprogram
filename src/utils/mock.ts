@@ -18,11 +18,16 @@ export interface Post {
   id: string
   title: string
   excerpt: string
+  content?: string
   cover?: string
   categoryTag: string
   mainCategory: string
   tags: string[]
+  authorId?: string
+  userId?: string
   author: {
+    id?: string
+    userId?: string
     name: string
     avatar?: string
     college: string
@@ -30,6 +35,12 @@ export interface Post {
   }
   likes: number
   comments: number
+  likeCount?: number
+  commentCount?: number
+  collectCount?: number
+  viewCount?: number
+  createdAt?: string
+  visibility?: 'public' | 'private'
 }
 
 export interface Activity {
@@ -193,35 +204,41 @@ export const INTEREST_GROUPS = [
 export const MOCK_POSTS: Post[] = [
   {
     id: '1', title: '如何用 Python 高效完成数据分析？',
-    excerpt: '分享我在科研中常用的几个 Python 库，包括 pandas、numpy 和 matplotlib 的使用技巧...',
+    excerpt: '整理了我在课程作业和科研数据处理中常用的分析流程，适合刚开始接触 pandas 的同学。',
+    content: '整理了我在课程作业和科研数据处理中常用的分析流程，适合刚开始接触 pandas 的同学。\n\n主要流程包括：明确问题、清洗数据、建立分析字段、输出可视化结果。常用工具是 pandas、numpy、matplotlib 和 Jupyter Notebook。',
     cover: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', categoryTag: '科研·技能交换', mainCategory: '科研',
-    tags: ['编程', '数据分析'],
-    author: { name: '科研小达人', college: '计算机学院', grade: '研一' },
-    likes: 128, comments: 32,
+    tags: ['Python', '数据分析'],
+    authorId: '10086', userId: '10086',
+    author: { id: '10086', userId: '10086', name: '张三', avatar: '', college: '计算机学院', grade: '研一' },
+    likes: 128, comments: 32, likeCount: 128, commentCount: 32, collectCount: 18, viewCount: 386, createdAt: '2026-05-10T10:00:00+08:00', visibility: 'public',
   },
   {
     id: '2', title: '浙大的春天太美了，求摄影搭子',
     excerpt: '最近樱花和郁金香都开了，想找个喜欢摄影的同学一起扫校园~',
     cover: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', categoryTag: '兴趣·搭子', mainCategory: '兴趣',
     tags: ['摄影', '兴趣搭子'],
-    author: { name: '光影捕手', college: '艺术学院', grade: '大二' },
-    likes: 256, comments: 45,
+    authorId: 'u_photo', userId: 'u_photo',
+    author: { id: 'u_photo', userId: 'u_photo', name: '光影捕手', college: '艺术学院', grade: '大二' },
+    likes: 256, comments: 45, likeCount: 256, commentCount: 45, collectCount: 36, viewCount: 820, createdAt: '2026-05-09T14:20:00+08:00', visibility: 'public',
   },
   {
     id: '3', title: '考研数学复习经验分享',
     excerpt: '从基础到强化，三个月数学一140分的复习路线...',
     cover: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', categoryTag: '升学·经验', mainCategory: '升学',
     tags: ['考研', '数学'],
-    author: { name: '上岸锦鲤', college: '数学学院', grade: '研一' },
-    likes: 512, comments: 89,
+    authorId: 'u_math', userId: 'u_math',
+    author: { id: 'u_math', userId: 'u_math', name: '上岸锦鲤', college: '数学学院', grade: '研一' },
+    likes: 512, comments: 89, likeCount: 512, commentCount: 89, collectCount: 74, viewCount: 1280, createdAt: '2026-05-08T09:30:00+08:00', visibility: 'public',
   },
   {
-    id: '4', title: '求推荐好用的 AI 写作工具',
-    excerpt: '最近在写论文综述，想找一些能辅助文献整理和写作的工具...',
+    id: '4', title: 'AI 工具如何辅助论文写作流程',
+    excerpt: '从文献整理、提纲生成到初稿润色，分享一套适合课程论文和组会汇报的 AI 使用方式。',
+    content: '从文献整理、提纲生成到初稿润色，分享一套适合课程论文和组会汇报的 AI 使用方式。\n\n我一般会先让 AI 帮忙提炼文献摘要，再按主题整理观点，最后用人工检查事实和引用。这个流程不能代替自己思考，但能明显提升初稿整理效率。',
     cover: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', categoryTag: '科研·求助', mainCategory: '科研',
     tags: ['AI', '论文写作'],
-    author: { name: '论文苦手', college: '人文学院', grade: '大三' },
-    likes: 67, comments: 23,
+    authorId: '10086', userId: '10086',
+    author: { id: '10086', userId: '10086', name: '张三', avatar: '', college: '计算机学院', grade: '研一' },
+    likes: 67, comments: 23, likeCount: 67, commentCount: 23, collectCount: 11, viewCount: 214, createdAt: '2026-05-05T20:10:00+08:00', visibility: 'public',
   },
 ]
 
@@ -802,6 +819,8 @@ export const MY_POSTS = [
     tags: ['Python', '数据分析'],
     likes: 128,
     comments: 32,
+    authorId: '10086',
+    visibility: 'public',
     time: '2天前',
   },
   {
@@ -811,6 +830,8 @@ export const MY_POSTS = [
     tags: ['AI', '论文写作'],
     likes: 67,
     comments: 23,
+    authorId: '10086',
+    visibility: 'public',
     time: '1周前',
   },
 ]
