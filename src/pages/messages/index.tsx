@@ -1,14 +1,16 @@
 import { useState } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
-import { CONVERSATIONS } from '../../utils/mock'
+import { CONVERSATIONS, type NotificationType } from '../../utils/mock'
 import { getChatConversations } from '../../utils/api'
+import { getUnreadCounts } from '../../utils/notifications'
 import './index.css'
 
-const NAV_BUTTONS = [
-  { name: '赞和收藏', key: 'likes', color: '#EF4444', icon: '♥', url: '/pages/message-likes/index' },
-  { name: '新增关注', key: 'follows', color: '#10B981', icon: '+', url: '/pages/message-follows/index' },
-  { name: '评论和@', key: 'comments', color: '#3B82F6', icon: '@', url: '/pages/message-comments/index' },
+const NAV_BUTTONS: Array<{ name: string; key: NotificationType; color: string; icon: string }> = [
+  { name: '赞和收藏', key: 'likes', color: '#EF4444', icon: '♥' },
+  { name: '新增关注', key: 'follows', color: '#10B981', icon: '+' },
+  { name: '评论和@', key: 'comments', color: '#3B82F6', icon: '@' },
+  { name: '系统通知', key: 'system', color: '#64748B', icon: 'i' },
 ]
 
 type Conversation = {
@@ -24,7 +26,7 @@ type Conversation = {
 
 function normalizeBaseConversations() {
   return CONVERSATIONS
-    .filter((item) => item.name === '系统通知')
+    .filter((item) => item.name === '系统通知' || item.category === '系统通知')
     .map((item) => ({
       ...item,
       id: String(item.id),
@@ -36,8 +38,11 @@ function normalizeBaseConversations() {
 
 export default function Messages() {
   const [conversations, setConversations] = useState<Conversation[]>([])
+  const [unreadCounts, setUnreadCounts] = useState(getUnreadCounts())
 
   useDidShow(() => {
+    setUnreadCounts(getUnreadCounts())
+
     async function loadConversations() {
       try {
         const cloudConversations = await getChatConversations()
@@ -55,11 +60,13 @@ export default function Messages() {
     loadConversations()
   })
 
-  const navigate = (url: string) => Taro.navigateTo({ url })
+  const navigateNotice = (type: NotificationType) => {
+    Taro.navigateTo({ url: `/pages/notification-list/index?type=${type}` })
+  }
 
   const goChat = (conv: Conversation) => {
     if (conv.name === '系统通知' || conv.category === '系统通知') {
-      Taro.navigateTo({ url: '/pages/message-system/index' })
+      Taro.navigateTo({ url: '/pages/notification-list/index?type=system' })
       return
     }
     setConversations((current) =>
@@ -71,79 +78,55 @@ export default function Messages() {
   }
 
   return (
-    <View style={{ minHeight: '100vh', backgroundColor: '#F8FAFC' }}>
-      <View style={{ backgroundColor: '#FFF', padding: '12px 16px 8px' }}>
-        <Text style={{ fontSize: '22px', fontWeight: '700', color: '#1E293B' }}>消息</Text>
+    <View className='messages-page'>
+      <View className='messages-head'>
+        <Text className='page-title'>消息</Text>
       </View>
 
-      <View style={{ display: 'flex', gap: '8px', padding: '4px 16px 12px', backgroundColor: '#FFF' }}>
-        {NAV_BUTTONS.map((btn) => (
-          <View key={btn.key} onClick={() => navigate(btn.url)}
-            style={{
-              flex: 1, padding: '14px 4px', borderRadius: '12px',
-              display: 'flex', flexDirection: 'column', alignItems: 'center',
-              justifyContent: 'center', gap: '4px',
-              backgroundColor: btn.color + '10',
-              border: '1px solid ' + btn.color + '20',
-            }}
-          >
-            <Text style={{ fontSize: '20px' }}>{btn.icon}</Text>
-            <Text style={{ fontSize: '13px', fontWeight: '500', color: btn.color }}>{btn.name}</Text>
-          </View>
-        ))}
+      <View className='notice-grid'>
+        {NAV_BUTTONS.map((btn) => {
+          const unread = unreadCounts[btn.key]
+          return (
+            <View key={btn.key} className='notice-card' onClick={() => navigateNotice(btn.key)} style={{ backgroundColor: `${btn.color}10`, borderColor: `${btn.color}20` }}>
+              <View className='notice-icon-wrap'>
+                <Text className='notice-icon' style={{ color: btn.color }}>{btn.icon}</Text>
+                {unread > 0 && (
+                  <View className='notice-badge'>
+                    <Text>{unread > 99 ? '99+' : unread}</Text>
+                  </View>
+                )}
+              </View>
+              <Text className='notice-name' style={{ color: btn.color }}>{btn.name}</Text>
+            </View>
+          )
+        })}
       </View>
 
-      <View style={{ height: '8px', backgroundColor: '#F1F5F9' }} />
+      <View className='split-line' />
 
-      <View style={{ padding: '14px 16px 8px', backgroundColor: '#FFF', borderBottom: '1px solid #F1F5F9' }}>
-        <Text style={{ fontSize: '15px', fontWeight: '600', color: '#1E293B' }}>聊天消息</Text>
+      <View className='chat-title-row'>
+        <Text>聊天消息</Text>
       </View>
 
-      <View style={{ backgroundColor: '#FFF' }}>
+      <View className='conversation-list'>
         {conversations.map((conv) => (
-          <View key={conv.id} onClick={() => goChat(conv)}
-            style={{
-              display: 'flex', padding: '12px 16px', gap: '12px', alignItems: 'center',
-              backgroundColor: conv.unread > 0 ? '#F8FAFC' : '#FFF',
-              borderBottom: '1px solid #F1F5F9',
-            }}
-          >
-            <View style={{ position: 'relative', width: '50px', height: '50px', flexShrink: 0 }}>
-              <View style={{
-                width: '50px', height: '50px', borderRadius: '50%',
-                backgroundColor: conv.unread > 0 ? '#2563EB' : '#E2E8F0',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <Text style={{ fontSize: '20px', color: conv.unread > 0 ? '#FFF' : '#64748B' }}>
-                  {(conv.name || '?')[0]}
-                </Text>
+          <View key={conv.id} className={conv.unread > 0 ? 'conversation-item unread' : 'conversation-item'} onClick={() => goChat(conv)}>
+            <View className='conv-avatar-wrap'>
+              <View className={conv.unread > 0 ? 'conv-avatar active' : 'conv-avatar'}>
+                <Text>{(conv.name || '?')[0]}</Text>
               </View>
               {conv.unread > 0 && (
-                <View style={{
-                  position: 'absolute', top: '-2px', right: '-2px',
-                  minWidth: '18px', height: '18px', borderRadius: '9px',
-                  backgroundColor: '#EF4444',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  padding: '0 4px',
-                }}>
-                  <Text style={{ fontSize: '10px', color: '#FFF', fontWeight: '600' }}>
-                    {conv.unread > 99 ? '99+' : conv.unread}
-                  </Text>
+                <View className='chat-badge'>
+                  <Text>{conv.unread > 99 ? '99+' : conv.unread}</Text>
                 </View>
               )}
             </View>
-            <View style={{ flex: 1, minWidth: 0 }}>
-              <View style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Text style={{ fontSize: '15px', fontWeight: conv.unread > 0 ? '600' : '400', color: '#1E293B' }} numberOfLines={1}>
-                  {conv.name}
-                </Text>
-                <Text style={{ fontSize: '11px', color: '#94A3B8', flexShrink: 0, marginLeft: '8px' }}>
-                  {conv.timestamp}
-                </Text>
+            <View className='conv-main'>
+              <View className='conv-head'>
+                <Text className={conv.unread > 0 ? 'conv-name unread' : 'conv-name'} numberOfLines={1}>{conv.name}</Text>
+                <Text className='conv-time'>{conv.timestamp}</Text>
               </View>
-              <Text style={{ fontSize: '13px', color: conv.unread > 0 ? '#475569' : '#94A3B8', marginTop: '4px' }} numberOfLines={1}>
-                {conv.lastMessage}
-              </Text>
+              <Text className={conv.unread > 0 ? 'conv-message unread' : 'conv-message'} numberOfLines={1}>{conv.lastMessage}</Text>
             </View>
           </View>
         ))}

@@ -297,6 +297,43 @@ export const CONVERSATIONS: Conversation[] = [
   { id: '5', name: '化学协会', avatar: '', lastMessage: '本周五化学实验技能培训开始报名啦~', timestamp: '周三', unread: 0, category: '兴趣搭子' },
 ]
 
+export type NotificationType = 'likes' | 'follows' | 'comments' | 'system'
+
+export type AppNotification = {
+  id: string
+  type: NotificationType
+  title: string
+  content: string
+  fromUserId?: string
+  fromUserName?: string
+  fromUserAvatar?: string
+  targetType?: 'post' | 'user' | 'activity' | 'system'
+  targetId?: string
+  targetTitle?: string
+  read: boolean
+  blocked: boolean
+  createdAt: string
+}
+
+export const NOTIFICATIONS_STORAGE_KEY = 'notifications'
+export const BLOCKED_NOTIFICATION_TYPES_KEY = 'blockedNotificationTypes'
+
+export const NOTIFICATIONS: AppNotification[] = [
+  { id: 'like-1', type: 'likes', title: '收到新的点赞', content: '科研小达人赞了你的发布', fromUserId: 'u_research', fromUserName: '科研小达人', fromUserAvatar: '', targetType: 'post', targetId: '1', targetTitle: '如何用 Python 高效完成数据分析？', read: false, blocked: false, createdAt: '刚刚' },
+  { id: 'like-2', type: 'likes', title: '技能被收藏', content: '光影捕手收藏了你的 AI工具 技能', fromUserId: 'u_photo', fromUserName: '光影捕手', fromUserAvatar: '', targetType: 'user', targetId: 'u_photo', targetTitle: 'AI工具', read: true, blocked: false, createdAt: '12分钟前' },
+  { id: 'like-3', type: 'likes', title: '收到新的收藏', content: '上岸锦鲤收藏了你的发布', fromUserId: 'u_math', fromUserName: '上岸锦鲤', fromUserAvatar: '', targetType: 'post', targetId: '4', targetTitle: 'AI 工具如何辅助论文写作流程', read: false, blocked: false, createdAt: '昨天' },
+  { id: 'follow-1', type: 'follows', title: '新增关注', content: '林晓晓关注了你', fromUserId: '3', fromUserName: '林晓晓', fromUserAvatar: '', targetType: 'user', targetId: '3', targetTitle: '林晓晓', read: false, blocked: false, createdAt: '刚刚' },
+  { id: 'follow-2', type: 'follows', title: '新增关注', content: '周明远关注了你', fromUserId: '4', fromUserName: '周明远', fromUserAvatar: '', targetType: 'user', targetId: '4', targetTitle: '周明远', read: true, blocked: false, createdAt: '2小时前' },
+  { id: 'follow-3', type: 'follows', title: '新增关注', content: '吴悦然关注了你', fromUserId: '5', fromUserName: '吴悦然', fromUserAvatar: '', targetType: 'user', targetId: '5', targetTitle: '吴悦然', read: false, blocked: false, createdAt: '昨天' },
+  { id: 'comment-1', type: 'comments', title: '新的评论', content: '代码小白评论了你的帖子：我也在用，确实节省很多时间。', fromUserId: 'u_code', fromUserName: '代码小白', fromUserAvatar: '', targetType: 'post', targetId: '4', targetTitle: 'AI 工具如何辅助论文写作流程', read: false, blocked: false, createdAt: '30分钟前' },
+  { id: 'comment-2', type: 'comments', title: '@了你', content: '材料人在评论中 @ 了你，想了解材料科学方向 prompt。', fromUserId: 'u_material', fromUserName: '材料人', fromUserAvatar: '', targetType: 'post', targetId: '4', targetTitle: 'AI 工具如何辅助论文写作流程', read: true, blocked: false, createdAt: '1小时前' },
+  { id: 'comment-3', type: 'comments', title: '新的回复', content: '研机达人回复了你的评论。', fromUserId: 'u_research', fromUserName: '研机达人', fromUserAvatar: '', targetType: 'post', targetId: '1', targetTitle: '如何用 Python 高效完成数据分析？', read: false, blocked: false, createdAt: '昨天' },
+  { id: 'comment-4', type: 'comments', title: '新的评论', content: '光影捕手评论了你的摄影兴趣。', fromUserId: 'u_photo', fromUserName: '光影捕手', fromUserAvatar: '', targetType: 'user', targetId: 'u_photo', targetTitle: '光影捕手', read: true, blocked: false, createdAt: '2天前' },
+  { id: 'system-1', type: 'system', title: '技能收藏提醒', content: '你的技能「Python编程」已被 3 位同学收藏，可以完善技能说明提升匹配率。', fromUserId: '', fromUserName: '系统通知', fromUserAvatar: '', targetType: 'user', targetId: '10086', targetTitle: '我的技能', read: false, blocked: false, createdAt: '昨天 18:20' },
+  { id: 'system-2', type: 'system', title: '活动报名提醒', content: '本周五化学实验技能培训开始报名啦，感兴趣的话可以去活动页查看。', fromUserId: '', fromUserName: '系统通知', fromUserAvatar: '', targetType: 'activity', targetId: 'a1', targetTitle: '化学实验技能培训', read: true, blocked: false, createdAt: '周三 09:15' },
+  { id: 'system-3', type: 'system', title: '资料完善建议', content: '补充一句话个人介绍后，同学在发现页和兴趣搭子页能更快了解你。', fromUserId: '', fromUserName: '系统通知', fromUserAvatar: '', targetType: 'user', targetId: '10086', targetTitle: '编辑资料', read: false, blocked: false, createdAt: '周一 12:00' },
+]
+
 // ========== POST DETAIL ==========
 export const POST_DETAIL = {
   id: '1', title: '如何用 OpenClaw 搞科研？',

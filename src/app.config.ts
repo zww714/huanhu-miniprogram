@@ -4,6 +4,7 @@ export default defineAppConfig({
     'pages/login/index',
     'pages/discover/index',
     'pages/messages/index',
+    'pages/notification-list/index',
     'pages/message-likes/index',
     'pages/message-follows/index',
     'pages/message-comments/index',
