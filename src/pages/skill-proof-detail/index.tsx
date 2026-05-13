@@ -63,7 +63,7 @@ export default function SkillProofDetailPage() {
   const handleContact = () => {
     if (!proof) return
     Taro.navigateTo({
-      url: `/pages/chat/index?id=${encodeURIComponent(proof.userId)}&skillId=${encodeURIComponent(proof.skillId)}&proofId=${encodeURIComponent(proof.id)}&name=${encodeURIComponent(proof.submitterName)}&category=${encodeURIComponent(proof.relatedSkill)}`,
+      url: `/pages/contact-request/index?userId=${encodeURIComponent(proof.userId)}&skillId=${encodeURIComponent(proof.skillId)}&proofId=${encodeURIComponent(proof.id)}&name=${encodeURIComponent(proof.submitterName)}&category=${encodeURIComponent(proof.relatedSkill)}&source=skill-proof`,
     })
   }
 

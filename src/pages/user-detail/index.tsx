@@ -245,7 +245,9 @@ export default function UserDetail() {
     Taro.navigateTo({ url: `/pages/skill-detail/index?userId=${encodeURIComponent(detailUser.id)}&skillId=${encodeURIComponent(skillId)}` })
   }
   const goChat = () => {
-    Taro.navigateTo({ url: `/pages/chat/index?id=${encodeURIComponent(detailUser.id)}&name=${encodeURIComponent(detailUser.name)}&category=${encodeURIComponent('个人主页')}` })
+    Taro.navigateTo({
+      url: `/pages/contact-request/index?userId=${encodeURIComponent(detailUser.id)}&name=${encodeURIComponent(detailUser.name)}&category=${encodeURIComponent('个人主页')}&source=user-detail`,
+    })
   }
 
   useDidShow(() => {

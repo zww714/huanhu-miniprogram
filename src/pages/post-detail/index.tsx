@@ -276,7 +276,9 @@ export default function PostDetail() {
   }
 
   const handleContactAuthor = () => {
-    Taro.navigateTo({ url: `/pages/chat/index?id=${encodeURIComponent(authorId)}&name=${encodeURIComponent(author.name)}&category=${encodeURIComponent('帖子交流')}` })
+    Taro.navigateTo({
+      url: `/pages/contact-request/index?userId=${encodeURIComponent(authorId)}&name=${encodeURIComponent(author.name)}&category=${encodeURIComponent('帖子交流')}&postId=${encodeURIComponent(postId)}&source=post-detail`,
+    })
   }
 
   const handleSendComment = () => {

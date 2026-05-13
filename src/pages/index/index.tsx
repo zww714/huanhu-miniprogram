@@ -240,8 +240,9 @@ export default function Index() {
 
   const handleStartChat = (user: SkillUser | PartnerUser) => {
     const id = getRecordId(user) || encodeURIComponent(user.name)
+    const category = activeTab === 1 ? '兴趣搭子' : '技能交换'
     Taro.navigateTo({
-      url: `/pages/chat/index?id=${encodeURIComponent(id)}&name=${encodeURIComponent(user.name)}&category=${encodeURIComponent(activeTab === 1 ? '兴趣搭子' : '技能交换')}`,
+      url: `/pages/contact-request/index?userId=${encodeURIComponent(id)}&name=${encodeURIComponent(user.name)}&category=${encodeURIComponent(category)}&source=home`,
     })
   }
   const handlePublish = () => {

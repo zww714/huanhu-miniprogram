@@ -25,11 +25,22 @@ export default function SkillDetailPage() {
   })
 
   const skill: SkillDetail | undefined = useMemo(() => {
-    return SKILLS_DETAIL.find((item) => {
+    const exact = SKILLS_DETAIL.find((item) => {
       const matchesSkill = item.id === skillId
       const matchesUser = !userId || item.userId === userId
       return matchesSkill && matchesUser
     })
+    if (exact) return exact
+
+    const template = SKILLS_DETAIL.find((item) => item.id === skillId)
+    if (!template || !userId) return template
+
+    return {
+      ...template,
+      userId,
+      verified: false,
+      proofs: [],
+    }
   }, [skillId, userId])
 
   const handleBack = () => Taro.navigateBack()
@@ -37,7 +48,7 @@ export default function SkillDetailPage() {
   const handleContact = () => {
     if (!skill) return
     Taro.navigateTo({
-      url: `/pages/chat/index?id=${encodeURIComponent(skill.userId)}&skillId=${encodeURIComponent(skill.id)}&name=${encodeURIComponent('TA')}&category=${encodeURIComponent(skill.name)}`,
+      url: `/pages/contact-request/index?userId=${encodeURIComponent(skill.userId)}&skillId=${encodeURIComponent(skill.id)}&name=${encodeURIComponent('TA')}&category=${encodeURIComponent(skill.name)}&source=skill-detail`,
     })
   }
   const handleProofClick = (proof: SkillProof) => {

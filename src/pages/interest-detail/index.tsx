@@ -15,7 +15,9 @@ export default function InterestDetail() {
 
   const handleBack = () => Taro.navigateBack()
   const goPost = (postId: string) => Taro.navigateTo({ url: `/pages/post-detail/index?id=${encodeURIComponent(postId)}` })
-  const goChat = (id: string, name: string) => Taro.navigateTo({ url: `/pages/chat/index?id=${encodeURIComponent(id)}&name=${encodeURIComponent(name)}&category=${encodeURIComponent(interestName || '兴趣搭子')}` })
+  const goChat = (id: string, name: string) => Taro.navigateTo({
+    url: `/pages/contact-request/index?userId=${encodeURIComponent(id)}&name=${encodeURIComponent(name)}&category=${encodeURIComponent(interestName || '兴趣搭子')}&source=interest-detail`,
+  })
 
   if (!detail) {
     return (
