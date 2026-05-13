@@ -347,7 +347,7 @@ export default function Index() {
         </View>
       </View>
 
-      <View style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <View style={{ padding: '0 16px 88px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {!filteredSkillUsers.length && renderEmpty('暂无匹配的技能用户')}
         {filteredSkillUsers.map((user) => (
           <View
@@ -429,7 +429,7 @@ export default function Index() {
         <Text style={{ display: 'block', fontSize: '15px', fontWeight: '800', color: '#1E293B' }}>找到同频搭子</Text>
         <Text style={{ display: 'block', marginTop: '4px', fontSize: '12px', lineHeight: '18px', color: '#64748B' }}>按兴趣快速筛选，一起约拍、运动、桌游或参加校园活动。</Text>
       </View>
-      <View style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <View style={{ padding: '0 16px 88px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {!filteredPartners.length && renderEmpty('暂无匹配的兴趣搭子')}
         {filteredPartners.map((user) => (
           <View key={getRecordId(user) || user.name} style={{ backgroundColor: '#FFF', borderRadius: '14px', padding: '16px', border: '1px solid #E2E8F0' }}>
@@ -475,7 +475,7 @@ export default function Index() {
   const renderActivities = () => (
     <View>
       {renderFilter(ACTIVITY_CATEGORIES, activityCategory, setActivityCategory, { marginBottom: '8px' })}
-      <View style={{ padding: '0 16px 128px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      <View style={{ padding: '0 16px 88px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
         {!filteredActivities.length && renderEmpty('暂无匹配的社区活动')}
         {filteredActivities.map((activity) => {
           const isFull = activity.participants >= (activity.maxParticipants || 999)
@@ -562,10 +562,9 @@ export default function Index() {
         {activeTab === 0 && renderSkillExchange()}
         {activeTab === 1 && renderInterestPartners()}
         {activeTab === 2 && renderActivities()}
-        <View style={{ height: '112px' }} />
       </ScrollView>
 
-      <View onClick={handlePublish} style={{ position: 'fixed', bottom: '116px', right: '24px', width: '56px', height: '56px', borderRadius: '50%', backgroundColor: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 12px 24px rgba(37,99,235,0.28)', zIndex: 100 }}>
+      <View onClick={handlePublish} style={{ position: 'fixed', bottom: '84px', right: '24px', width: '56px', height: '56px', borderRadius: '50%', backgroundColor: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 12px 24px rgba(37,99,235,0.28)', zIndex: 100 }}>
         <Text style={{ fontSize: '28px', color: '#FFF', lineHeight: '28px' }}>+</Text>
       </View>
     </View>

@@ -279,5 +279,5 @@ page {
 }
 
 .bottom-space {
-  height: calc(72px + env(safe-area-inset-bottom));
+  height: calc(24px + env(safe-area-inset-bottom));
 }

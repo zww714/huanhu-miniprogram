@@ -494,7 +494,7 @@ export default function Publish() {
       </View>
 
       <ScrollView scrollY style={{ height: 'calc(100vh - 52px)' }}>
-        <View style={{ padding: '16px', paddingBottom: '100px' }}>
+        <View style={{ padding: '16px', paddingBottom: '32px' }}>
           {mode === 'skill' && renderSkillForm()}
           {mode === 'partner' && renderPartnerForm()}
           {mode === 'activity' && renderActivityForm()}

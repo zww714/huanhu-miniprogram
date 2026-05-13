@@ -176,7 +176,7 @@ export default function Discover() {
         </ScrollView>
       </View>
 
-      <View style={{ padding: '0 16px 136px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      <View style={{ padding: '0 16px 96px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
         {!filtered.length && (
           <View style={{ padding: '40px 0', textAlign: 'center' }}>
             <Text style={{ fontSize: '13px', color: '#94A3B8' }}>{loading ? '正在加载帖子...' : '暂无帖子'}</Text>
@@ -277,7 +277,7 @@ export default function Discover() {
 
       <View onClick={handlePublish}
         style={{
-          position: 'fixed', right: '20px', bottom: '116px', width: '52px', height: '52px',
+          position: 'fixed', right: '20px', bottom: '84px', width: '52px', height: '52px',
           borderRadius: '50%', backgroundColor: '#2563EB', display: 'flex', alignItems: 'center',
           justifyContent: 'center', border: '1px solid #2563EB', zIndex: 100,
           boxShadow: '0 12px 24px rgba(37,99,235,0.28)'

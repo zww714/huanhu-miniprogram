@@ -665,5 +665,5 @@ page {
 }
 
 .tabbar-space {
-  height: calc(92px + env(safe-area-inset-bottom));
+  height: calc(32px + env(safe-area-inset-bottom));
 }

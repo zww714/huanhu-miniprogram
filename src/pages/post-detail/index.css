@@ -54,7 +54,7 @@ page {
 }
 
 .page-body {
-  padding: 16px 16px 118px;
+  padding: 16px 16px calc(76px + env(safe-area-inset-bottom, 0px));
 }
 
 .post-card,

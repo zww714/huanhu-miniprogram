@@ -313,7 +313,7 @@ page {
 }
 
 .bottom-space {
-  height: 92px;
+  height: calc(78px + env(safe-area-inset-bottom, 0px));
 }
 
 .bottom-bar {
@@ -321,7 +321,7 @@ page {
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 10px 16px 24px;
+  padding: 10px 16px calc(12px + env(safe-area-inset-bottom, 0px));
   background: rgba(255, 255, 255, 0.96);
   border-top: 1px solid #E2E8F0;
 }
