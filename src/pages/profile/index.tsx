@@ -16,10 +16,10 @@ import {
 } from '../../utils/mock'
 
 const QUICK_ENTRIES = [
-  { key: 'partners', icon: '🤝', label: '我的搭子', desc: '3 个', url: '/pages/my-partners/index' },
-  { key: 'activities', icon: '🏃', label: '我的活动', desc: '2 个', url: '/pages/my-activities/index' },
-  { key: 'favorites', icon: '⭐', label: '我的收藏', desc: '5 条', url: '/pages/my-favorites/index' },
-  { key: 'settings', icon: '⚙️', label: '设置', desc: '账号与隐私', url: '/pages/settings/index' },
+  { key: 'partners', icon: '搭', label: '我的搭子', desc: '3 个', url: '/pages/my-partners/index' },
+  { key: 'activities', icon: '活', label: '我的活动', desc: '2 个', url: '/pages/my-activities/index' },
+  { key: 'favorites', icon: '藏', label: '我的收藏', desc: '5 条', url: '/pages/my-favorites/index' },
+  { key: 'settings', icon: '设', label: '设置', desc: '账号与隐私', url: '/pages/settings/index' },
 ]
 
 const LEVEL_COLORS: Record<number, { bg: string; text: string; label: string }> = {
@@ -101,6 +101,9 @@ export default function Profile() {
   const goPostDetail = (postId: string) => {
     Taro.navigateTo({ url: `/pages/post-detail/index?postId=${encodeURIComponent(postId)}&from=mine` })
   }
+  const goPostManage = (postId: string) => {
+    Taro.navigateTo({ url: `/pages/post-manage/index?postId=${encodeURIComponent(postId)}` })
+  }
 
   const p = MY_PROFILE
   const displaySkills = MY_SKILLS.slice(0, 4)
@@ -178,7 +181,7 @@ export default function Profile() {
                   <Text className='skill-name'>{skill.name}</Text>
                   <Text className='skill-desc'>{skill.desc}</Text>
                 </View>
-                {selected && <Text className='skill-more'>查看详情 ›</Text>}
+                <Text className='skill-more'>查看详情 ›</Text>
               </View>
             )
           })}
@@ -253,9 +256,14 @@ export default function Profile() {
                   <View className='post-tags'>
                     {post.tags.map((tag) => <Text className='post-tag' key={tag}>{tag}</Text>)}
                   </View>
-                  <View className='post-meta'>
-                    <Text>♡ {post.likes}</Text>
-                    <Text>评论 {post.comments}</Text>
+                  <View className='post-meta-row'>
+                    <View className='post-meta'>
+                      <Text>♡ {post.likes}</Text>
+                      <Text>评论 {post.comments}</Text>
+                    </View>
+                    <View className='post-manage-btn' onClick={(event) => { event.stopPropagation(); goPostManage(post.id) }}>
+                      <Text>管理</Text>
+                    </View>
                   </View>
                 </View>
               ))

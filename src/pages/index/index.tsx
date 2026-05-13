@@ -383,27 +383,37 @@ export default function Index() {
             <View style={{ marginTop: '10px' }}>
               <Text style={{ fontSize: '12px', color: '#2563EB', fontWeight: '500', marginBottom: '4px' }}>我会</Text>
               <View style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                {userSkills(user).slice(0, 4).map((skill) => (
+                {userSkills(user).slice(0, 3).map((skill) => (
                   <View key={skill.name} style={{ display: 'flex', alignItems: 'center', gap: '2px', backgroundColor: '#F0FDF4', borderRadius: '100px', padding: '3px 10px' }}>
                     <Text style={{ fontSize: '12px', color: '#10B981' }}>{skill.name}</Text>
                     {renderStars(skill.level)}
                   </View>
                 ))}
+                {userSkills(user).length > 3 && (
+                  <View style={{ backgroundColor: '#EEF2FF', borderRadius: '100px', padding: '3px 10px' }}>
+                    <Text style={{ fontSize: '12px', color: '#2563EB', fontWeight: '600' }}>+{userSkills(user).length - 3}</Text>
+                  </View>
+                )}
               </View>
             </View>
 
             <View style={{ marginTop: '8px' }}>
               <Text style={{ fontSize: '12px', color: '#EA580C', fontWeight: '500', marginBottom: '4px' }}>想学</Text>
               <View style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                {userWants(user).slice(0, 4).map((want) => (
+                {userWants(user).slice(0, 3).map((want) => (
                   <View key={want} style={{ backgroundColor: '#FFF7ED', borderRadius: '100px', padding: '3px 10px' }}>
                     <Text style={{ fontSize: '12px', color: '#EA580C' }}>{want}</Text>
                   </View>
                 ))}
+                {userWants(user).length > 3 && (
+                  <View style={{ backgroundColor: '#FFF7ED', borderRadius: '100px', padding: '3px 10px' }}>
+                    <Text style={{ fontSize: '12px', color: '#EA580C', fontWeight: '600' }}>+{userWants(user).length - 3}</Text>
+                  </View>
+                )}
               </View>
             </View>
 
-            <View onClick={() => handleStartChat(user)} style={{ marginTop: '12px', padding: '8px 0', backgroundColor: '#2563EB', borderRadius: '8px', textAlign: 'center' }}>
+            <View onClick={() => handleStartChat(user)} style={{ marginTop: '12px', marginLeft: 'auto', width: '112px', padding: '8px 0', backgroundColor: '#2563EB', borderRadius: '999px', textAlign: 'center' }}>
               <Text style={{ fontSize: '14px', color: '#FFF', fontWeight: '500' }}>发起联系</Text>
             </View>
           </View>
@@ -415,6 +425,10 @@ export default function Index() {
   const renderInterestPartners = () => (
     <View>
       {renderFilter(PARTNER_CATEGORIES, partnerCategory, setPartnerCategory, { marginTop: '4px', marginBottom: '4px' })}
+      <View style={{ margin: '0 16px 12px', padding: '14px 16px', borderRadius: '16px', background: 'linear-gradient(135deg, #EFF6FF 0%, #FFFFFF 100%)', border: '1px solid #DBEAFE', boxShadow: '0 8px 20px rgba(37,99,235,0.06)' }}>
+        <Text style={{ display: 'block', fontSize: '15px', fontWeight: '800', color: '#1E293B' }}>找到同频搭子</Text>
+        <Text style={{ display: 'block', marginTop: '4px', fontSize: '12px', lineHeight: '18px', color: '#64748B' }}>按兴趣快速筛选，一起约拍、运动、桌游或参加校园活动。</Text>
+      </View>
       <View style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {!filteredPartners.length && renderEmpty('暂无匹配的兴趣搭子')}
         {filteredPartners.map((user) => (
@@ -461,7 +475,7 @@ export default function Index() {
   const renderActivities = () => (
     <View>
       {renderFilter(ACTIVITY_CATEGORIES, activityCategory, setActivityCategory, { marginBottom: '8px' })}
-      <View style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      <View style={{ padding: '0 16px 128px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
         {!filteredActivities.length && renderEmpty('暂无匹配的社区活动')}
         {filteredActivities.map((activity) => {
           const isFull = activity.participants >= (activity.maxParticipants || 999)
@@ -548,9 +562,10 @@ export default function Index() {
         {activeTab === 0 && renderSkillExchange()}
         {activeTab === 1 && renderInterestPartners()}
         {activeTab === 2 && renderActivities()}
+        <View style={{ height: '112px' }} />
       </ScrollView>
 
-      <View onClick={handlePublish} style={{ position: 'fixed', bottom: '100px', right: '24px', width: '56px', height: '56px', borderRadius: '50%', backgroundColor: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 14px rgba(37,99,235,0.4)', zIndex: 100 }}>
+      <View onClick={handlePublish} style={{ position: 'fixed', bottom: '116px', right: '24px', width: '56px', height: '56px', borderRadius: '50%', backgroundColor: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 12px 24px rgba(37,99,235,0.28)', zIndex: 100 }}>
         <Text style={{ fontSize: '28px', color: '#FFF', lineHeight: '28px' }}>+</Text>
       </View>
     </View>

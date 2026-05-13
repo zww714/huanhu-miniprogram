@@ -14,17 +14,37 @@ import {
 import './index.css'
 
 const validTypes: NotificationType[] = ['likes', 'follows', 'comments', 'system']
+const filters = [
+  { key: 'all', label: '全部' },
+  { key: 'unread', label: '未读' },
+  { key: 'read', label: '已读' },
+] as const
 
-function Avatar({ name, avatar }: { name?: string; avatar?: string }) {
+type FilterKey = (typeof filters)[number]['key']
+
+const typeMeta: Record<NotificationType, { icon: string; color: string; bg: string }> = {
+  likes: { icon: '♥', color: '#EF4444', bg: '#FEF2F2' },
+  follows: { icon: '+', color: '#0F9F6E', bg: '#ECFDF5' },
+  comments: { icon: '@', color: '#2563EB', bg: '#EFF6FF' },
+  system: { icon: 'i', color: '#7C3AED', bg: '#F5F3FF' },
+}
+
+function NoticeAvatar({ item, title }: { item: AppNotification; title: string }) {
+  const meta = typeMeta[item.type]
   return (
-    <View className='notice-avatar'>
-      {avatar ? <Image className='avatar-img' src={avatar} mode='aspectFill' /> : <Text>{(name || '系').charAt(0)}</Text>}
+    <View className='notice-avatar' style={{ backgroundColor: meta.bg }}>
+      {item.fromUserAvatar ? (
+        <Image className='avatar-img' src={item.fromUserAvatar} mode='aspectFill' />
+      ) : (
+        <Text style={{ color: meta.color }}>{item.type === 'system' ? meta.icon : (item.fromUserName || title).charAt(0)}</Text>
+      )}
     </View>
   )
 }
 
 export default function NotificationList() {
   const [type, setType] = useState<NotificationType>('likes')
+  const [filter, setFilter] = useState<FilterKey>('all')
   const [items, setItems] = useState<AppNotification[]>([])
   const [blocked, setBlocked] = useState(false)
 
@@ -44,12 +64,18 @@ export default function NotificationList() {
 
   const unreadCount = items.filter((item) => !item.read).length
   const title = notificationTitles[type]
+  const visibleItems = items.filter((item) => {
+    if (filter === 'unread') return !item.read
+    if (filter === 'read') return item.read
+    return true
+  })
 
   const handleBack = () => Taro.navigateBack()
   const markOne = (item: AppNotification, read: boolean) => {
     updateNotification(item.id, { read })
     refresh()
   }
+
   const deleteOne = (item: AppNotification) => {
     Taro.showModal({
       title: '删除通知',
@@ -64,6 +90,7 @@ export default function NotificationList() {
       },
     })
   }
+
   const blockType = () => {
     Taro.showModal({
       title: '屏蔽通知',
@@ -78,6 +105,7 @@ export default function NotificationList() {
       },
     })
   }
+
   const handleMore = (item: AppNotification) => {
     Taro.showActionSheet({
       itemList: [item.read ? '标为未读' : '标为已读', '删除通知', '屏蔽此类通知'],
@@ -88,11 +116,13 @@ export default function NotificationList() {
       },
     })
   }
+
   const handleAllRead = () => {
     markTypeRead(type)
     refresh()
     Taro.showToast({ title: '已全部标为已读', icon: 'success' })
   }
+
   const handleNoticeTap = (item: AppNotification) => {
     if (!item.read) updateNotification(item.id, { read: true })
     if (item.targetType === 'post' && item.targetId) {
@@ -121,9 +151,14 @@ export default function NotificationList() {
       </View>
 
       <View className='notice-summary'>
-        <View>
-          <Text className='summary-title'>{title}</Text>
-          <Text className='summary-desc'>{blocked ? '已屏蔽此类通知' : `未读 ${unreadCount} 条`}</Text>
+        <View className='summary-left'>
+          <View className='summary-icon' style={{ backgroundColor: typeMeta[type].bg }}>
+            <Text style={{ color: typeMeta[type].color }}>{typeMeta[type].icon}</Text>
+          </View>
+          <View>
+            <Text className='summary-title'>{title}</Text>
+            <Text className='summary-desc'>{blocked ? '已屏蔽此类通知' : `未读 ${unreadCount} 条`}</Text>
+          </View>
         </View>
         {!blocked && items.length > 0 && (
           <View className='read-all-btn' onClick={handleAllRead}>
@@ -132,19 +167,29 @@ export default function NotificationList() {
         )}
       </View>
 
+      {!blocked && (
+        <View className='filter-tabs'>
+          {filters.map((item) => (
+            <View key={item.key} className={`filter-tab ${filter === item.key ? 'active' : ''}`} onClick={() => setFilter(item.key)}>
+              <Text>{item.label}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+
       <ScrollView scrollY className='notice-scroll' showScrollbar={false}>
         {blocked ? (
           <View className='empty-card'>
             <Text className='empty-title'>已屏蔽此类通知</Text>
             <Text className='empty-desc'>后续可以在通知设置页重新开启。</Text>
           </View>
-        ) : items.length ? (
+        ) : visibleItems.length ? (
           <View className='notice-list'>
-            {items.map((item) => (
+            {visibleItems.map((item) => (
               <View className={item.read ? 'notice-item' : 'notice-item unread'} key={item.id}>
                 {!item.read && <View className='unread-dot' />}
                 <View className='notice-body' onClick={() => handleNoticeTap(item)}>
-                  <Avatar name={item.fromUserName || title} avatar={item.fromUserAvatar} />
+                  <NoticeAvatar item={item} title={title} />
                   <View className='notice-main'>
                     <View className='notice-title-row'>
                       <Text className={item.read ? 'notice-title' : 'notice-title unread'}>{item.title}</Text>
@@ -154,7 +199,9 @@ export default function NotificationList() {
                     {!!item.targetTitle && <Text className='notice-target'>{item.targetTitle}</Text>}
                   </View>
                 </View>
-                <Text className='notice-more' onClick={() => handleMore(item)}>•••</Text>
+                <View className='notice-more' onClick={() => handleMore(item)}>
+                  <Text>•••</Text>
+                </View>
               </View>
             ))}
           </View>
