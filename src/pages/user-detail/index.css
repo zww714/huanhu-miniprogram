@@ -91,7 +91,16 @@ page {
   height: 80px;
   border-radius: 50%;
   flex: 0 0 80px;
-  background: linear-gradient(145deg, #e8edf7 0%, #dfe5f1 100%);
+  background: linear-gradient(145deg, #2563EB 0%, #60A5FA 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-text {
+  color: #ffffff;
+  font-size: 28px;
+  font-weight: 900;
 }
 
 .profile-main {
@@ -455,6 +464,11 @@ page {
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #9aa4b5;
+  font-size: 13px;
+}
+
+.empty-inline {
   color: #9aa4b5;
   font-size: 13px;
 }
