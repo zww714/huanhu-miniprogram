@@ -108,6 +108,10 @@ export default function Profile() {
   const p = MY_PROFILE
   const displaySkills = MY_SKILLS.slice(0, 4)
   const systemAvatar = SYSTEM_AVATARS.find((item) => item.id === avatarUrl)
+  const reviewAverage = MY_REVIEWS.length
+    ? (MY_REVIEWS.reduce((sum, review) => sum + review.rating, 0) / MY_REVIEWS.length).toFixed(1)
+    : '0.0'
+  const reviewTags = Array.from(new Set(MY_REVIEWS.flatMap((review) => review.tags))).slice(0, 5)
 
   useDidShow(() => {
     const cachedAvatar = Taro.getStorageSync(AVATAR_STORAGE_KEY)
@@ -280,18 +284,36 @@ export default function Profile() {
         )}
         {activeTab === 'reviews' && (
           <View className='review-list'>
+            <View className='review-overview'>
+              <View className='review-score-block'>
+                <Text className='review-score'>{reviewAverage}</Text>
+                <Text className='review-score-label'>综合评分</Text>
+              </View>
+              <View className='review-summary'>
+                <Text className='review-summary-title'>收到 {MY_REVIEWS.length} 条评价</Text>
+                <Text className='review-summary-desc'>这些评价来自你完成的技能交换、活动搭子或学习互助。</Text>
+                <View className='review-common-tags'>
+                  {reviewTags.map((tag) => <Text className='review-common-tag' key={tag}>{tag}</Text>)}
+                </View>
+              </View>
+            </View>
             {MY_REVIEWS.map((review) => (
               <View key={review.id} className='review-card'>
                 <View className='review-head'>
-                  <View className='review-avatar'><Text>{review.reviewer.charAt(0)}</Text></View>
-                  <Text className='reviewer-name'>{review.reviewer}</Text>
-                  <Text className='review-time'>{review.time}</Text>
+                  <View className='review-avatar'><Text>{review.reviewerName.charAt(0)}</Text></View>
+                  <View className='reviewer-main'>
+                    <Text className='reviewer-name'>{review.reviewerName}</Text>
+                    <Text className='review-time'>{review.createdAt}</Text>
+                  </View>
+                  <Text className='review-rating'>★ {review.rating}</Text>
                 </View>
                 <View className='review-tags'>
                   {review.tags.map((tag: string) => <Text className='review-tag' key={tag}>{tag}</Text>)}
                 </View>
                 <Text className='review-content'>{review.content}</Text>
-                <Text className='review-skill'>关联技能：{review.skill}</Text>
+                <Text className='review-skill'>
+                  {review.relatedType === 'activity' ? '关联活动' : review.relatedType === 'partner' ? '关联搭子' : '关联技能'}：{review.relatedTitle}
+                </Text>
               </View>
             ))}
           </View>

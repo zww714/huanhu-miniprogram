@@ -21,7 +21,10 @@ export function getBlockedNotificationTypes(): NotificationType[] {
 
 export function getNotifications(): AppNotification[] {
   const saved = Taro.getStorageSync(NOTIFICATIONS_STORAGE_KEY)
-  if (Array.isArray(saved) && saved.length) return saved
+  if (Array.isArray(saved) && saved.length) {
+    const hasLegacyCommentTarget = saved.some((item) => item.type === 'comments' && item.targetType !== 'post')
+    if (!hasLegacyCommentTarget) return saved
+  }
   Taro.setStorageSync(NOTIFICATIONS_STORAGE_KEY, NOTIFICATIONS)
   return NOTIFICATIONS
 }

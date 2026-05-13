@@ -412,7 +412,7 @@ export const NOTIFICATIONS: AppNotification[] = [
   { id: 'comment-1', type: 'comments', title: '新的评论', content: '代码小白评论了你的帖子：我也在用，确实节省很多时间。', fromUserId: 'u_code', fromUserName: '代码小白', fromUserAvatar: '', targetType: 'post', targetId: '4', targetTitle: 'AI 工具如何辅助论文写作流程', read: false, blocked: false, createdAt: '30分钟前' },
   { id: 'comment-2', type: 'comments', title: '@了你', content: '材料人在评论中 @ 了你，想了解材料科学方向 prompt。', fromUserId: 'u_material', fromUserName: '材料人', fromUserAvatar: '', targetType: 'post', targetId: '4', targetTitle: 'AI 工具如何辅助论文写作流程', read: true, blocked: false, createdAt: '1小时前' },
   { id: 'comment-3', type: 'comments', title: '新的回复', content: '研机达人回复了你的评论。', fromUserId: 'u_research', fromUserName: '研机达人', fromUserAvatar: '', targetType: 'post', targetId: '1', targetTitle: '如何用 Python 高效完成数据分析？', read: false, blocked: false, createdAt: '昨天' },
-  { id: 'comment-4', type: 'comments', title: '新的评论', content: '光影捕手评论了你的摄影兴趣。', fromUserId: 'u_photo', fromUserName: '光影捕手', fromUserAvatar: '', targetType: 'user', targetId: 'u_photo', targetTitle: '光影捕手', read: true, blocked: false, createdAt: '2天前' },
+  { id: 'comment-4', type: 'comments', title: '新的评论', content: '光影捕手评论了你的帖子：下次可以一起拍校园活动。', fromUserId: 'u_photo', fromUserName: '光影捕手', fromUserAvatar: '', targetType: 'post', targetId: '2', targetTitle: '浙大的春天太美了，求摄影搭子', read: true, blocked: false, createdAt: '2天前' },
   { id: 'system-1', type: 'system', title: '技能收藏提醒', content: '你的技能「Python编程」已被 3 位同学收藏，可以完善技能说明提升匹配率。', fromUserId: '', fromUserName: '系统通知', fromUserAvatar: '', targetType: 'user', targetId: '10086', targetTitle: '我的技能', read: false, blocked: false, createdAt: '昨天 18:20' },
   { id: 'system-2', type: 'system', title: '活动报名提醒', content: '本周五化学实验技能培训开始报名啦，感兴趣的话可以去活动页查看。', fromUserId: '', fromUserName: '系统通知', fromUserAvatar: '', targetType: 'activity', targetId: 'a1', targetTitle: '化学实验技能培训', read: true, blocked: false, createdAt: '周三 09:15' },
   { id: 'system-3', type: 'system', title: '资料完善建议', content: '补充一句话个人介绍后，同学在发现页和兴趣搭子页能更快了解你。', fromUserId: '', fromUserName: '系统通知', fromUserAvatar: '', targetType: 'user', targetId: '10086', targetTitle: '编辑资料', read: false, blocked: false, createdAt: '周一 12:00' },
@@ -1030,27 +1030,69 @@ export const INTEREST_DETAILS: Record<string, {
 }
 
 // ========== MY REVIEWS ==========
-export const MY_REVIEWS = [
+export type UserReview = {
+  id: string
+  reviewerId: string
+  reviewerName: string
+  reviewerAvatar: string
+  rating: number
+  tags: string[]
+  content: string
+  relatedType: 'skill' | 'activity' | 'partner'
+  relatedId: string
+  relatedTitle: string
+  createdAt: string
+}
+
+export const MY_REVIEWS: UserReview[] = [
   {
-    id: 'r1', reviewer: '王同学', reviewerAvatar: '',
+    id: 'r1',
+    reviewerId: 'u_review_1',
+    reviewerName: '王同学',
+    reviewerAvatar: '',
     rating: 5, tags: ['认真', '准时', '讲得清楚'],
     content: 'Python 讲得很清楚，案例也很实用，帮我解决了数据分析的大问题。',
-    skill: 'Python 编程',
-    time: '3天前',
+    relatedType: 'skill',
+    relatedId: 'skill_python',
+    relatedTitle: 'Python 编程',
+    createdAt: '3天前',
   },
   {
-    id: 'r2', reviewer: '李学姐', reviewerAvatar: '',
+    id: 'r2',
+    reviewerId: 'u_review_2',
+    reviewerName: '李学姐',
+    reviewerAvatar: '',
     rating: 5, tags: ['有耐心', '专业'],
     content: 'AI工具的使用心得分享非常详细，学到了很多实用技巧。',
-    skill: 'AI工具',
-    time: '1周前',
+    relatedType: 'skill',
+    relatedId: 'skill_ai',
+    relatedTitle: 'AI工具',
+    createdAt: '1周前',
   },
   {
-    id: 'r3', reviewer: '材料人', reviewerAvatar: '',
-    rating: 4, tags: ['及时'],
-    content: '帮我解答了Python数据分析的问题，回复很及时。',
-    skill: 'Python 编程',
-    time: '2周前',
+    id: 'r3',
+    reviewerId: 'u_review_3',
+    reviewerName: '材料人',
+    reviewerAvatar: '',
+    rating: 4.5, tags: ['及时', '沟通顺畅'],
+    content: '一起整理课程项目数据时很靠谱，能把步骤说明清楚，也会提醒容易出错的地方。',
+    relatedType: 'partner',
+    relatedId: 'partner_data_1',
+    relatedTitle: '数据分析学习互助',
+    createdAt: '2周前',
+  },
+  {
+    id: 'r4',
+    reviewerId: 'u_review_4',
+    reviewerName: '羽毛球搭子',
+    reviewerAvatar: '',
+    rating: 4.8,
+    tags: ['准时', '友好'],
+    content: '活动组织得很顺利，时间地点沟通清楚，体验很好。',
+    relatedType: 'activity',
+    relatedId: 'activity_badminton_1',
+    relatedTitle: '周末羽毛球活动',
+    createdAt: '1个月前',
   },
 ]
 

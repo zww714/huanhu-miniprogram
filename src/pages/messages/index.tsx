@@ -6,11 +6,11 @@ import { getChatConversations } from '../../utils/api'
 import { getUnreadCounts } from '../../utils/notifications'
 import './index.css'
 
-const NAV_BUTTONS: Array<{ name: string; key: NotificationType; color: string; icon: string }> = [
-  { name: '赞和收藏', key: 'likes', color: '#EF4444', icon: '♥' },
-  { name: '新增关注', key: 'follows', color: '#10B981', icon: '+' },
-  { name: '评论和@', key: 'comments', color: '#3B82F6', icon: '@' },
-  { name: '系统通知', key: 'system', color: '#64748B', icon: 'i' },
+const NAV_BUTTONS: Array<{ name: string; desc: string; key: NotificationType; color: string; icon: string }> = [
+  { name: '赞和收藏', desc: '查看点赞与收藏提醒', key: 'likes', color: '#EF4444', icon: '♥' },
+  { name: '新增关注', desc: '查看关注你的同学', key: 'follows', color: '#10B981', icon: '+' },
+  { name: '评论和@', desc: '查看帖子评论、回复和提及你的互动', key: 'comments', color: '#3B82F6', icon: '@' },
+  { name: '系统通知', desc: '查看平台和账号消息', key: 'system', color: '#64748B', icon: 'i' },
 ]
 
 type Conversation = {
@@ -97,6 +97,7 @@ export default function Messages() {
                 )}
               </View>
               <Text className='notice-name' style={{ color: btn.color }}>{btn.name}</Text>
+              <Text className='notice-desc'>{btn.desc}</Text>
             </View>
           )
         })}
