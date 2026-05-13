@@ -9,6 +9,7 @@ import {
   markTypeRead,
   notificationTitles,
   removeNotification,
+  updateMessageTabUnread,
   updateNotification,
 } from '../../utils/notifications'
 import './index.css'
@@ -51,6 +52,7 @@ export default function NotificationList() {
   const refresh = (nextType = type) => {
     setBlocked(getBlockedNotificationTypes().includes(nextType))
     setItems(getVisibleNotifications(nextType))
+    updateMessageTabUnread()
   }
 
   useLoad((options) => {

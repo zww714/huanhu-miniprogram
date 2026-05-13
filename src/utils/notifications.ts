@@ -14,6 +14,8 @@ export const notificationTitles: Record<NotificationType, string> = {
   system: '系统通知',
 }
 
+const MESSAGE_TAB_INDEX = 2
+
 export function getBlockedNotificationTypes(): NotificationType[] {
   const blocked = Taro.getStorageSync(BLOCKED_NOTIFICATION_TYPES_KEY)
   return Array.isArray(blocked) ? blocked : []
@@ -56,15 +58,40 @@ export function getUnreadCounts() {
   return counts
 }
 
+export function getNotificationUnreadTotal() {
+  const counts = getUnreadCounts()
+  return Object.values(counts).reduce((sum, count) => sum + count, 0)
+}
+
+export function updateMessageTabUnread(extraUnread = 0) {
+  const total = getNotificationUnreadTotal() + Math.max(0, extraUnread)
+  try {
+    if (total > 0) {
+      Taro.setTabBarBadge({
+        index: MESSAGE_TAB_INDEX,
+        text: total > 99 ? '99+' : String(total),
+      })
+      return total
+    }
+    Taro.removeTabBarBadge({ index: MESSAGE_TAB_INDEX })
+    Taro.hideTabBarRedDot({ index: MESSAGE_TAB_INDEX })
+    return 0
+  } catch (e) {
+    return total
+  }
+}
+
 export function updateNotification(id: string, patch: Partial<AppNotification>) {
   const next = getNotifications().map((item) => item.id === id ? { ...item, ...patch } : item)
   saveNotifications(next)
+  updateMessageTabUnread()
   return next
 }
 
 export function removeNotification(id: string) {
   const next = getNotifications().filter((item) => item.id !== id)
   saveNotifications(next)
+  updateMessageTabUnread()
   return next
 }
 
@@ -73,6 +100,17 @@ export function markTypeRead(type: NotificationType) {
     item.type === type && !item.blocked ? { ...item, read: true } : item
   ))
   saveNotifications(next)
+  updateMessageTabUnread()
+  return next
+}
+
+export function markAllNotificationsRead() {
+  const blockedTypes = getBlockedNotificationTypes()
+  const next = getNotifications().map((item) => (
+    !item.blocked && !blockedTypes.includes(item.type) ? { ...item, read: true } : item
+  ))
+  saveNotifications(next)
+  updateMessageTabUnread()
   return next
 }
 
@@ -81,5 +119,6 @@ export function blockNotificationType(type: NotificationType) {
   Taro.setStorageSync(BLOCKED_NOTIFICATION_TYPES_KEY, blocked)
   const next = getNotifications().map((item) => item.type === type ? { ...item, blocked: true } : item)
   saveNotifications(next)
+  updateMessageTabUnread()
   return next
 }

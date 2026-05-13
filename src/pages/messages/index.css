@@ -20,6 +20,60 @@ page {
   color: #1E293B;
 }
 
+.unread-summary {
+  margin: 0 16px 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.04);
+}
+
+.unread-summary.active {
+  background: #EFF6FF;
+  border-color: #BFDBFE;
+}
+
+.unread-title {
+  display: block;
+  color: #1E293B;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.unread-desc {
+  display: block;
+  margin-top: 3px;
+  color: #64748B;
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.unread-action {
+  flex-shrink: 0;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: #2563EB;
+}
+
+.unread-action text {
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.unread-action.disabled {
+  background: #F1F5F9;
+}
+
+.unread-action.disabled text {
+  color: #94A3B8;
+}
+
 .notice-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
