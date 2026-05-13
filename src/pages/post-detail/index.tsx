@@ -213,8 +213,8 @@ export default function PostDetail() {
   }
   const handleDeletePost = () => {
     Taro.showModal({
-      title: '删除帖子',
-      content: '确定要删除这条帖子吗？第一版只会从当前页面状态中移除。',
+      title: '确认删除',
+      content: '删除后将无法恢复，确定要删除这条帖子吗？',
       confirmText: '删除',
       confirmColor: '#EF4444',
       success: (res) => {
@@ -228,12 +228,12 @@ export default function PostDetail() {
   const handleMore = () => {
     if (isOwner) {
       Taro.showActionSheet({
-        itemList: ['编辑帖子', '管理帖子', '删除帖子', visibility === 'public' ? '设为私密' : '设为公开'],
+        itemList: ['编辑帖子', '帖子管理', visibility === 'public' ? '设为私密' : '设为公开', '删除帖子'],
         success: (res) => {
           if (res.tapIndex === 0) handleEditPost()
           if (res.tapIndex === 1) handleManagePost()
-          if (res.tapIndex === 2) handleDeletePost()
-          if (res.tapIndex === 3) handleToggleVisibility()
+          if (res.tapIndex === 2) handleToggleVisibility()
+          if (res.tapIndex === 3) handleDeletePost()
         },
       })
       return
@@ -413,16 +413,12 @@ export default function PostDetail() {
             </View>
 
             {isOwner && (
-              <View className='owner-panel'>
+              <View className='owner-panel' onClick={handleManagePost}>
                 <View className='owner-copy'>
-                  <Text className='owner-title'>这是你发布的帖子</Text>
-                  <Text className='owner-desc'>可以编辑内容、查看互动数据或调整公开状态。</Text>
+                  <Text className='owner-title'>作者工具</Text>
+                  <Text className='owner-desc'>这是你发布的帖子，可查看互动数据、编辑内容或调整公开状态。</Text>
                 </View>
-                <View className='owner-buttons'>
-                  <View className='owner-btn primary' onClick={handleEditPost}><Text>编辑帖子</Text></View>
-                  <View className='owner-btn' onClick={handleManagePost}><Text>管理</Text></View>
-                  <View className='owner-btn danger' onClick={handleDeletePost}><Text>删除</Text></View>
-                </View>
+                <Text className='owner-link'>进入管理 ›</Text>
               </View>
             )}
           </View>

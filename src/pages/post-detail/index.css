@@ -213,16 +213,19 @@ page {
 
 .owner-panel {
   margin-top: 14px;
-  padding: 12px;
+  padding: 11px 12px;
   border-radius: 12px;
   background: #EFF6FF;
   border: 1px solid #BFDBFE;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .owner-title {
   display: block;
-  color: #1E293B;
-  font-size: 14px;
+  color: #2563EB;
+  font-size: 13px;
   font-weight: 800;
 }
 
@@ -234,45 +237,16 @@ page {
   line-height: 18px;
 }
 
-.owner-buttons {
-  display: flex;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-.owner-btn {
+.owner-copy {
   flex: 1;
-  height: 34px;
-  border-radius: 9px;
-  background: #FFFFFF;
-  border: 1px solid #DBEAFE;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  min-width: 0;
 }
 
-.owner-btn text {
+.owner-link {
+  flex-shrink: 0;
   color: #2563EB;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 800;
-}
-
-.owner-btn.primary {
-  background: #2563EB;
-  border-color: #2563EB;
-}
-
-.owner-btn.primary text {
-  color: #FFFFFF;
-}
-
-.owner-btn.danger {
-  border-color: #FECACA;
-  background: #FEF2F2;
-}
-
-.owner-btn.danger text {
-  color: #EF4444;
 }
 
 .action-icon {
