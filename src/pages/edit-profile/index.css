@@ -1,16 +1,23 @@
+/* postcss-pxtransform disable */
+
 page {
-  background-color: #F8FAFC;
+  background-color: #F5F8FC;
 }
 
 .edit-page {
   min-height: 100vh;
-  padding: 16px 16px calc(24px + env(safe-area-inset-bottom));
-  background: #F8FAFC;
+  padding: 16px 14px calc(28px + env(safe-area-inset-bottom));
+  background: #F5F8FC;
   box-sizing: border-box;
 }
 
 .form-field {
-  margin-bottom: 16px;
+  margin-bottom: 14px;
+  padding: 14px;
+  border-radius: 16px;
+  background: #FFFFFF;
+  border: 1px solid #EEF2F7;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.04);
 }
 
 .field-label {
@@ -40,7 +47,7 @@ page {
   margin-top: 8px;
   width: 100%;
   box-sizing: border-box;
-  background: #FFFFFF;
+  background: #F8FAFC;
   border: 1px solid #E2E8F0;
   border-radius: 12px;
 }
@@ -69,7 +76,7 @@ page {
 .gender-option {
   height: 40px;
   border-radius: 999px;
-  background: #FFFFFF;
+  background: #F8FAFC;
   border: 1px solid #E2E8F0;
   display: flex;
   align-items: center;
@@ -102,11 +109,17 @@ page {
 }
 
 .save-btn {
-  margin-top: 24px;
+  margin: 22px 0 0;
   height: 46px;
   border-radius: 14px;
   background: #2563EB;
   color: #FFFFFF;
   font-size: 15px;
   font-weight: 800;
+  line-height: 46px;
+  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.22);
+}
+
+.save-btn::after {
+  border: 0;
 }
