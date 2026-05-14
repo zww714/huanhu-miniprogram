@@ -957,6 +957,8 @@ export const MY_PROFILE = {
   school: '浙江大学',
   college: '计算机学院',
   grade: '研一',
+  gender: 'private' as 'male' | 'female' | 'private',
+  campus: '紫金港',
   bio: '擅长 Python 和数据分析，想找摄影搭子',
   stats: { skills: 5, posts: 12, followers: 86, following: 42 },
 }

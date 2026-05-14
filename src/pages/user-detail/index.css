@@ -155,6 +155,19 @@ page {
   margin-top: 4px;
 }
 
+.gender-badge {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 6px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #EFF6FF;
+  color: #2563EB;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 800;
+}
+
 .stat-row {
   padding: 22px 24px 0;
   display: flex;

@@ -46,6 +46,8 @@ type DetailUser = {
   verified: boolean
   school: string
   major: string
+  gender?: 'male' | 'female' | 'private'
+  campus?: string
   bio: string
   stats: Array<{ label: string; value: number; key: string }>
   skillChips: Array<{ name: string; level: number; featured?: boolean }>
@@ -53,6 +55,23 @@ type DetailUser = {
   interests: string[]
   reviews: Array<{ id: string; reviewerName: string; rating?: number; tags: string[]; content: string; relatedTitle?: string; createdAt: string }>
   isSelf: boolean
+}
+
+function getMyProfileDraft() {
+  const draft = Taro.getStorageSync('profileDraft')
+  if (!draft || typeof draft !== 'object') return MY_PROFILE
+  return {
+    ...MY_PROFILE,
+    ...draft,
+    name: draft.nickname || draft.name || MY_PROFILE.name,
+    bio: draft.intro || draft.bio || MY_PROFILE.bio,
+  }
+}
+
+function getGenderText(gender?: string) {
+  if (gender === 'male') return '男'
+  if (gender === 'female') return '女'
+  return ''
 }
 
 function getPostId(post: ProfilePost) {
@@ -97,14 +116,17 @@ function normalizeReviews(source: any) {
 }
 
 function buildCurrentUser(): DetailUser {
+  const profile = getMyProfileDraft()
   return {
     id: CURRENT_USER.id,
-    name: MY_PROFILE.name,
+    name: profile.name,
     verified: true,
-    school: MY_PROFILE.school,
-    major: `${MY_PROFILE.college} · ${MY_PROFILE.grade}`,
-    bio: MY_PROFILE.bio,
-    stats: getStats(MY_PROFILE.stats, 0),
+    school: profile.school,
+    major: `${profile.college} · ${profile.grade}${profile.campus ? ` · ${profile.campus}` : ''}`,
+    gender: profile.gender,
+    campus: profile.campus,
+    bio: profile.bio,
+    stats: getStats(profile.stats, 0),
     skillChips: MY_SKILLS.slice(0, 4).map((skill, index) => ({
       name: skill.name,
       level: skill.level,
@@ -295,6 +317,7 @@ export default function UserDetail() {
             {detailUser.verified && <Text className='verify-text'>已认证</Text>}
           </View>
           <Text className='school-line'>{detailUser.school} · {detailUser.major}</Text>
+          {!!getGenderText(detailUser.gender) && <Text className='gender-badge'>{getGenderText(detailUser.gender)}</Text>}
           <Text className='bio'>{detailUser.bio}</Text>
         </View>
       </View>

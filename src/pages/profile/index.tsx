@@ -34,6 +34,7 @@ export default function Profile() {
   const [activeTab, setActiveTab] = useState('posts')
   const [selectedSkillName, setSelectedSkillName] = useState(MY_SKILLS[0]?.name || '')
   const [avatarUrl, setAvatarUrl] = useState(MY_PROFILE.avatar || '')
+  const [profileData, setProfileData] = useState(MY_PROFILE)
 
   const toast = (msg: string) => Taro.showToast({ title: msg, icon: 'none' })
   const go = (url: string) => Taro.navigateTo({ url })
@@ -105,7 +106,7 @@ export default function Profile() {
     Taro.navigateTo({ url: `/pages/post-manage/index?postId=${encodeURIComponent(postId)}` })
   }
 
-  const p = MY_PROFILE
+  const p = profileData
   const displaySkills = MY_SKILLS.slice(0, 4)
   const systemAvatar = SYSTEM_AVATARS.find((item) => item.id === avatarUrl)
   const reviewAverage = MY_REVIEWS.length
@@ -115,6 +116,17 @@ export default function Profile() {
 
   useDidShow(() => {
     const cachedAvatar = Taro.getStorageSync(AVATAR_STORAGE_KEY)
+    const profileDraft = Taro.getStorageSync('profileDraft')
+    if (profileDraft && typeof profileDraft === 'object') {
+      setProfileData({
+        ...MY_PROFILE,
+        ...profileDraft,
+        name: profileDraft.nickname || profileDraft.name || MY_PROFILE.name,
+        bio: profileDraft.intro || profileDraft.bio || MY_PROFILE.bio,
+      })
+    } else {
+      setProfileData(MY_PROFILE)
+    }
     setAvatarUrl(cachedAvatar || MY_PROFILE.avatar || '')
   })
 
@@ -140,7 +152,7 @@ export default function Profile() {
           <Text className='profile-name'>{p.name}</Text>
           <View className='verify-dot'><Text>✓</Text></View>
         </View>
-        <Text className='profile-meta'>{p.school} · {p.college} · {p.grade}</Text>
+        <Text className='profile-meta'>{p.school} · {p.college} · {p.grade}{p.campus ? ` · ${p.campus}` : ''}</Text>
         <Text className='profile-bio'>{p.bio}</Text>
         <View className='edit-profile-btn' onClick={() => go('/pages/edit-profile/index')}>
           <Text>编辑资料</Text>
