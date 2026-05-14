@@ -1,0 +1,9 @@
+{
+  "name": "getComments",
+  "version": "1.0.0",
+  "description": "获取帖子评论",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

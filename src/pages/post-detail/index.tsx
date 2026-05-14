@@ -9,7 +9,7 @@ import {
   type Comment,
   type CommentReply,
 } from '../../utils/mock'
-import { deletePost, getPostDetail, getPosts, updatePost } from '../../utils/api'
+import { deletePost, getPostDetail, getPosts, updatePost, getComments, addComment, replyComment, deleteComment as apiDeleteComment } from '../../utils/api'
 import { openUnifiedUserProfile } from '../../utils/publicProfiles'
 import './index.css'
 
@@ -185,6 +185,19 @@ export default function PostDetail() {
         setIsMissing(true)
       }
     }
+
+    // Load comments from cloud
+    if (id) {
+      getComments({ postId: id })
+        .then((cloudComments) => {
+          if (Array.isArray(cloudComments)) {
+            setComments(cloudComments)
+          }
+        })
+        .catch((e) => {
+          console.warn('[PostDetail] getComments failed, using mock', e)
+        })
+    }
   })
 
   const author = getAuthor(post)
@@ -289,52 +302,105 @@ export default function PostDetail() {
     })
   }
 
-  const handleSendComment = () => {
+  const handleSendComment = async () => {
     const text = commentText.trim()
     if (!text) {
       Taro.showToast({ title: '请输入内容', icon: 'none' })
       return
     }
 
-    if (replyTarget) {
-      const reply: CommentReply = {
-        id: `reply_${Date.now()}`,
-        commentId: replyTarget.commentId,
-        userId: currentUser.userId,
-        userName: currentUser.userName,
-        userAvatar: currentUser.userAvatar,
-        replyToUserId: replyTarget.userId,
-        replyToUserName: replyTarget.userName,
-        content: text,
-        createdAt: '刚刚',
+    try {
+      if (replyTarget) {
+        await replyComment({
+          postId,
+          parentId: replyTarget.commentId,
+          replyToUserId: replyTarget.userId,
+          content: text,
+        })
+      } else {
+        await addComment({ postId, content: text })
       }
-      setComments((current) => current.map((comment) => (
-        comment.id === replyTarget.commentId
-          ? { ...comment, replies: [...(comment.replies || []), reply] }
-          : comment
-      )))
-    } else {
-      const comment: Comment = {
-        id: `local_${Date.now()}`,
-        postId,
-        userId: currentUser.userId,
-        userName: currentUser.userName,
-        userAvatar: currentUser.userAvatar,
-        author: { name: currentUser.userName, avatar: currentUser.userAvatar },
-        content: text,
-        time: '刚刚',
-        createdAt: '刚刚',
-        likes: 0,
-        likeCount: 0,
-        liked: false,
-        replies: [],
+
+      setCommentText('')
+      setReplyTarget(null)
+      Taro.showToast({ title: '发送成功', icon: 'success' })
+
+      // Refresh comments
+      getComments({ postId }).then((cloudComments) => {
+        if (Array.isArray(cloudComments)) setComments(cloudComments)
+      }).catch(() => {})
+    } catch (e) {
+      console.warn('[PostDetail] send comment cloud failed, fallback local', e)
+      Taro.showToast({ title: '网络异常，已保存本地', icon: 'none' })
+
+      if (replyTarget) {
+        const reply: CommentReply = {
+          id: `reply_${Date.now()}`,
+          commentId: replyTarget.commentId,
+          userId: currentUser.userId,
+          userName: currentUser.userName,
+          userAvatar: currentUser.userAvatar,
+          replyToUserId: replyTarget.userId,
+          replyToUserName: replyTarget.userName,
+          content: text,
+          createdAt: '刚刚',
+        }
+        setComments((current) => current.map((comment) => (
+          comment.id === replyTarget.commentId
+            ? { ...comment, replies: [...(comment.replies || []), reply] }
+            : comment
+        )))
+      } else {
+        const comment: Comment = {
+          id: `local_${Date.now()}`,
+          postId,
+          userId: currentUser.userId,
+          userName: currentUser.userName,
+          userAvatar: currentUser.userAvatar,
+          author: { name: currentUser.userName, avatar: currentUser.userAvatar },
+          content: text,
+          time: '刚刚',
+          createdAt: '刚刚',
+          likes: 0,
+          likeCount: 0,
+          liked: false,
+          canDelete: true,
+          replies: [],
+        }
+        setComments((current) => [comment, ...current])
       }
-      setComments((current) => [comment, ...current])
+
+      setCommentText('')
+      setReplyTarget(null)
+    }
+  }
+
+  const handleDeleteComment = (comment: Comment) => {
+    const commentId = comment.id || comment._id || ''
+    if (!commentId) {
+      Taro.showToast({ title: '评论不存在', icon: 'none' })
+      return
     }
 
-    setCommentText('')
-    setReplyTarget(null)
-    Taro.showToast({ title: replyTarget ? '回复成功' : '评论成功', icon: 'success' })
+    Taro.showModal({
+      title: '确认删除',
+      content: '确定要删除这条评论吗？',
+      confirmText: '删除',
+      confirmColor: '#EF4444',
+      success: (res) => {
+        if (!res.confirm) return
+        apiDeleteComment({ commentId })
+          .then((result) => {
+            Taro.showToast({ title: '已删除', icon: 'success' })
+            // Remove from local state
+            setComments((current) => current.filter((c) => c.id !== commentId && c._id !== commentId))
+          })
+          .catch((e) => {
+            console.warn('[PostDetail] delete comment failed', e)
+            Taro.showToast({ title: '删除失败', icon: 'none' })
+          })
+      },
+    })
   }
 
   if (isMissing) {
@@ -436,6 +502,11 @@ export default function PostDetail() {
           <View className='comment-card'>
             <Text className='comment-title'>评论 ({commentTotal})</Text>
 
+            {!comments.length && (
+              <View className='comments-empty'>
+                <Text className='comments-empty-text'>暂时还没有评论，来发表第一条评论吧</Text>
+              </View>
+            )}
             {comments.map((comment) => {
               const userName = getUserName(comment)
               return (
@@ -450,6 +521,9 @@ export default function PostDetail() {
                     <View className='comment-actions'>
                       <Text className={comment.liked ? 'comment-like active-red' : 'comment-like'} onClick={() => handleCommentLike(comment.id)}>赞 {getCommentLikes(comment)}</Text>
                       <Text className='reply-btn' onClick={() => startReply(comment)}>回复</Text>
+                      {comment.canDelete && (
+                        <Text className='delete-btn' onClick={() => handleDeleteComment(comment)}>删除</Text>
+                      )}
                     </View>
 
                     {!!comment.replies?.length && (

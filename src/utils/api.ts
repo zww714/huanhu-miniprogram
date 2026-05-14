@@ -1071,6 +1071,150 @@ export async function updateProfile(params: { field?: string; value?: any; profi
 // 当云函数准备好后，在开发者工具 Console 执行:
 //   setCloudMode(true)
 // 即可全局切换到云函数模式
+// ============ 评论相关 ============
+import { POST_COMMENTS, type Comment, type CommentReply } from './mock'
+
+function normalizeCloudComment(cloudComment: any): Comment {
+  const author = cloudComment.author || { _id: '', name: '同学', avatar: '', college: '', grade: '', verified: false }
+  const replyToUser = cloudComment.replyToUser || null
+  const isReply = !!cloudComment.parentId
+
+  const base: any = {
+    id: cloudComment.id || cloudComment._id || '',
+    _id: cloudComment._id || cloudComment.id || '',
+    postId: cloudComment.postId || '',
+    content: cloudComment.content || '',
+    userId: author._id || '',
+    userName: author.name || '同学',
+    userAvatar: author.avatar || '',
+    author: { name: author.name || '同学', avatar: author.avatar || '' },
+    time: cloudComment.createdAt ? formatCloudTime(cloudComment.createdAt) : '刚刚',
+    createdAt: cloudComment.createdAt || '',
+    likes: Number(cloudComment.likeCount || 0),
+    likeCount: Number(cloudComment.likeCount || 0),
+    liked: false,
+    canDelete: !!cloudComment.canDelete,
+    replyToUser: replyToUser ? { _id: replyToUser._id || '', name: replyToUser.name || '', avatar: replyToUser.avatar || '' } : null,
+    replyToUserId: cloudComment.replyToUserId || null,
+    parentId: cloudComment.parentId || null,
+  }
+
+  if (isReply) {
+    return base as CommentReply
+  }
+
+  // Root comment: attach replies
+  const replies: CommentReply[] = (cloudComment.replies || []).map((r: any) => normalizeCloudReply(r))
+  base.replies = replies
+  base.replyCount = cloudComment.replyCount || replies.length
+  base.topReplies = (cloudComment.topReplies || []).map((r: any) => normalizeCloudReply(r))
+
+  return base as Comment
+}
+
+function normalizeCloudReply(r: any): CommentReply {
+  const author = r.author || { _id: '', name: '同学', avatar: '', college: '', grade: '', verified: false }
+  const replyToUser = r.replyToUser || null
+  return {
+    id: r.id || r._id || '',
+    commentId: r.parentId || '',
+    userId: author._id || '',
+    userName: author.name || '同学',
+    userAvatar: author.avatar || '',
+    replyToUserId: r.replyToUserId || (replyToUser ? replyToUser._id : '') || '',
+    replyToUserName: replyToUser ? replyToUser.name : '',
+    content: r.content || '',
+    createdAt: r.createdAt ? formatCloudTime(r.createdAt) : '刚刚',
+  }
+}
+
+function formatCloudTime(value: any): string {
+  if (!value) return '刚刚'
+  if (typeof value === 'string') {
+    const d = new Date(value)
+    if (Number.isNaN(d.getTime())) return value
+    const now = Date.now()
+    const diff = now - d.getTime()
+    if (diff < 60000) return '刚刚'
+    if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)}小时前`
+    if (diff < 604800000) return `${Math.floor(diff / 86400)}天前`
+    return `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  }
+  // serverDate object
+  return '刚刚'
+}
+
+let lastCommentsCache: any = null
+
+export async function getComments(params: { postId: string }): Promise<Comment[]> {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('getComments', { postId: params.postId })
+      const cloudComments = (res.data || []).map(normalizeCloudComment)
+      lastCommentsCache = cloudComments
+      return cloudComments
+    } catch (e) {
+      console.warn('[API] getComments cloud failed, fallback to mock', e)
+    }
+  }
+  // Return mock data
+  const mockComments = POST_COMMENTS.map((c) => ({ ...c }))
+  lastCommentsCache = mockComments
+  return mockComments
+}
+
+export async function addComment(params: { postId: string; content: string }): Promise<any> {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('addComment', {
+        postId: params.postId,
+        content: params.content,
+      })
+      return res.data || res
+    } catch (e) {
+      console.warn('[API] addComment cloud failed', e)
+      throw e
+    }
+  }
+  throw new Error('本地模式不支持真实评论')
+}
+
+export async function replyComment(params: {
+  postId: string
+  parentId: string
+  replyToUserId: string
+  content: string
+}): Promise<any> {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('replyComment', {
+        postId: params.postId,
+        parentId: params.parentId,
+        replyToUserId: params.replyToUserId,
+        content: params.content,
+      })
+      return res.data || res
+    } catch (e) {
+      console.warn('[API] replyComment cloud failed', e)
+      throw e
+    }
+  }
+  throw new Error('本地模式不支持真实回复')
+}
+
+export async function deleteComment(params: { commentId: string }): Promise<any> {
+  if (USE_CLOUD) {
+    try {
+      return await callCloudFunction('deleteComment', { commentId: params.commentId })
+    } catch (e) {
+      console.warn('[API] deleteComment cloud failed', e)
+      throw e
+    }
+  }
+  throw new Error('本地模式不支持真实删除')
+}
+
 export function setCloudMode(enabled: boolean) {
   ;(window as any).USE_CLOUD = enabled
 }

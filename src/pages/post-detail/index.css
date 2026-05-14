@@ -307,6 +307,12 @@ page {
   font-weight: 700;
 }
 
+.delete-btn {
+  color: #EF4444;
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .reply-list {
   margin-top: 8px;
   padding: 8px 10px;
@@ -404,6 +410,17 @@ page {
 
 .send-btn.active text {
   color: #FFFFFF;
+}
+
+.comments-empty {
+  padding: 24px 12px;
+  text-align: center;
+}
+
+.comments-empty-text {
+  display: block;
+  color: #94A3B8;
+  font-size: 13px;
 }
 
 .empty-state {
