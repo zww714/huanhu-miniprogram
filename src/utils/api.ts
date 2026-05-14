@@ -1166,6 +1166,55 @@ export async function deleteNotification(params: { id: string }) {
   return { deleted: true }
 }
 
+// ----- 技能证明材料 -----
+export async function getSkillProofs(params: { skillId: string; userId?: string }) {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('skillProof', { action: 'getBySkill', ...params })
+      return res.data || []
+    } catch (e) {
+      console.warn('[API] getSkillProofs failed', e)
+    }
+  }
+  return []
+}
+
+export async function getSkillProofDetail(params: { proofId: string }) {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('skillProof', { action: 'getDetail', ...params })
+      return res.data || null
+    } catch (e) {
+      console.warn('[API] getSkillProofDetail failed', e)
+    }
+  }
+  return null
+}
+
+export async function getSkillProofCount(params: { skillId: string }) {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('skillProof', { action: 'getProofCount', ...params })
+      return res.data?.count || 0
+    } catch (e) {
+      console.warn('[API] getSkillProofCount failed', e)
+    }
+  }
+  return 0
+}
+
+export async function addSkillProof(params: { skillId: string; title: string; type: string; description?: string; images?: string[]; links?: any[]; detail?: any; tags?: string[] }) {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('skillProof', { action: 'add', ...params })
+      return res.data || null
+    } catch (e) {
+      console.warn('[API] addSkillProof failed', e)
+    }
+  }
+  return null
+}
+
 // ----- 更新资料 -----
 export async function updateProfile(params: { field?: string; value?: any; profile?: Record<string, any> } | Record<string, any>) {
   if (USE_CLOUD) {

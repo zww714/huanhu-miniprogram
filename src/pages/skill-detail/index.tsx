@@ -3,7 +3,7 @@ import Taro, { useLoad } from '@tarojs/taro'
 import { ScrollView, Text, View } from '@tarojs/components'
 import { CURRENT_USER, SKILLS_DETAIL, type SkillDetail, type SkillProof } from '../../utils/mock'
 import { PUBLIC_SKILLS } from '../../utils/publicProfiles'
-import { getSkillDetail } from '../../utils/api'
+import { getSkillDetail, getSkillProofs, getSkillProofCount } from '../../utils/api'
 import './index.css'
 
 const proofTypeText: Record<SkillProof['type'], string> = {
@@ -39,6 +39,8 @@ export default function SkillDetailPage() {
   const [skillId, setSkillId] = useState('')
   const [userId, setUserId] = useState('')
   const [remoteSkill, setRemoteSkill] = useState<any>(null)
+  const [cloudProofs, setCloudProofs] = useState<SkillProof[]>([])
+  const [proofCount, setProofCount] = useState(0)
 
   useLoad((options) => {
     setSkillId(String(options?.skillId || options?.id || ''))
@@ -54,6 +56,13 @@ export default function SkillDetailPage() {
         setRemoteSkill(data)
       })
       .catch((e) => console.warn('[SkillDetail] getSkillDetail failed, fallback to mock', e))
+    // 加载云端证明材料
+    getSkillProofs({ skillId, userId })
+      .then((proofs) => { if (alive && Array.isArray(proofs) && proofs.length) setCloudProofs(proofs as SkillProof[]) })
+      .catch(() => {})
+    getSkillProofCount({ skillId })
+      .then((count) => { if (alive) setProofCount(count) })
+      .catch(() => {})
     return () => { alive = false }
   }, [skillId, userId])
 
@@ -102,7 +111,9 @@ export default function SkillDetailPage() {
   const handleBack = () => Taro.navigateBack()
   const handleMore = () => Taro.showToast({ title: '更多功能后续开放', icon: 'none' })
   const handleEditSkill = () => Taro.navigateTo({ url: `/pages/edit-skills/index?skillId=${encodeURIComponent(skill?.id || '')}` })
-  const handleSubmitProof = () => Taro.showToast({ title: '证明材料提交功能后续接入', icon: 'none' })
+  const handleSubmitProof = () => {
+    Taro.showToast({ title: '证明材料提交功能即将开放', icon: 'none' })
+  }
   const handleContact = () => {
     if (!skill) return
     Taro.navigateTo({
@@ -187,10 +198,10 @@ export default function SkillDetailPage() {
 
         <View className='info-card'>
           <Text className='section-title'>技能证明 / 作品</Text>
-          {skill.proofs.length ? (
+          {(cloudProofs.length || skill.proofs.length) ? (
             <View className='proof-list'>
-              {skill.proofs.map((proof) => (
-                <View className='proof-item clickable' key={`${proof.type}-${proof.title}`} onClick={() => handleProofClick(proof)}>
+              {(cloudProofs.length ? cloudProofs : skill.proofs).map((proof, index) => (
+                <View className='proof-item clickable' key={`${proof.type}-${proof.title}-${index}`} onClick={() => handleProofClick(proof)}>
                   <View className='proof-icon'>
                     <Text>{proofTypeText[proof.type].slice(0, 2)}</Text>
                   </View>

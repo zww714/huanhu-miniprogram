@@ -1,0 +1,9 @@
+{
+  "name": "skillProof",
+  "version": "1.0.0",
+  "description": "技能证明材料管理",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

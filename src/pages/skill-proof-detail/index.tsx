@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { Image, ScrollView, Text, View } from '@tarojs/components'
 import { CURRENT_USER, SKILL_PROOFS, type SkillProofDetail } from '../../utils/mock'
+import { getSkillProofDetail } from '../../utils/api'
 import './index.css'
 
 const typeText: Record<SkillProofDetail['type'], string> = {
@@ -38,14 +39,24 @@ export default function SkillProofDetailPage() {
     setTargetUserId(String(options?.userId || ''))
   })
 
+  const [cloudProof, setCloudProof] = useState<any>(null)
+
+  useEffect(() => {
+    if (!proofId) return
+    getSkillProofDetail({ proofId })
+      .then((data) => { if (data) setCloudProof(data) })
+      .catch(() => {})
+  }, [proofId])
+
   const proof = useMemo(() => {
+    if (cloudProof) return cloudProof as SkillProofDetail
     return SKILL_PROOFS.find((item) => {
       const matchesProof = item.id === proofId
       const matchesSkill = !skillId || item.skillId === skillId
       const matchesUser = !targetUserId || item.userId === targetUserId
       return matchesProof && matchesSkill && matchesUser
     })
-  }, [proofId, skillId, targetUserId])
+  }, [proofId, skillId, targetUserId, cloudProof])
 
   const isOwnProof = !!proof && !!CURRENT_USER?.id && CURRENT_USER.id === proof.userId
 
