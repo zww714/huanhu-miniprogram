@@ -1,7 +1,7 @@
 {
-  "name": "followUser",
+  "name": "unfollowUser",
   "version": "1.0.0",
-  "description": "关注用户",
+  "description": "取消关注用户",
   "main": "index.js",
   "dependencies": {
     "wx-server-sdk": "latest"

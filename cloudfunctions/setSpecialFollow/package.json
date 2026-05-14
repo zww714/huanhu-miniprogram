@@ -1,7 +1,7 @@
 {
-  "name": "followUser",
+  "name": "setSpecialFollow",
   "version": "1.0.0",
-  "description": "关注用户",
+  "description": "设置/取消特别关注",
   "main": "index.js",
   "dependencies": {
     "wx-server-sdk": "latest"

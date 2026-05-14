@@ -1,98 +1,102 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
-import { MOCK_RELATIONS, type UserRelation } from '../../utils/mock'
+import { getFollowers, followUser as apiFollowUser, unfollowUser as apiUnfollowUser, blockUser as apiBlockUser, setSpecialFollow as apiSetSpecialFollow } from '../../utils/api'
 import { openUnifiedUserProfile } from '../../utils/publicProfiles'
 import './index.css'
 
-const STORAGE_KEY = 'myUserRelations'
-
-function readRelations() {
-  const cached = Taro.getStorageSync(STORAGE_KEY)
-  return Array.isArray(cached) && cached.length ? cached : MOCK_RELATIONS
-}
-
-function saveRelations(relations: UserRelation[]) {
-  Taro.setStorageSync(STORAGE_KEY, relations)
-}
-
-function getRelationLabel(user: UserRelation) {
-  if (user.isMutual) return '互相关注'
-  if (user.isFollowing) return '已关注'
-  return '未关注'
-}
-
 export default function MyFollowers() {
-  const [relations, setRelations] = useState<UserRelation[]>([])
+  const [followers, setFollowers] = useState<any[]>([])
+  const [total, setTotal] = useState(0)
+  const [loading, setLoading] = useState(true)
+
+  const loadFollowers = useCallback(() => {
+    setLoading(true)
+    getFollowers({})
+      .then((res) => {
+        setFollowers(res.data || [])
+        setTotal(res.total || 0)
+      })
+      .catch((e) => {
+        console.warn('[MyFollowers] getFollowers failed', e)
+        setFollowers([])
+      })
+      .finally(() => setLoading(false))
+  }, [])
 
   useDidShow(() => {
-    setRelations(readRelations())
+    loadFollowers()
   })
 
-  const followers = relations.filter((user) => user.isFollower && !user.isBlocked)
-  const unfollowedCount = followers.filter((user) => !user.isFollowing).length
-
-  const updateRelations = (next: UserRelation[]) => {
-    setRelations(next)
-    saveRelations(next)
-  }
+  const unfollowedCount = followers.filter((u) => !u.isFollowing).length
 
   const goUser = (userId: string) => {
-    const target = relations.find((user) => user.userId === userId)
-    openUnifiedUserProfile(userId, target?.name)
+    openUnifiedUserProfile(userId)
   }
 
-  const followBack = (userId: string, silent = false) => {
-    const next = relations.map((user) => user.userId === userId
-      ? { ...user, isFollowing: true, isMutual: user.isFollower, relationType: user.isFollower ? 'mutual' as const : user.relationType }
-      : user)
-    updateRelations(next)
-    if (!silent) Taro.showToast({ title: '已回关', icon: 'success' })
+  const followBack = async (userId: string, silent = false) => {
+    try {
+      const res = await apiFollowUser({ targetUserId: userId })
+      setFollowers((prev) => prev.map((u) =>
+        u.userId === userId ? { ...u, isFollowing: true, isMutual: true } : u
+      ))
+      if (!silent) Taro.showToast({ title: '已回关', icon: 'success' })
+    } catch (e) {
+      console.warn('[MyFollowers] followBack failed', e)
+      if (!silent) Taro.showToast({ title: '操作失败', icon: 'none' })
+    }
   }
 
-  const followBackAll = () => {
-    if (!unfollowedCount) {
+  const followBackAll = async () => {
+    const toFollow = followers.filter((u) => !u.isFollowing)
+    if (!toFollow.length) {
       Taro.showToast({ title: '暂无需要回关的人', icon: 'none' })
       return
     }
     Taro.showModal({
       title: '一键回关',
-      content: `确认回关所有未关注的 ${unfollowedCount} 位粉丝吗？`,
-      success: ({ confirm }) => {
+      content: `确认回关所有未关注的 ${toFollow.length} 位粉丝吗？`,
+      success: async ({ confirm }) => {
         if (!confirm) return
-        const next = relations.map((user) => user.isFollower && !user.isFollowing
-          ? { ...user, isFollowing: true, isMutual: true, relationType: 'mutual' as const }
-          : user)
-        updateRelations(next)
+        // 批量操作，串行执行
+        for (const user of toFollow) {
+          await followBack(user.userId, true)
+        }
         Taro.showToast({ title: '已全部回关', icon: 'success' })
       },
     })
   }
 
-  const confirmRemove = (user: UserRelation) => {
+  const confirmRemove = (user: any) => {
     Taro.showModal({
       title: '移除粉丝',
-      content: `确定将 ${user.name} 从粉丝列表移除吗？`,
+      content: `确定将 ${user.name} 从粉丝列表移除吗（不移除粉丝数）？`,
       confirmText: '移除',
       confirmColor: '#EF4444',
       success: ({ confirm }) => {
         if (!confirm) return
-        updateRelations(relations.map((item) => item.userId === user.userId ? { ...item, isFollower: false, isMutual: false } : item))
+        setFollowers((prev) => prev.filter((item) => item.userId !== user.userId))
         Taro.showToast({ title: '已移除', icon: 'success' })
       },
     })
   }
 
-  const confirmBlock = (user: UserRelation) => {
+  const confirmBlock = (user: any) => {
     Taro.showModal({
       title: '拉黑用户',
       content: `拉黑后将不再显示 ${user.name}，确定继续吗？`,
       confirmText: '拉黑',
       confirmColor: '#EF4444',
-      success: ({ confirm }) => {
+      success: async ({ confirm }) => {
         if (!confirm) return
-        updateRelations(relations.map((item) => item.userId === user.userId ? { ...item, isBlocked: true, isFollowing: false, isFollower: false, isMutual: false } : item))
-        Taro.showToast({ title: '已拉黑', icon: 'success' })
+        try {
+          await apiBlockUser({ targetUserId: user.userId })
+          setFollowers((prev) => prev.filter((item) => item.userId !== user.userId))
+          Taro.showToast({ title: '已拉黑', icon: 'success' })
+        } catch (e) {
+          console.warn('[MyFollowers] block failed', e)
+          Taro.showToast({ title: '操作失败', icon: 'none' })
+        }
       },
     })
   }
@@ -104,12 +108,21 @@ export default function MyFollowers() {
     })
   }
 
-  const toggleSpecial = (user: UserRelation) => {
-    updateRelations(relations.map((item) => item.userId === user.userId ? { ...item, isSpecial: !item.isSpecial } : item))
-    Taro.showToast({ title: user.isSpecial ? '已取消特别关注' : '已设为特别关注', icon: 'success' })
+  const toggleSpecial = async (user: any) => {
+    const nextSpecial = !user.isSpecial
+    try {
+      await apiSetSpecialFollow({ targetUserId: user.userId, isSpecial: nextSpecial })
+      setFollowers((prev) => prev.map((item) =>
+        item.userId === user.userId ? { ...item, isSpecial: nextSpecial } : item
+      ))
+      Taro.showToast({ title: nextSpecial ? '已设为特别关注' : '已取消特别关注', icon: 'success' })
+    } catch (e) {
+      console.warn('[MyFollowers] toggleSpecial failed', e)
+      Taro.showToast({ title: '操作失败', icon: 'none' })
+    }
   }
 
-  const showMore = (user: UserRelation) => {
+  const showMore = (user: any) => {
     Taro.showActionSheet({
       itemList: ['查看主页', user.isSpecial ? '取消特别关注' : '设为特别关注', '移除粉丝', '举报', '拉黑'],
       success: ({ tapIndex }) => {
@@ -122,12 +135,22 @@ export default function MyFollowers() {
     })
   }
 
+  if (loading) {
+    return (
+      <View className='relation-page'>
+        <View className='loading-state'>
+          <Text>加载中...</Text>
+        </View>
+      </View>
+    )
+  }
+
   return (
     <View className='relation-page'>
       <View className='page-header'>
         <View>
           <Text className='page-title'>我的粉丝</Text>
-          <Text className='page-subtitle'>共 {followers.length} 人，{unfollowedCount} 人待回关</Text>
+          <Text className='page-subtitle'>共 {total} 人，{unfollowedCount} 人待回关</Text>
         </View>
         <View className='header-actions'>
           <View className='primary-pill' onClick={followBackAll}>
@@ -140,22 +163,29 @@ export default function MyFollowers() {
       </View>
 
       <View className='user-list'>
+        {!followers.length && (
+          <View className='empty-state'>
+            <Text>还没有粉丝</Text>
+          </View>
+        )}
         {followers.map((user) => (
           <View className='user-card' key={user.userId}>
             <View className='avatar' onClick={() => goUser(user.userId)}>
-              <Text>{user.name.slice(0, 1)}</Text>
+              <Text>{(user.name || '同').slice(0, 1)}</Text>
             </View>
             <View className='user-main'>
               <View className='name-row'>
                 <Text className='user-name' onClick={() => goUser(user.userId)}>{user.name}</Text>
                 {user.isSpecial && <Text className='special-tag'>特别关注</Text>}
               </View>
-              <Text className='user-meta'>{user.college} · {user.grade} · {user.campus}</Text>
-              <Text className='user-intro'>{user.intro}</Text>
-              <Text className='relation-label'>{getRelationLabel(user)}</Text>
+              <Text className='user-meta'>{[user.college, user.grade, user.campus].filter(Boolean).join(' · ')}</Text>
+              <Text className='user-intro'>{user.intro || 'TA还没有完善更多资料'}</Text>
             </View>
             <View className='side-actions'>
-              <View className={`follow-btn ${user.isFollowing ? 'muted' : ''}`} onClick={() => user.isFollowing ? undefined : followBack(user.userId)}>
+              <View
+                className={`follow-btn ${user.isFollowing ? 'muted' : ''}`}
+                onClick={() => user.isFollowing ? undefined : followBack(user.userId)}
+              >
                 <Text>{user.isMutual ? '互相关注' : user.isFollowing ? '已关注' : '回关'}</Text>
               </View>
               <View className='more-btn' onClick={() => showMore(user)}>
@@ -165,6 +195,10 @@ export default function MyFollowers() {
           </View>
         ))}
       </View>
+
+      {!loading && !followers.length && (
+        <View className='safe-bottom' />
+      )}
     </View>
   )
 }

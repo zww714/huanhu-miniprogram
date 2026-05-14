@@ -1,56 +1,61 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
-import { MOCK_RELATIONS, type UserRelation } from '../../utils/mock'
+import { getFollowing, unfollowUser as apiUnfollowUser, blockUser as apiBlockUser, setSpecialFollow as apiSetSpecialFollow } from '../../utils/api'
 import { openUnifiedUserProfile } from '../../utils/publicProfiles'
 import './index.css'
 
-const STORAGE_KEY = 'myUserRelations'
-
-function readRelations() {
-  const cached = Taro.getStorageSync(STORAGE_KEY)
-  return Array.isArray(cached) && cached.length ? cached : MOCK_RELATIONS
-}
-
-function saveRelations(relations: UserRelation[]) {
-  Taro.setStorageSync(STORAGE_KEY, relations)
-}
-
 export default function MyFollowing() {
-  const [relations, setRelations] = useState<UserRelation[]>([])
+  const [following, setFollowing] = useState<any[]>([])
+  const [total, setTotal] = useState(0)
+  const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'special'>('all')
   const [manageMode, setManageMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
 
+  const loadFollowing = useCallback(() => {
+    setLoading(true)
+    getFollowing({ filter: filter === 'special' ? 'special' : undefined })
+      .then((res) => {
+        setFollowing(res.data || [])
+        setTotal(res.total || 0)
+      })
+      .catch((e) => {
+        console.warn('[MyFollowing] getFollowing failed', e)
+        setFollowing([])
+      })
+      .finally(() => setLoading(false))
+  }, [filter])
+
   useDidShow(() => {
-    setRelations(readRelations())
+    loadFollowing()
   })
 
-  const following = relations.filter((user) => user.isFollowing && !user.isBlocked)
-  const visibleUsers = following.filter((user) => filter === 'all' || user.isSpecial)
+  const visibleUsers = following
   const allSelected = visibleUsers.length > 0 && selectedIds.length === visibleUsers.length
 
-  const updateRelations = (next: UserRelation[]) => {
-    setRelations(next)
-    saveRelations(next)
-  }
-
   const goUser = (userId: string) => {
-    const target = relations.find((user) => user.userId === userId)
-    openUnifiedUserProfile(userId, target?.name)
+    openUnifiedUserProfile(userId)
   }
 
   const toggleSelect = (userId: string) => {
     setSelectedIds((current) => current.includes(userId) ? current.filter((id) => id !== userId) : [...current, userId])
   }
 
-  const toggleSpecial = (userId: string) => {
-    const target = relations.find((user) => user.userId === userId)
-    updateRelations(relations.map((user) => user.userId === userId ? { ...user, isSpecial: !user.isSpecial } : user))
-    Taro.showToast({ title: target?.isSpecial ? '已取消特别关注' : '已设为特别关注', icon: 'success' })
+  const toggleSpecial = async (userId: string) => {
+    const target = following.find((u) => u.userId === userId)
+    const nextSpecial = !target?.isSpecial
+    try {
+      await apiSetSpecialFollow({ targetUserId: userId, isSpecial: nextSpecial })
+      setFollowing((prev) => prev.map((u) => u.userId === userId ? { ...u, isSpecial: nextSpecial } : u))
+      Taro.showToast({ title: nextSpecial ? '已设为特别关注' : '已取消特别关注', icon: 'success' })
+    } catch (e) {
+      console.warn('[MyFollowing] toggleSpecial failed', e)
+      Taro.showToast({ title: '操作失败', icon: 'none' })
+    }
   }
 
-  const confirmUnfollow = (ids: string[]) => {
+  const confirmUnfollow = async (ids: string[]) => {
     if (!ids.length) {
       Taro.showToast({ title: '请先选择用户', icon: 'none' })
       return
@@ -60,18 +65,24 @@ export default function MyFollowing() {
       content: ids.length > 1 ? `确认取消关注选中的 ${ids.length} 位同学吗？` : '确认取消关注该用户吗？',
       confirmText: '取消关注',
       confirmColor: '#EF4444',
-      success: ({ confirm }) => {
+      success: async ({ confirm }) => {
         if (!confirm) return
-        updateRelations(relations.map((user) => ids.includes(user.userId)
-          ? { ...user, isFollowing: false, isMutual: false, isSpecial: false, relationType: user.isFollower ? 'follower' as const : user.relationType }
-          : user))
+        for (const id of ids) {
+          try {
+            await apiUnfollowUser({ targetUserId: id })
+          } catch (e) {
+            console.warn('[MyFollowing] unfollow failed for', id, e)
+          }
+        }
+        setFollowing((prev) => prev.filter((u) => !ids.includes(u.userId)))
+        setTotal((prev) => Math.max(0, prev - ids.length))
         setSelectedIds([])
         Taro.showToast({ title: '已取消关注', icon: 'success' })
       },
     })
   }
 
-  const confirmBlock = (ids: string[]) => {
+  const confirmBlock = async (ids: string[]) => {
     if (!ids.length) {
       Taro.showToast({ title: '请先选择用户', icon: 'none' })
       return
@@ -81,11 +92,16 @@ export default function MyFollowing() {
       content: ids.length > 1 ? `确认拉黑选中的 ${ids.length} 位同学吗？` : '拉黑后将不再显示该用户，确定继续吗？',
       confirmText: '拉黑',
       confirmColor: '#EF4444',
-      success: ({ confirm }) => {
+      success: async ({ confirm }) => {
         if (!confirm) return
-        updateRelations(relations.map((user) => ids.includes(user.userId)
-          ? { ...user, isBlocked: true, isFollowing: false, isFollower: false, isMutual: false, isSpecial: false }
-          : user))
+        for (const id of ids) {
+          try {
+            await apiBlockUser({ targetUserId: id })
+          } catch (e) {
+            console.warn('[MyFollowing] block failed for', id, e)
+          }
+        }
+        setFollowing((prev) => prev.filter((u) => !ids.includes(u.userId)))
         setSelectedIds([])
         Taro.showToast({ title: '已拉黑', icon: 'success' })
       },
@@ -99,16 +115,23 @@ export default function MyFollowing() {
     })
   }
 
-  const batchSpecial = () => {
+  const batchSpecial = async () => {
     if (!selectedIds.length) {
       Taro.showToast({ title: '请先选择用户', icon: 'none' })
       return
     }
-    updateRelations(relations.map((user) => selectedIds.includes(user.userId) ? { ...user, isSpecial: true } : user))
+    for (const id of selectedIds) {
+      try {
+        await apiSetSpecialFollow({ targetUserId: id, isSpecial: true })
+      } catch (e) {
+        console.warn('[MyFollowing] batchSpecial failed for', id, e)
+      }
+    }
+    setFollowing((prev) => prev.map((u) => selectedIds.includes(u.userId) ? { ...u, isSpecial: true } : u))
     Taro.showToast({ title: '已设为特别关注', icon: 'success' })
   }
 
-  const showMore = (user: UserRelation) => {
+  const showMore = (user: any) => {
     Taro.showActionSheet({
       itemList: ['查看主页', user.isSpecial ? '取消特别关注' : '设为特别关注', '取消关注', '举报', '拉黑'],
       success: ({ tapIndex }) => {
@@ -121,12 +144,22 @@ export default function MyFollowing() {
     })
   }
 
+  if (loading) {
+    return (
+      <View className='following-page'>
+        <View className='loading-state'>
+          <Text>加载中...</Text>
+        </View>
+      </View>
+    )
+  }
+
   return (
     <View className='following-page'>
       <View className='page-header'>
         <View>
           <Text className='page-title'>我的关注</Text>
-          <Text className='page-subtitle'>共 {following.length} 人，{following.filter((user) => user.isSpecial).length} 位特别关注</Text>
+          <Text className='page-subtitle'>共 {total} 人，{following.filter((u) => u.isSpecial).length} 位特别关注</Text>
         </View>
         <View className={`outline-pill ${manageMode ? 'active' : ''}`} onClick={() => { setManageMode(!manageMode); setSelectedIds([]) }}>
           <Text>{manageMode ? '完成' : '管理'}</Text>
@@ -144,12 +177,19 @@ export default function MyFollowing() {
 
       {manageMode && (
         <View className='batch-top'>
-          <Text onClick={() => setSelectedIds(allSelected ? [] : visibleUsers.map((user) => user.userId))}>{allSelected ? '取消全选' : '全选'}</Text>
+          <Text onClick={() => setSelectedIds(allSelected ? [] : visibleUsers.map((u) => u.userId))}>{allSelected ? '取消全选' : '全选'}</Text>
           <Text>{selectedIds.length ? `已选 ${selectedIds.length} 人` : '选择需要管理的关注'}</Text>
         </View>
       )}
 
       <View className='user-list'>
+        {!visibleUsers.length && (
+          <View className='empty-state'>
+            <Text>
+              {filter === 'special' ? '还没有特别关注的人' : '还没有关注的人'}
+            </Text>
+          </View>
+        )}
         {visibleUsers.map((user) => (
           <View className='user-card' key={user.userId} onClick={() => manageMode ? toggleSelect(user.userId) : undefined}>
             {manageMode && (
@@ -157,16 +197,16 @@ export default function MyFollowing() {
                 <Text>{selectedIds.includes(user.userId) ? '✓' : ''}</Text>
               </View>
             )}
-            <View className='avatar' onClick={(event) => { event.stopPropagation(); goUser(user.userId) }}>
-              <Text>{user.name.slice(0, 1)}</Text>
+            <View className='avatar' onClick={(e) => { e.stopPropagation(); goUser(user.userId) }}>
+              <Text>{(user.name || '同').slice(0, 1)}</Text>
             </View>
             <View className='user-main'>
               <View className='name-row'>
-                <Text className='user-name' onClick={(event) => { event.stopPropagation(); goUser(user.userId) }}>{user.name}</Text>
+                <Text className='user-name' onClick={(e) => { e.stopPropagation(); goUser(user.userId) }}>{user.name}</Text>
                 {user.isSpecial && <Text className='special-tag'>特别关注</Text>}
               </View>
-              <Text className='user-meta'>{user.college} · {user.grade} · {user.campus}</Text>
-              <Text className='user-intro'>{user.intro}</Text>
+              <Text className='user-meta'>{[user.college, user.grade, user.campus].filter(Boolean).join(' · ')}</Text>
+              <Text className='user-intro'>{user.intro || 'TA还没有完善更多资料'}</Text>
             </View>
             {!manageMode && (
               <View className='side-actions'>

@@ -1033,16 +1033,88 @@ export async function getMyReviews() {
 }
 
 // ----- 关注/取消关注 -----
-export async function followUser(params: { targetUserId: string; action: 'follow' | 'unfollow' }) {
+export async function followUser(params: { targetUserId: string }) {
   if (USE_CLOUD) {
     try {
       const res = await callCloudFunction('followUser', params)
-      return res.isFollowing as boolean
+      return res.data || { isFollowing: true, isMutual: false }
     } catch (e) {
       console.warn('[API] followUser cloud failed', e)
     }
   }
-  return params.action === 'follow'
+  return { isFollowing: true, isMutual: false }
+}
+
+export async function unfollowUser(params: { targetUserId: string }) {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('unfollowUser', params)
+      return res.data || { isFollowing: false, isMutual: false }
+    } catch (e) {
+      console.warn('[API] unfollowUser cloud failed', e)
+    }
+  }
+  return { isFollowing: false, isMutual: false }
+}
+
+export async function getFollowStatus(params: { targetUserId: string }) {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('getFollowStatus', params)
+      return res.data
+    } catch (e) {
+      console.warn('[API] getFollowStatus cloud failed', e)
+    }
+  }
+  return { isFollowing: false, isFollower: false, isMutual: false, isSpecial: false, isBlocked: false, blockedByTarget: false }
+}
+
+export async function getFollowers(params: { userId?: string; page?: number; pageSize?: number }) {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('getFollowers', params)
+      return { data: res.data || [], total: res.total || 0 }
+    } catch (e) {
+      console.warn('[API] getFollowers cloud failed', e)
+    }
+  }
+  return { data: [], total: 0 }
+}
+
+export async function getFollowing(params: { userId?: string; page?: number; pageSize?: number; filter?: string }) {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('getFollowing', params)
+      return { data: res.data || [], total: res.total || 0 }
+    } catch (e) {
+      console.warn('[API] getFollowing cloud failed', e)
+    }
+  }
+  return { data: [], total: 0 }
+}
+
+export async function setSpecialFollow(params: { targetUserId: string; isSpecial: boolean }) {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('setSpecialFollow', params)
+      return res.data || { isSpecial: params.isSpecial }
+    } catch (e) {
+      console.warn('[API] setSpecialFollow cloud failed', e)
+    }
+  }
+  return { isSpecial: params.isSpecial }
+}
+
+export async function blockUser(params: { targetUserId: string; isBlocked?: boolean }) {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('blockUser', params)
+      return res.data || { isBlocked: true, isFollowing: false }
+    } catch (e) {
+      console.warn('[API] blockUser cloud failed', e)
+    }
+  }
+  return { isBlocked: true, isFollowing: false }
 }
 
 // ----- 更新资料 -----

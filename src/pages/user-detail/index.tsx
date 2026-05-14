@@ -39,7 +39,8 @@ export default function UserDetail() {
   const [remoteSkills, setRemoteSkills] = useState<any[]>([])
   const [remotePosts, setRemotePosts] = useState<any[]>([])
   const [activeTab, setActiveTab] = useState<'posts' | 'reviews'>('posts')
-  const [relationTick, setRelationTick] = useState(0)
+  const [relation, setRelation] = useState<FollowRelation>(DEFAULT_RELATION)
+  const [relationLoading, setRelationLoading] = useState(false)
 
   useLoad((options) => {
     setRouteUser({
@@ -49,7 +50,7 @@ export default function UserDetail() {
   })
 
   useDidShow(() => {
-    setRelationTick((value) => value + 1)
+    loadRelation()
   })
 
   useEffect(() => {
@@ -90,6 +91,29 @@ export default function UserDetail() {
     return () => { alive = false }
   }, [routeUser.id, routeUser.name])
 
+  const loadRelation = useCallback(() => {
+    const userId = normalizePublicUserId(routeUser.id, routeUser.name)
+    if (!userId || userId === CURRENT_USER.id) {
+      setRelation(DEFAULT_RELATION)
+      return
+    }
+    setRelationLoading(true)
+    apiGetFollowStatus({ targetUserId: userId })
+      .then((status) => {
+        if (status) {
+          setRelation({
+            isFollowing: !!status.isFollowing,
+            isFollower: !!status.isFollower,
+            isMutual: !!status.isMutual,
+            isSpecial: !!status.isSpecial,
+            isBlocked: !!status.isBlocked || !!status.blockedByTarget,
+          })
+        }
+      })
+      .catch((e) => console.warn('[UserDetail] getFollowStatus failed', e))
+      .finally(() => setRelationLoading(false))
+  }, [routeUser.id, routeUser.name])
+
   const detailUser = useMemo(() => {
     const userId = normalizePublicUserId(routeUser.id, routeUser.name)
     const fallback = getPublicUser(userId, routeUser.name)
@@ -111,7 +135,6 @@ export default function UserDetail() {
   }, [routeUser.id, routeUser.name, remoteUser, remoteSkills])
 
   const isSelf = detailUser.id === CURRENT_USER.id
-  const relation = useMemo(() => getRelationForUser(detailUser.id), [detailUser.id, relationTick])
   const posts = useMemo(() => {
     const source = remotePosts.length
       ? remotePosts
@@ -129,34 +152,44 @@ export default function UserDetail() {
     return source.slice(0, 2)
   }, [detailUser.id, remoteUser, remotePosts])
   const reviews = useMemo(() => getPublicReviews(detailUser.id).slice(0, 2), [detailUser.id])
-  const followerCount = Math.max(detailUser.followerCount, getFollowersForUser(detailUser.id).length)
-  const followingCount = Math.max(detailUser.followingCount, getFollowingForUser(detailUser.id).length)
+  const followerCount = detailUser.followerCount || 0
+  const followingCount = detailUser.followingCount || 0
 
-  const refreshRelation = (patch: Partial<PublicRelation>) => {
-    upsertRelation(detailUser.id, patch)
-    setRelationTick((value) => value + 1)
+  const handleFollow = async () => {
+    const userId = normalizePublicUserId(routeUser.id, routeUser.name)
+    if (!userId) return
+    try {
+      const res = await apiFollowUser({ targetUserId: userId })
+      setRelation((prev) => ({
+        ...prev,
+        isFollowing: true,
+        isMutual: !!res.isMutual,
+      }))
+      Taro.showToast({ title: '已关注', icon: 'success' })
+    } catch (e) {
+      console.warn('[UserDetail] follow failed', e)
+      Taro.showToast({ title: '关注失败', icon: 'none' })
+    }
   }
 
-  const follow = () => {
-    refreshRelation({
-      isFollowing: true,
-      isFollower: false,
-      isMutual: false,
-      isSpecial: relation.isSpecial,
-    })
-    Taro.showToast({ title: '已关注', icon: 'success' })
-  }
-
-  const unfollow = () => {
+  const handleUnfollow = () => {
+    const userId = normalizePublicUserId(routeUser.id, routeUser.name)
+    if (!userId) return
     Taro.showModal({
       title: '取消关注',
       content: '确认取消关注该用户吗？',
       confirmText: '取消关注',
       confirmColor: '#EF4444',
-      success: ({ confirm }) => {
+      success: async ({ confirm }) => {
         if (!confirm) return
-        refreshRelation({ isFollowing: false, isMutual: false, isSpecial: false })
-        Taro.showToast({ title: '已取消关注', icon: 'success' })
+        try {
+          await apiUnfollowUser({ targetUserId: userId })
+          setRelation((prev) => ({ ...prev, isFollowing: false, isMutual: false }))
+          Taro.showToast({ title: '已取消关注', icon: 'success' })
+        } catch (e) {
+          console.warn('[UserDetail] unfollow failed', e)
+          Taro.showToast({ title: '取消关注失败', icon: 'none' })
+        }
       },
     })
   }
@@ -166,18 +199,23 @@ export default function UserDetail() {
       Taro.switchTab({ url: '/pages/profile/index' })
       return
     }
-    if (relation.isFollowing) unfollow()
-    else follow()
+    if (relation.isFollowing) handleUnfollow()
+    else handleFollow()
   }
 
-  const toggleSpecial = () => {
+  const handleToggleSpecial = () => {
+    const userId = normalizePublicUserId(routeUser.id, routeUser.name)
+    if (!userId) return
     const nextSpecial = !relation.isSpecial
-    refreshRelation({
-      isFollowing: true,
-      isMutual: relation.isFollowing && relation.isFollower,
-      isSpecial: nextSpecial,
-    })
-    Taro.showToast({ title: nextSpecial ? '已设为特别关注' : '已取消特别关注', icon: 'success' })
+    apiSetSpecialFollow({ targetUserId: userId, isSpecial: nextSpecial })
+      .then(() => {
+        setRelation((prev) => ({ ...prev, isSpecial: nextSpecial }))
+        Taro.showToast({ title: nextSpecial ? '已设为特别关注' : '已取消特别关注', icon: 'success' })
+      })
+      .catch((e) => {
+        console.warn('[UserDetail] setSpecialFollow failed', e)
+        Taro.showToast({ title: '操作失败', icon: 'none' })
+      })
   }
 
   const reportUser = () => {
@@ -187,16 +225,24 @@ export default function UserDetail() {
     })
   }
 
-  const blockUser = () => {
+  const handleBlockUser = () => {
+    const userId = normalizePublicUserId(routeUser.id, routeUser.name)
+    if (!userId) return
     Taro.showModal({
       title: '拉黑用户',
       content: '拉黑后对方将无法与你互动，确定拉黑吗？',
       confirmText: '拉黑',
       confirmColor: '#EF4444',
-      success: ({ confirm }) => {
+      success: async ({ confirm }) => {
         if (!confirm) return
-        refreshRelation({ isBlocked: true, isFollowing: false, isFollower: false, isMutual: false, isSpecial: false })
-        Taro.showToast({ title: '已拉黑', icon: 'success' })
+        try {
+          await apiBlockUser({ targetUserId: userId })
+          setRelation({ isBlocked: true, isFollowing: false, isFollower: false, isMutual: false, isSpecial: false })
+          Taro.showToast({ title: '已拉黑', icon: 'success' })
+        } catch (e) {
+          console.warn('[UserDetail] blockUser failed', e)
+          Taro.showToast({ title: '操作失败', icon: 'none' })
+        }
       },
     })
   }
@@ -210,11 +256,11 @@ export default function UserDetail() {
       itemList,
       success: ({ tapIndex }) => {
         const item = itemList[tapIndex]
-        if (item === '关注TA') follow()
-        if (item === '设为特别关注' || item === '取消特别关注') toggleSpecial()
-        if (item === '取消关注') unfollow()
+        if (item === '关注TA') handleFollow()
+        if (item === '设为特别关注' || item === '取消特别关注') handleToggleSpecial()
+        if (item === '取消关注') handleUnfollow()
         if (item === '举报用户') reportUser()
-        if (item === '拉黑用户') blockUser()
+        if (item === '拉黑用户') handleBlockUser()
       },
     })
   }

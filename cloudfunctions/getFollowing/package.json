@@ -1,7 +1,7 @@
 {
-  "name": "followUser",
+  "name": "getFollowing",
   "version": "1.0.0",
-  "description": "关注用户",
+  "description": "获取关注列表",
   "main": "index.js",
   "dependencies": {
     "wx-server-sdk": "latest"
