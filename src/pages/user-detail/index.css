@@ -62,17 +62,6 @@ page {
   box-shadow: 0 14px 34px rgba(37, 99, 235, 0.1);
 }
 
-.public-eyebrow {
-  display: inline-flex;
-  margin-bottom: 14px;
-  padding: 5px 10px;
-  border-radius: 999px;
-  background: #EFF6FF;
-  color: #2563EB;
-  font-size: 12px;
-  font-weight: 800;
-}
-
 .profile-head {
   display: flex;
   align-items: flex-start;
@@ -238,29 +227,6 @@ page {
 
 .secondary-btn.following text {
   color: #2563EB;
-}
-
-.public-hint {
-  margin: 0 16px 12px;
-  padding: 12px 14px;
-  border-radius: 16px;
-  background: #EEF6FF;
-  border: 1px solid #BFDBFE;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.public-hint-title {
-  color: #1D4ED8;
-  font-size: 14px;
-  font-weight: 900;
-}
-
-.public-hint-desc {
-  color: #64748B;
-  font-size: 12px;
-  line-height: 18px;
 }
 
 .info-card,

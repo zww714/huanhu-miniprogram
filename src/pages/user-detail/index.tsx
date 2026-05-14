@@ -210,7 +210,7 @@ function getMyProfile(): DetailUser {
         likes: post.likeCount ?? post.likes ?? 0,
         comments: post.commentCount ?? post.comments ?? 0,
         createdAt: post.createdAt || '最近',
-        categoryTag: '我的发布',
+        categoryTag: '发布内容',
         authorId: CURRENT_USER.id,
         authorName: CURRENT_USER.name,
       })),
@@ -453,7 +453,6 @@ export default function UserDetail() {
       </View>
 
       <View className='public-card'>
-        {!detailUser.isSelf && <Text className='public-eyebrow'>对外展示主页</Text>}
         <View className='profile-head'>
           <View className='avatar'>
             <Text className='avatar-text'>{detailUser.name.charAt(0)}</Text>
@@ -495,13 +494,6 @@ export default function UserDetail() {
           </View>
         )}
       </View>
-
-      {!detailUser.isSelf && (
-        <View className='public-hint'>
-          <Text className='public-hint-title'>TA 的公开主页</Text>
-          <Text className='public-hint-desc'>这里只能查看资料、作品和评价，不提供编辑、管理或删除入口。</Text>
-        </View>
-      )}
 
       <View className='info-card'>
         <View className='section-title blue'>
