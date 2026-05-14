@@ -10,6 +10,7 @@ import {
   type CommentReply,
 } from '../../utils/mock'
 import { getPosts } from '../../utils/api'
+import { openUnifiedUserProfile } from '../../utils/publicProfiles'
 import './index.css'
 
 type Post = {
@@ -199,9 +200,7 @@ export default function PostDetail() {
       Taro.showToast({ title: '用户信息不存在', icon: 'none' })
       return
     }
-    const query = [`userId=${encodeURIComponent(userId)}`]
-    if (name) query.push(`name=${encodeURIComponent(name)}`)
-    Taro.navigateTo({ url: `/pages/user-detail/index?${query.join('&')}` })
+    openUnifiedUserProfile(userId, name)
   }
 
   const handleEditPost = () => Taro.navigateTo({ url: `/pages/publish/index?mode=edit&postId=${encodeURIComponent(postId)}` })

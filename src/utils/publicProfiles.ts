@@ -434,11 +434,25 @@ export const PUBLIC_RELATIONS: PublicRelation[] = [
 export function normalizePublicUserId(id?: string | number, name?: string) {
   const raw = String(id || '').trim()
   if (raw && raw !== 'undefined') {
+    if (raw === '1' && (name === '陈同学' || name === CURRENT_USER.name)) return CURRENT_USER.id
     if (/^\d+$/.test(raw) && raw !== CURRENT_USER.id) return `u${raw}`
     return raw
   }
   const user = PUBLIC_USERS.find((item) => item.name === name)
   return user?.id || ''
+}
+
+export function openUnifiedUserProfile(userId?: string | number, name?: string) {
+  const normalizedId = normalizePublicUserId(userId, name)
+  const isCurrentUser = normalizedId === CURRENT_USER.id || name === CURRENT_USER.name || name === '陈同学'
+  if (isCurrentUser) {
+    Taro.switchTab({ url: '/pages/profile/index' })
+    return
+  }
+  const query = normalizedId
+    ? `userId=${encodeURIComponent(normalizedId)}`
+    : `name=${encodeURIComponent(name || '同学')}`
+  Taro.navigateTo({ url: `/pages/user-detail/index?${query}` })
 }
 
 export function getPublicSkills(userId: string) {

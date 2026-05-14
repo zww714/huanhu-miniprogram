@@ -6,6 +6,7 @@ import {
   getPublicUser,
   getRelationForUser,
   normalizePublicUserId,
+  openUnifiedUserProfile,
   upsertRelation,
   type PublicUser,
 } from '../../utils/publicProfiles'
@@ -29,7 +30,7 @@ export default function UserFollowers() {
   const followers = useMemo(() => getFollowersForUser(user.id), [user.id, tick])
 
   const openUser = (target: PublicUser) => {
-    Taro.navigateTo({ url: `/pages/user-detail/index?userId=${encodeURIComponent(target.id)}` })
+    openUnifiedUserProfile(target.id, target.name)
   }
 
   const followUser = (target: PublicUser) => {

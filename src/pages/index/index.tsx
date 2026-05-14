@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { Input, ScrollView, Text, View } from '@tarojs/components'
 import { getActivities, getPartners, getUsers } from '../../utils/api'
+import { openUnifiedUserProfile } from '../../utils/publicProfiles'
 import './index.css'
 
 const TABS = ['技能交换', '兴趣搭子', '社区活动']
@@ -381,8 +382,7 @@ export default function Index() {
 
   const handleUserClick = (user: SkillUser) => {
     const id = getRecordId(user)
-    const query = id ? `userId=${encodeURIComponent(id)}` : `name=${encodeURIComponent(user.name)}`
-    Taro.navigateTo({ url: `/pages/user-detail/index?${query}` })
+    openUnifiedUserProfile(id, user.name)
   }
 
   const handleActivityRegister = (activity: Activity, isFull: boolean) => {

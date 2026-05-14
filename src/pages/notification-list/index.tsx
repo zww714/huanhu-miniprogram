@@ -12,6 +12,7 @@ import {
   updateMessageTabUnread,
   updateNotification,
 } from '../../utils/notifications'
+import { openUnifiedUserProfile } from '../../utils/publicProfiles'
 import './index.css'
 
 const validTypes: NotificationType[] = ['likes', 'follows', 'comments', 'system']
@@ -132,7 +133,7 @@ export default function NotificationList() {
       return
     }
     if (item.targetType === 'user' && item.targetId) {
-      Taro.navigateTo({ url: `/pages/user-detail/index?userId=${encodeURIComponent(item.targetId)}` })
+      openUnifiedUserProfile(item.targetId, item.fromUserName)
       return
     }
     if (item.targetType === 'activity') {

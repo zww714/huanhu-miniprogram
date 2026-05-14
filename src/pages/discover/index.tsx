@@ -3,6 +3,7 @@ import Taro, { useLoad } from '@tarojs/taro'
 import { Image, Input, ScrollView, Text, View } from '@tarojs/components'
 import { getPosts } from '../../utils/api'
 import { MOCK_POSTS } from '../../utils/mock'
+import { openUnifiedUserProfile } from '../../utils/publicProfiles'
 import './index.css'
 
 const CATEGORIES = ['全部', '科研', '升学', '兴趣', '工作']
@@ -265,7 +266,7 @@ export default function Discover() {
 
   const openUser = (post: Post) => {
     const author = getAuthor(post)
-    Taro.navigateTo({ url: `/pages/user-detail/index?userId=${encodeURIComponent(author.id)}&name=${encodeURIComponent(author.name)}` })
+    openUnifiedUserProfile(author.id, author.name)
   }
 
   return (

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
 import { MOCK_RELATIONS, type UserRelation } from '../../utils/mock'
+import { openUnifiedUserProfile } from '../../utils/publicProfiles'
 import './index.css'
 
 const STORAGE_KEY = 'myUserRelations'
@@ -37,7 +38,8 @@ export default function MyFollowers() {
   }
 
   const goUser = (userId: string) => {
-    Taro.navigateTo({ url: `/pages/user-detail/index?userId=${encodeURIComponent(userId)}` })
+    const target = relations.find((user) => user.userId === userId)
+    openUnifiedUserProfile(userId, target?.name)
   }
 
   const followBack = (userId: string, silent = false) => {
