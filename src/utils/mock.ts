@@ -606,6 +606,123 @@ export const CONTACTS = [
   { id: 10, name: '小王', avatar: '', bio: '设计专业大三', online: true },
 ]
 
+// ========== USER RELATIONS ==========
+export type UserRelation = {
+  userId: string
+  name: string
+  avatar: string
+  college: string
+  grade: string
+  campus: string
+  intro: string
+  relationType: 'follower' | 'following' | 'mutual'
+  isFollowing: boolean
+  isFollower: boolean
+  isMutual: boolean
+  isSpecial: boolean
+  isBlocked: boolean
+  createdAt: string
+}
+
+export const MOCK_RELATIONS: UserRelation[] = [
+  {
+    userId: 'u_fan_ai',
+    name: '科研小达人',
+    avatar: '',
+    college: '计算机学院',
+    grade: '研一',
+    campus: '紫金港',
+    intro: '关注 AI 工具和论文写作流程，最近在整理文献阅读模板。',
+    relationType: 'follower',
+    isFollowing: false,
+    isFollower: true,
+    isMutual: false,
+    isSpecial: false,
+    isBlocked: false,
+    createdAt: '2026-05-10',
+  },
+  {
+    userId: 'u_fan_photo',
+    name: '光影捕手',
+    avatar: '',
+    college: '外国语学院',
+    grade: '大三',
+    campus: '西溪',
+    intro: '喜欢校园摄影和后期修图，想找周末一起扫街的搭子。',
+    relationType: 'mutual',
+    isFollowing: true,
+    isFollower: true,
+    isMutual: true,
+    isSpecial: true,
+    isBlocked: false,
+    createdAt: '2026-05-08',
+  },
+  {
+    userId: 'u_fan_data',
+    name: '数据分析同学',
+    avatar: '',
+    college: '管理学院',
+    grade: '研二',
+    campus: '紫金港',
+    intro: '正在学习 Python 数据清洗，希望交流课程作业分析思路。',
+    relationType: 'follower',
+    isFollowing: false,
+    isFollower: true,
+    isMutual: false,
+    isSpecial: false,
+    isBlocked: false,
+    createdAt: '2026-05-07',
+  },
+  {
+    userId: 'u_follow_design',
+    name: '产品设计同学',
+    avatar: '',
+    college: '管理学院',
+    grade: '大四',
+    campus: '紫金港',
+    intro: '关注产品原型、用户研究和小程序体验设计。',
+    relationType: 'following',
+    isFollowing: true,
+    isFollower: false,
+    isMutual: false,
+    isSpecial: false,
+    isBlocked: false,
+    createdAt: '2026-05-06',
+  },
+  {
+    userId: 'u_follow_python',
+    name: 'Python 练习生',
+    avatar: '',
+    college: '计算机学院',
+    grade: '大二',
+    campus: '玉泉',
+    intro: '每天刷一点 Python 自动化脚本，想参加开源项目。',
+    relationType: 'following',
+    isFollowing: true,
+    isFollower: false,
+    isMutual: false,
+    isSpecial: true,
+    isBlocked: false,
+    createdAt: '2026-05-04',
+  },
+  {
+    userId: 'u_follow_sport',
+    name: '羽毛球搭子',
+    avatar: '',
+    college: '电气学院',
+    grade: '大三',
+    campus: '玉泉',
+    intro: '每周固定打球，欢迎水平相近的同学一起约场。',
+    relationType: 'following',
+    isFollowing: true,
+    isFollower: false,
+    isMutual: false,
+    isSpecial: false,
+    isBlocked: false,
+    createdAt: '2026-05-02',
+  },
+]
+
 // ========== SKILL DETAIL ==========
 export const SKILL_DETAIL = {
   id: 1, name: 'Python 编程', level: 'Lv.5', category: '编程开发',
