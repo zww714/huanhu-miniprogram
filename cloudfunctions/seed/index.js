@@ -282,9 +282,16 @@ async function seedCollection(name, data) {
 // ========== 主入口 ==========
 
 exports.main = async (event, context) => {
-  const { reset, step } = event
-
   try {
+    // 安全保护：仅管理员可执行
+    const { OPENID } = cloud.getWXContext()
+    if (!OPENID) return { success: false, message: '无访问权限' }
+    // 禁止自动执行，必须传 secret 参数
+    if (!event.secret || event.secret !== 'huanhu-admin-seed') {
+      return { success: false, message: '需提供正确的 secret 参数' }
+    }
+
+    const { reset, step } = event
     // 如果 reset 为 true，先清空所有集合
     if (reset === true) {
       const collections = ['users', 'posts', 'activities', 'certifications']
