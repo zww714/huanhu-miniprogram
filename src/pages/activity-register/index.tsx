@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { Button, Input, Text, Textarea, View } from '@tarojs/components'
+import { registerActivity } from '../../utils/api'
 import './index.css'
 
 export default function ActivityRegister() {
@@ -16,6 +17,7 @@ export default function ActivityRegister() {
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [note, setNote] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
   useLoad((options) => {
     setActivity({
@@ -29,21 +31,31 @@ export default function ActivityRegister() {
     })
   })
 
-  const submit = () => {
+  const submit = async () => {
     if (!name.trim()) {
       Taro.showToast({ title: '请输入姓名', icon: 'none' })
       return
     }
-    Taro.setStorageSync('lastActivityRegistration', {
-      activityId: activity.id,
-      activityTitle: activity.title,
-      name,
-      phone,
-      note,
-      createdAt: Date.now(),
-    })
-    Taro.showToast({ title: '报名成功', icon: 'success' })
-    setTimeout(() => Taro.navigateBack(), 600)
+    setSubmitting(true)
+    try {
+      const res = await registerActivity({
+        activityId: activity.id,
+        name: name.trim(),
+        phone: phone.trim(),
+        note: note.trim(),
+      })
+      if (res.registered) {
+        Taro.showToast({ title: '报名成功', icon: 'success' })
+        setTimeout(() => Taro.navigateBack(), 600)
+      } else {
+        Taro.showToast({ title: '报名失败，请重试', icon: 'none' })
+      }
+    } catch (e) {
+      console.warn('[ActivityRegister] submit failed', e)
+      Taro.showToast({ title: '报名失败', icon: 'none' })
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -71,7 +83,16 @@ export default function ActivityRegister() {
         <Textarea value={note} placeholder='可填写你的报名说明' onInput={(e) => setNote(String(e.detail.value || ''))} style={{ marginTop: '8px', width: '100%', height: '100px', boxSizing: 'border-box', backgroundColor: '#F8FAFC', borderRadius: '10px', padding: '12px', fontSize: '14px' }} />
       </View>
 
-      <Button onClick={submit} style={{ marginTop: '22px', backgroundColor: '#2563EB', color: '#FFF', borderRadius: '10px', fontSize: '15px' }}>提交报名</Button>
+      <Button
+        onClick={submit}
+        disabled={submitting}
+        style={{
+          marginTop: '22px', backgroundColor: submitting ? '#94A3B8' : '#2563EB',
+          color: '#FFF', borderRadius: '10px', fontSize: '15px',
+        }}
+      >
+        {submitting ? '提交中...' : '提交报名'}
+      </Button>
     </View>
   )
 }

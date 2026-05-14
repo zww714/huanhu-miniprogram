@@ -726,6 +726,55 @@ export async function getActivities(params?: { category?: string; page?: number 
   return activities
 }
 
+// ----- 活动报名 -----
+export async function registerActivity(params: { activityId: string; name?: string; phone?: string; note?: string }) {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('activity', { action: 'register', ...params })
+      return res.data || { registered: true }
+    } catch (e) {
+      console.warn('[API] registerActivity failed', e)
+    }
+  }
+  return { registered: true }
+}
+
+export async function getMyActivityRegistrations() {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('activity', { action: 'getMyRegistrations' })
+      return res.data || []
+    } catch (e) {
+      console.warn('[API] getMyActivityRegistrations failed', e)
+    }
+  }
+  return []
+}
+
+export async function cancelActivityRegistration(params: { registrationId?: string; activityId?: string }) {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('activity', { action: 'cancelRegistration', ...params })
+      return res.data || { canceled: true }
+    } catch (e) {
+      console.warn('[API] cancelActivityRegistration failed', e)
+    }
+  }
+  return { canceled: true }
+}
+
+export async function getActivityDetail(params: { activityId: string }) {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('activity', { action: 'getDetail', ...params })
+      return res.data || null
+    } catch (e) {
+      console.warn('[API] getActivityDetail failed', e)
+    }
+  }
+  return null
+}
+
 // ----- 对话列表 -----
 export async function getConversations() {
   if (USE_CLOUD) {
