@@ -1,7 +1,8 @@
 import { View, Text, ScrollView } from '@tarojs/components'
 import Taro, { useDidShow, useLoad } from '@tarojs/taro'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { CURRENT_USER } from '../../utils/mock'
+import { getUserDetail, getUserPosts, getUserSkills } from '../../utils/api'
 import {
   getFollowingForUser,
   getFollowersForUser,
@@ -34,6 +35,9 @@ function relationLabel(relation: PublicRelation) {
 
 export default function UserDetail() {
   const [routeUser, setRouteUser] = useState({ id: '', name: '' })
+  const [remoteUser, setRemoteUser] = useState<any>(null)
+  const [remoteSkills, setRemoteSkills] = useState<any[]>([])
+  const [remotePosts, setRemotePosts] = useState<any[]>([])
   const [activeTab, setActiveTab] = useState<'posts' | 'reviews'>('posts')
   const [relationTick, setRelationTick] = useState(0)
 
@@ -48,14 +52,82 @@ export default function UserDetail() {
     setRelationTick((value) => value + 1)
   })
 
+  useEffect(() => {
+    const userId = normalizePublicUserId(routeUser.id, routeUser.name)
+    if (!userId) return
+    let alive = true
+    getUserDetail({ userId })
+      .then((user) => {
+        if (!alive || !user) return
+        setRemoteUser(user)
+      })
+      .catch((e) => console.warn('[UserDetail] getUserDetail failed, fallback to public mock', e))
+    return () => { alive = false }
+  }, [routeUser.id, routeUser.name])
+
+  useEffect(() => {
+    const userId = normalizePublicUserId(routeUser.id, routeUser.name)
+    if (!userId) return
+    let alive = true
+    getUserPosts({ userId })
+      .then((posts) => {
+        if (alive && Array.isArray(posts)) setRemotePosts(posts)
+      })
+      .catch((e) => console.warn('[UserDetail] getUserPosts failed, fallback public mock', e))
+    return () => { alive = false }
+  }, [routeUser.id, routeUser.name])
+
+  useEffect(() => {
+    const userId = normalizePublicUserId(routeUser.id, routeUser.name)
+    if (!userId) return
+    let alive = true
+    getUserSkills({ userId })
+      .then((skills) => {
+        if (!alive || !Array.isArray(skills)) return
+        setRemoteSkills(skills)
+      })
+      .catch((e) => console.warn('[UserDetail] getUserSkills failed, fallback to public mock', e))
+    return () => { alive = false }
+  }, [routeUser.id, routeUser.name])
+
   const detailUser = useMemo(() => {
     const userId = normalizePublicUserId(routeUser.id, routeUser.name)
-    return getPublicUser(userId, routeUser.name)
-  }, [routeUser.id, routeUser.name])
+    const fallback = getPublicUser(userId, routeUser.name)
+    if (!remoteUser) return fallback
+    const canTeach = remoteSkills.length ? remoteSkills : (remoteUser.canTeach || remoteUser.skills || remoteUser.can || fallback.canTeach)
+    const wantToLearn = remoteUser.wantToLearn || remoteUser.learnWants || remoteUser.want || fallback.wantToLearn
+    return {
+      ...fallback,
+      ...remoteUser,
+      id: remoteUser.id || remoteUser._id || fallback.id,
+      name: remoteUser.name || fallback.name,
+      intro: remoteUser.intro || remoteUser.bio || fallback.intro,
+      canTeach,
+      wantToLearn,
+      interests: remoteUser.interests || fallback.interests,
+      followerCount: remoteUser.followerCount ?? remoteUser.stats?.followers ?? fallback.followerCount,
+      followingCount: remoteUser.followingCount ?? remoteUser.stats?.following ?? fallback.followingCount,
+    }
+  }, [routeUser.id, routeUser.name, remoteUser, remoteSkills])
 
   const isSelf = detailUser.id === CURRENT_USER.id
   const relation = useMemo(() => getRelationForUser(detailUser.id), [detailUser.id, relationTick])
-  const posts = useMemo(() => getPublicPosts(detailUser.id).slice(0, 2), [detailUser.id])
+  const posts = useMemo(() => {
+    const source = remotePosts.length
+      ? remotePosts
+      : Array.isArray(remoteUser?.posts) && remoteUser.posts.length
+      ? remoteUser.posts.map((post: any) => ({
+        ...post,
+        id: post.id || post._id,
+        authorId: post.authorId || post.userId || detailUser.id,
+        summary: post.summary || post.excerpt || post.content || '',
+        likeCount: post.likeCount ?? post.likes ?? 0,
+        commentCount: post.commentCount ?? post.comments ?? 0,
+        visibility: post.visibility || 'public',
+      }))
+      : getPublicPosts(detailUser.id)
+    return source.slice(0, 2)
+  }, [detailUser.id, remoteUser, remotePosts])
   const reviews = useMemo(() => getPublicReviews(detailUser.id).slice(0, 2), [detailUser.id])
   const followerCount = Math.max(detailUser.followerCount, getFollowersForUser(detailUser.id).length)
   const followingCount = Math.max(detailUser.followingCount, getFollowingForUser(detailUser.id).length)

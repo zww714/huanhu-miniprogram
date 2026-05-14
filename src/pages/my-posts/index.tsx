@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
 import { CURRENT_USER, MOCK_POSTS, MY_POSTS } from '../../utils/mock'
+import { deletePost, getMyPosts, updatePost } from '../../utils/api'
 import './index.css'
 
 type ManagedPost = {
@@ -75,6 +76,22 @@ export default function MyPosts() {
 
   useDidShow(() => {
     setPosts(readPosts())
+    getMyPosts()
+      .then((data) => {
+        if (!Array.isArray(data)) return
+        setPosts(data.map((post: any) => ({
+          id: post.id || post._id,
+          title: post.title,
+          excerpt: post.excerpt || post.summary || post.content || '',
+          tags: post.tags || [],
+          likes: post.likes ?? post.likeCount ?? 0,
+          comments: post.comments ?? post.commentCount ?? 0,
+          createdAt: post.createdAt,
+          authorId: post.authorId || post.userId,
+          visibility: post.visibility || 'public',
+        })))
+      })
+      .catch((e) => console.warn('[MyPosts] getMyPosts failed, fallback local', e))
   })
 
   const visiblePosts = useMemo(() => {
@@ -106,6 +123,7 @@ export default function MyPosts() {
         if (tapIndex === 3) {
           const next = posts.map((item) => item.id === post.id ? { ...item, visibility: item.visibility === 'private' ? 'public' : 'private' } : item)
           updatePosts(next)
+          updatePost({ postId: post.id, post: { visibility: post.visibility === 'private' ? 'public' : 'private' } }).catch((e) => console.warn('[MyPosts] update visibility failed', e))
           Taro.showToast({ title: post.visibility === 'private' ? '已设为公开' : '已设为私密', icon: 'success' })
         }
         if (tapIndex === 4) confirmDelete([post.id])
@@ -121,6 +139,7 @@ export default function MyPosts() {
       confirmColor: '#EF4444',
       success: ({ confirm }) => {
         if (!confirm) return
+        ids.forEach((id) => deletePost({ postId: id }).catch((e) => console.warn('[MyPosts] delete failed', e)))
         updatePosts(posts.filter((post) => !ids.includes(post.id)))
         setSelectedIds([])
         Taro.showToast({ title: '已删除', icon: 'success' })

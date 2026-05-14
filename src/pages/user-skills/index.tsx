@@ -1,18 +1,32 @@
 import { View, Text, ScrollView } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { getPublicSkills, getPublicUser, normalizePublicUserId } from '../../utils/publicProfiles'
+import { getUserSkills } from '../../utils/api'
 import './index.css'
 
 export default function UserSkills() {
   const [userId, setUserId] = useState('')
+  const [remoteSkills, setRemoteSkills] = useState<any[]>([])
 
   useLoad((options) => {
     setUserId(normalizePublicUserId(String(options?.userId || options?.id || '')))
   })
 
   const user = useMemo(() => getPublicUser(userId), [userId])
-  const skills = useMemo(() => getPublicSkills(user.id), [user.id])
+  const skills = useMemo(() => remoteSkills.length ? remoteSkills : getPublicSkills(user.id), [remoteSkills, user.id])
+
+  useEffect(() => {
+    if (!user.id) return
+    let alive = true
+    getUserSkills({ userId: user.id })
+      .then((data) => {
+        if (!alive || !Array.isArray(data)) return
+        setRemoteSkills(data)
+      })
+      .catch((e) => console.warn('[UserSkills] getUserSkills failed, fallback to public mock', e))
+    return () => { alive = false }
+  }, [user.id])
 
   const openSkill = (skillId: string) => {
     Taro.navigateTo({ url: `/pages/skill-detail/index?userId=${encodeURIComponent(user.id)}&skillId=${encodeURIComponent(skillId)}` })
@@ -40,7 +54,7 @@ export default function UserSkills() {
               <Text className='skill-title'>{skill.name}</Text>
               <Text className='level-pill'>Lv.{skill.level}</Text>
             </View>
-            <Text className='skill-intro'>{skill.intro}</Text>
+            <Text className='skill-intro'>{skill.intro || skill.desc}</Text>
             <View className='skill-meta'>
               <Text>{skill.proofCount} 个证明材料</Text>
               <Text>{skill.workCount} 个作品</Text>

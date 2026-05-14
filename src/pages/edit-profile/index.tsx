@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Taro from '@tarojs/taro'
 import { Button, Input, Text, Textarea, View } from '@tarojs/components'
 import { MY_PROFILE } from '../../utils/mock'
+import { getCurrentUser, updateProfile } from '../../utils/api'
 import './index.css'
 
 type Gender = 'male' | 'female' | 'private'
@@ -28,7 +29,23 @@ export default function EditProfile() {
   const [campus, setCampus] = useState(saved.campus || MY_PROFILE.campus || '')
   const [intro, setIntro] = useState(saved.intro || saved.bio || MY_PROFILE.bio || '')
 
-  const save = () => {
+  useEffect(() => {
+    let alive = true
+    getCurrentUser()
+      .then((user) => {
+        if (!alive || !user) return
+        setNickname(user.name || user.nickname || '')
+        setGender(user.gender || 'private')
+        setCollege(user.college || '')
+        setGrade(user.grade || '')
+        setCampus(user.campus || '')
+        setIntro(user.intro || user.bio || '')
+      })
+      .catch((e) => console.warn('[EditProfile] getCurrentUser failed, fallback to local', e))
+    return () => { alive = false }
+  }, [])
+
+  const save = async () => {
     const nextNickname = nickname.trim()
     const nextCollege = college.trim()
     const nextGrade = grade.trim()
@@ -44,7 +61,7 @@ export default function EditProfile() {
       return
     }
 
-    Taro.setStorageSync(PROFILE_STORAGE_KEY, {
+    const payload = {
       nickname: nextNickname,
       name: nextNickname,
       gender: gender || 'private',
@@ -53,7 +70,14 @@ export default function EditProfile() {
       campus: nextCampus,
       intro: nextIntro,
       bio: nextIntro,
-    })
+    }
+
+    Taro.setStorageSync(PROFILE_STORAGE_KEY, payload)
+    try {
+      await updateProfile({ profile: payload })
+    } catch (e) {
+      console.warn('[EditProfile] updateProfile failed, saved locally', e)
+    }
     Taro.showToast({ title: '保存成功', icon: 'success' })
     setTimeout(() => Taro.navigateBack(), 500)
   }

@@ -2,6 +2,7 @@ import { View, Text, ScrollView, Image } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { useState } from 'react'
 import './index.css'
+import { getCurrentUser, getMyPosts, getMySkills as fetchMySkills, updateProfile } from '../../utils/api'
 
 import {
   AVATAR_STORAGE_KEY,
@@ -35,6 +36,8 @@ export default function Profile() {
   const [selectedSkillName, setSelectedSkillName] = useState(MY_SKILLS[0]?.name || '')
   const [avatarUrl, setAvatarUrl] = useState(MY_PROFILE.avatar || '')
   const [profileData, setProfileData] = useState(MY_PROFILE)
+  const [mySkills, setMySkills] = useState<any[]>(MY_SKILLS)
+  const [myPosts, setMyPosts] = useState<any[]>(MY_POSTS)
 
   const toast = (msg: string) => Taro.showToast({ title: msg, icon: 'none' })
   const go = (url: string) => Taro.navigateTo({ url })
@@ -43,9 +46,13 @@ export default function Profile() {
     setAvatarUrl(nextAvatar)
     Taro.setStorageSync(AVATAR_STORAGE_KEY, nextAvatar)
   }
-  const updateProfileAvatar = (nextAvatar: string) => {
-    // Reserved for the real backend flow: upload avatar, then call updateProfile.
+  const updateProfileAvatar = async (nextAvatar: string) => {
     saveAvatar(nextAvatar)
+    try {
+      await updateProfile({ profile: { avatar: nextAvatar } })
+    } catch (e) {
+      console.warn('[Profile] update avatar failed, saved locally', e)
+    }
   }
   const chooseAvatarImage = (sourceType: 'camera' | 'album') => {
     const failTitle = sourceType === 'camera' ? '未能获取照片' : '未能选择图片'
@@ -87,11 +94,13 @@ export default function Profile() {
       },
     })
   }
-  const goSkillDetail = (skillName: string) => {
+  const goSkillDetail = (skill: any) => {
+    const skillName = skill.name || ''
     setSelectedSkillName(skillName)
-    const skillId = SKILL_ID_BY_NAME[skillName] || encodeURIComponent(skillName)
+    const skillId = skill.id || skill._id || SKILL_ID_BY_NAME[skillName] || encodeURIComponent(skillName)
+    const userId = skill.userId || profileData.user_id || MY_PROFILE.user_id
     Taro.navigateTo({
-      url: `/pages/skill-detail/index?userId=${encodeURIComponent(MY_PROFILE.user_id)}&skillId=${encodeURIComponent(skillId)}`,
+      url: `/pages/skill-detail/index?userId=${encodeURIComponent(userId)}&skillId=${encodeURIComponent(skillId)}`,
     })
   }
   const goInterestDetail = (interestName: string) => {
@@ -107,7 +116,7 @@ export default function Profile() {
   }
 
   const p = profileData
-  const displaySkills = MY_SKILLS.slice(0, 4)
+  const displaySkills = mySkills.slice(0, 4)
   const systemAvatar = SYSTEM_AVATARS.find((item) => item.id === avatarUrl)
   const reviewAverage = MY_REVIEWS.length
     ? (MY_REVIEWS.reduce((sum, review) => sum + review.rating, 0) / MY_REVIEWS.length).toFixed(1)
@@ -128,6 +137,39 @@ export default function Profile() {
       setProfileData(MY_PROFILE)
     }
     setAvatarUrl(cachedAvatar || MY_PROFILE.avatar || '')
+
+    getCurrentUser()
+      .then((user) => {
+        if (!user) return
+        const merged = {
+          ...MY_PROFILE,
+          ...user,
+          user_id: user.user_id || user.id || user._id || MY_PROFILE.user_id,
+          name: user.name || user.nickname || MY_PROFILE.name,
+          bio: user.intro || user.bio || MY_PROFILE.bio,
+          stats: user.stats || {
+            skills: user.skillCount ?? MY_PROFILE.stats.skills,
+            posts: user.postCount ?? MY_PROFILE.stats.posts,
+            followers: user.followerCount ?? MY_PROFILE.stats.followers,
+            following: user.followingCount ?? MY_PROFILE.stats.following,
+          },
+        }
+        setProfileData(merged)
+        setAvatarUrl(cachedAvatar || user.avatar || MY_PROFILE.avatar || '')
+      })
+      .catch((e) => console.warn('[Profile] getCurrentUser failed, fallback to mock', e))
+
+    fetchMySkills()
+      .then((skills) => {
+        if (Array.isArray(skills) && skills.length) setMySkills(skills)
+      })
+      .catch((e) => console.warn('[Profile] getMySkills failed, fallback to mock', e))
+
+    getMyPosts()
+      .then((posts) => {
+        if (Array.isArray(posts)) setMyPosts(posts)
+      })
+      .catch((e) => console.warn('[Profile] getMyPosts failed, fallback to mock', e))
   })
 
   return (
@@ -188,21 +230,21 @@ export default function Profile() {
               <View
                 key={skill.name}
                 className={`skill-card ${selected ? 'selected' : ''}`}
-                onClick={() => goSkillDetail(skill.name)}
+                onClick={() => goSkillDetail(skill)}
               >
                 <View className='level-badge' style={{ backgroundColor: lc.bg }}>
                   <Text style={{ color: lc.text }}>{lc.label}</Text>
                 </View>
                 <View className='skill-main'>
                   <Text className='skill-name'>{skill.name}</Text>
-                  <Text className='skill-desc'>{skill.desc}</Text>
+                  <Text className='skill-desc'>{skill.desc || skill.intro}</Text>
                 </View>
                 <Text className='skill-more'>查看详情 ›</Text>
               </View>
             )
           })}
         </View>
-        {MY_SKILLS.length > 4 && (
+        {mySkills.length > 4 && (
           <View className='more-link' onClick={() => go('/pages/my-skills/index')}>
             <Text>查看更多...</Text>
           </View>
@@ -261,12 +303,12 @@ export default function Profile() {
         </View>
         {activeTab === 'posts' && (
           <View className='post-list'>
-            {MY_POSTS.length ? (
-              MY_POSTS.slice(0, 2).map((post) => (
+            {myPosts.length ? (
+              myPosts.slice(0, 2).map((post) => (
                 <View className='post-card' key={post.id} onClick={() => goPostDetail(post.id)}>
                   <View className='post-title-row'>
                     <Text className='post-title'>{post.title}</Text>
-                    <Text className='post-time'>{post.time}</Text>
+                    <Text className='post-time'>{post.time || (post.createdAt ? new Date(post.createdAt).toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' }) : '刚刚')}</Text>
                   </View>
                   <Text className='post-excerpt'>{post.excerpt}</Text>
                   <View className='post-tags'>

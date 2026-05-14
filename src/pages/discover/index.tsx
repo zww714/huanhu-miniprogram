@@ -236,7 +236,7 @@ export default function Discover() {
     async function loadPosts() {
       setLoading(true)
       try {
-        const data = await getPosts({ page: 0 })
+        const data = await getPosts({ page: 0, category: CATEGORIES[activeCat], keyword: searchQuery.trim() })
         if (alive) setPosts(mergePendingPost(data?.length ? data : MOCK_POSTS))
       } catch (e) {
         console.warn('[Discover] load posts failed', e)
@@ -249,7 +249,7 @@ export default function Discover() {
     return () => {
       alive = false
     }
-  }, [])
+  }, [activeCat, searchQuery])
 
   const keyword = searchQuery.trim()
   const filtered = useMemo(() => {

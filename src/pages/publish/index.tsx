@@ -1,7 +1,7 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { Image, Input, ScrollView, Text, Textarea, View } from '@tarojs/components'
-import { createActivity, createPost, publishPartnerProfile, publishSkillNeed } from '../../utils/api'
+import { createActivity, createPost, getPostDetail, publishPartnerProfile, publishSkillNeed, updatePost } from '../../utils/api'
 import { MOCK_POSTS, MY_POSTS } from '../../utils/mock'
 import './index.css'
 
@@ -66,6 +66,20 @@ export default function Publish() {
       setMode('post')
       setIsEditMode(true)
       setEditPostId(postId)
+      getPostDetail({ postId })
+        .then((remotePost: any) => {
+          if (!remotePost) return
+          if (!remotePost.canManage) {
+            Taro.showToast({ title: '无权限编辑该帖子', icon: 'none' })
+            return
+          }
+          setPostTitle(remotePost.title || '')
+          setPostContent(remotePost.content || remotePost.excerpt || '')
+          setPostCategory(remotePost.category || remotePost.mainCategory || '科研')
+          setPostTags(Array.isArray(remotePost.tags) ? remotePost.tags : [])
+          setPostImage(remotePost.images?.[0] || (remotePost.cover && !String(remotePost.cover).startsWith('linear-gradient') ? remotePost.cover : ''))
+        })
+        .catch((e) => console.warn('[Publish] getPostDetail failed, fallback local', e))
       if (post) {
         setPostTitle(post.title || '')
         setPostContent(post.content || post.excerpt || '')
@@ -174,17 +188,16 @@ export default function Publish() {
     }
 
     if (isEditMode) {
-      const editedPosts = Taro.getStorageSync('editedPosts') || {}
-      Taro.setStorageSync('editedPosts', {
-        ...editedPosts,
-        [editPostId]: {
+      await updatePost({
+        postId: editPostId,
+        post: {
           title: postTitle.trim(),
           content: postContent.trim(),
-          excerpt: postContent.trim().slice(0, 80),
+          summary: postContent.trim().slice(0, 80),
           tags: tags.length ? tags : [postCategory],
+          category: postCategory,
           mainCategory: postCategory,
           images: postImage ? [postImage] : [],
-          updatedAt: new Date().toISOString(),
         },
       })
       Taro.showToast({ title: '保存成功', icon: 'success' })

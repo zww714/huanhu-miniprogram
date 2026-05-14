@@ -1,6 +1,7 @@
 import { View, Text, ScrollView } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { getUserPosts } from '../../utils/api'
 import {
   getPublicPosts,
   getPublicUser,
@@ -12,16 +13,28 @@ import './index.css'
 
 export default function UserPosts() {
   const [userId, setUserId] = useState('')
+  const [remotePosts, setRemotePosts] = useState<any[]>([])
 
   useLoad((options) => {
     setUserId(normalizePublicUserId(String(options?.userId || options?.id || '')))
   })
 
   const user = useMemo(() => getPublicUser(userId), [userId])
-  const posts = useMemo(() => getPublicPosts(user.id), [user.id])
+  const posts = useMemo(() => remotePosts.length ? remotePosts : getPublicPosts(user.id), [remotePosts, user.id])
+
+  useEffect(() => {
+    if (!user.id) return
+    let alive = true
+    getUserPosts({ userId: user.id })
+      .then((data) => {
+        if (alive && Array.isArray(data)) setRemotePosts(data)
+      })
+      .catch((e) => console.warn('[UserPosts] getUserPosts failed, fallback mock', e))
+    return () => { alive = false }
+  }, [user.id])
 
   const openPost = (post: PublicPost) => {
-    setPendingPublicPost(post, user)
+    if (!(post as any).canManage) setPendingPublicPost(post, user)
     Taro.navigateTo({ url: `/pages/post-detail/index?postId=${encodeURIComponent(post.id)}&from=user-posts` })
   }
 

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * API 层 - 统一数据入口
  *
  * 设计原则：
@@ -234,13 +234,26 @@ export async function login() {
   if (USE_CLOUD) {
     try {
       const res = await callCloudFunction('login')
-      return res.userData
+      return res.currentUser || res.userData
     } catch (e) {
       console.warn('[API] login cloud failed', e)
     }
   }
   await delay()
   return MY_PROFILE
+}
+
+export async function getCurrentUser() {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('getCurrentUser')
+      return res.currentUser || res.userData
+    } catch (e) {
+      console.warn('[API] getCurrentUser cloud failed', e)
+    }
+  }
+  await delay()
+  return wx.getStorageSync('profileDraft') || MY_PROFILE
 }
 
 const LOGIN_USER_KEY = 'huanhuLoginUser'
@@ -379,34 +392,37 @@ function normalizePost(post: any) {
       grade: '在读',
     },
     tags: Array.isArray(cleanSeed?.tags || post.tags) ? (cleanSeed?.tags || post.tags) : [],
-    likes: Number(post.likes || cleanSeed?.likes || 0),
-    comments: Number(post.comments || cleanSeed?.comments || 0),
+    likes: Number(post.likes ?? post.likeCount ?? cleanSeed?.likes ?? 0),
+    comments: Number(post.comments ?? post.commentCount ?? cleanSeed?.comments ?? 0),
+    likeCount: Number(post.likeCount ?? post.likes ?? cleanSeed?.likes ?? 0),
+    commentCount: Number(post.commentCount ?? post.comments ?? cleanSeed?.comments ?? 0),
+    collectCount: Number(post.collectCount ?? post.favoriteCount ?? 0),
+    favoriteCount: Number(post.favoriteCount ?? post.collectCount ?? 0),
+    authorId: post.authorId || post.userId || cleanSeed?.authorId,
+    userId: post.userId || post.authorId || cleanSeed?.userId,
+    canManage: !!post.canManage,
     createdAt,
     createdAtMs,
   }
 }
 
-export async function getPosts(params?: { category?: string; page?: number; userId?: string }) {
+export async function getPosts(params?: { category?: string; page?: number; userId?: string; keyword?: string; tag?: string }) {
   if (USE_CLOUD) {
     try {
-      let posts = await getCloudCollection('posts')
-      if (params?.userId) {
-        posts = posts.filter((p: any) => p.userId === params.userId)
-      }
-      if (params?.category && params.category !== '全部') {
-        posts = posts.filter((p: any) => p.mainCategory === params.category)
-      }
-      return posts
-        .map(normalizePost)
-        .sort((a: any, b: any) => (b.createdAtMs || 0) - (a.createdAtMs || 0)) as Post[]
+      const res = await callCloudFunction('getPosts', params)
+      return (res.data || []).map(normalizePost) as Post[]
     } catch (e) {
-      console.warn('[API] getPosts database failed, fallback to mock', e)
+      console.warn('[API] getPosts cloud failed, fallback to mock', e)
     }
   }
   await delay()
   let posts = [...MOCK_POSTS]
-  if (params?.category && params.category !== '全部') {
-    posts = posts.filter(p => p.mainCategory === params.category)
+  if (params?.category && params.category !== '全部' && params.category !== '鍏ㄩ儴') {
+    posts = posts.filter(p => p.mainCategory === params.category || p.category === params.category)
+  }
+  if (params?.keyword) {
+    const keyword = params.keyword.toLowerCase()
+    posts = posts.filter((post: any) => [post.title, post.content, post.excerpt, post.summary, post.mainCategory, post.category, ...(post.tags || [])].some((value) => String(value || '').toLowerCase().includes(keyword)))
   }
   return posts.map((post: any) => normalizePost(post))
 }
@@ -463,15 +479,94 @@ export async function createPost(params: {
 
   if (USE_CLOUD) {
     try {
-      const res = await addCloudDocument('posts', post)
-      return { ...post, id: res._id, _id: res._id }
+      const res = await callCloudFunction('createPost', {
+        title,
+        content,
+        summary: content.slice(0, 80),
+        tags,
+        visibility: params.visibility,
+        category: params.mainCategory || '兴趣',
+        mainCategory: params.mainCategory || '兴趣',
+        images: image ? [image] : [],
+        image,
+      })
+      return normalizePost(res.data)
     } catch (e) {
-      console.warn('[API] createPost database failed', e)
-      throw e
+      console.warn('[API] createPost cloud failed, fallback local', e)
     }
   }
 
-  return { ...post, id: `local_${Date.now()}` }
+  const id = `local_${Date.now()}`
+  const localPost = { ...post, id, _id: id }
+  const saved = wx.getStorageSync('localMinePosts')
+  wx.setStorageSync('localMinePosts', [localPost, ...(Array.isArray(saved) ? saved : [])])
+  return localPost
+}
+
+export async function getMyPosts() {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('getMyPosts')
+      return (res.data || []).map(normalizePost)
+    } catch (e) {
+      console.warn('[API] getMyPosts cloud failed, fallback local', e)
+    }
+  }
+  const saved = wx.getStorageSync('localMinePosts')
+  const localPosts = Array.isArray(saved) ? saved : []
+  return [...localPosts, ...MY_POSTS].map((item: any) => normalizePost(item))
+}
+
+export async function getUserPosts(params: { userId: string }) {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('getUserPosts', params)
+      return (res.data || []).map(normalizePost)
+    } catch (e) {
+      console.warn('[API] getUserPosts cloud failed, fallback mock', e)
+    }
+  }
+  return []
+}
+
+export async function getPostDetail(params: { postId: string }) {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('getPostDetail', params)
+      return normalizePost(res.data)
+    } catch (e) {
+      console.warn('[API] getPostDetail cloud failed, fallback mock', e)
+    }
+  }
+  return undefined
+}
+
+export async function updatePost(params: { postId: string; post: Record<string, any> }) {
+  if (USE_CLOUD) {
+    try {
+      return await callCloudFunction('updatePost', params)
+    } catch (e) {
+      console.warn('[API] updatePost cloud failed, fallback local', e)
+    }
+  }
+  const editedPosts = wx.getStorageSync('editedPosts') || {}
+  wx.setStorageSync('editedPosts', { ...editedPosts, [params.postId]: params.post })
+  return { code: 0, msg: '保存成功' }
+}
+
+export async function deletePost(params: { postId: string }) {
+  if (USE_CLOUD) {
+    try {
+      return await callCloudFunction('deletePost', params)
+    } catch (e) {
+      console.warn('[API] deletePost cloud failed, fallback local', e)
+    }
+  }
+  const saved = wx.getStorageSync('localMinePosts')
+  if (Array.isArray(saved)) {
+    wx.setStorageSync('localMinePosts', saved.filter((item: any) => item.id !== params.postId && item._id !== params.postId))
+  }
+  return { code: 0, msg: '已删除' }
 }
 
 // ----- 发布“我会 / 我想学” -----
@@ -841,7 +936,88 @@ export async function getMyProfile() {
 }
 
 export async function getMySkills() {
-  return MY_SKILLS
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('getMySkills')
+      return res.data || []
+    } catch (e) {
+      console.warn('[API] getMySkills cloud failed, fallback to mock', e)
+    }
+  }
+  const saved = wx.getStorageSync('localMySkills')
+  return Array.isArray(saved) ? saved : MY_SKILLS
+}
+
+export async function getUserSkills(params: { userId: string }) {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('getUserSkills', params)
+      return res.data || []
+    } catch (e) {
+      console.warn('[API] getUserSkills cloud failed, fallback to mock', e)
+    }
+  }
+  return []
+}
+
+export async function getSkillDetail(params: { skillId: string; userId?: string }) {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('getSkillDetail', params)
+      return res.data
+    } catch (e) {
+      console.warn('[API] getSkillDetail cloud failed, fallback to mock', e)
+    }
+  }
+  return undefined
+}
+
+export async function createSkill(params: Record<string, any>) {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('createSkill', params)
+      return res.data
+    } catch (e) {
+      console.warn('[API] createSkill cloud failed, fallback local', e)
+    }
+  }
+  const saved = wx.getStorageSync('localMySkills')
+  const list = Array.isArray(saved) ? saved : MY_SKILLS
+  const next = { ...params, id: `local-${Date.now()}`, desc: params.intro || params.desc || '' }
+  wx.setStorageSync('localMySkills', [next, ...list])
+  return next
+}
+
+export async function updateSkill(params: { skillId: string; skill: Record<string, any> }) {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('updateSkill', params)
+      return res.data
+    } catch (e) {
+      console.warn('[API] updateSkill cloud failed, fallback local', e)
+    }
+  }
+  const saved = wx.getStorageSync('localMySkills')
+  const list = Array.isArray(saved) ? saved : MY_SKILLS
+  const next = list.map((item: any) => (item.id === params.skillId || item._id === params.skillId)
+    ? { ...item, ...params.skill, desc: params.skill.intro || params.skill.desc || item.desc }
+    : item)
+  wx.setStorageSync('localMySkills', next)
+  return next.find((item: any) => item.id === params.skillId || item._id === params.skillId)
+}
+
+export async function deleteSkill(params: { skillId: string }) {
+  if (USE_CLOUD) {
+    try {
+      return await callCloudFunction('deleteSkill', params)
+    } catch (e) {
+      console.warn('[API] deleteSkill cloud failed, fallback local', e)
+    }
+  }
+  const saved = wx.getStorageSync('localMySkills')
+  const list = Array.isArray(saved) ? saved : MY_SKILLS
+  wx.setStorageSync('localMySkills', list.filter((item: any) => item.id !== params.skillId && item._id !== params.skillId))
+  return { code: 0, msg: '已删除' }
 }
 
 export async function getMyLearnWants() {
@@ -870,15 +1046,25 @@ export async function followUser(params: { targetUserId: string; action: 'follow
 }
 
 // ----- 更新资料 -----
-export async function updateProfile(params: { field: string; value: any }) {
+export async function updateProfile(params: { field?: string; value?: any; profile?: Record<string, any> } | Record<string, any>) {
   if (USE_CLOUD) {
     try {
-      return await callCloudFunction('updateProfile', params)
+      const res = await callCloudFunction('updateProfile', params)
+      return res.currentUser || res.userData || res
     } catch (e) {
       console.warn('[API] updateProfile cloud failed', e)
     }
   }
-  return { code: 0, msg: '模拟更新成功' }
+  const profile = (params as any).profile || ((params as any).field ? { [(params as any).field]: (params as any).value } : params)
+  const cached = wx.getStorageSync('profileDraft') || {}
+  const localUser = {
+    ...MY_PROFILE,
+    ...cached,
+    ...profile,
+    bio: profile.intro || profile.bio || cached.bio || MY_PROFILE.bio,
+  }
+  wx.setStorageSync('profileDraft', localUser)
+  return localUser
 }
 
 // ============ 切换云函数模式 ============

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { Image, Input, ScrollView, Text, View } from '@tarojs/components'
 import {
@@ -9,7 +9,7 @@ import {
   type Comment,
   type CommentReply,
 } from '../../utils/mock'
-import { getPosts } from '../../utils/api'
+import { deletePost, getPostDetail, getPosts, updatePost } from '../../utils/api'
 import { openUnifiedUserProfile } from '../../utils/publicProfiles'
 import './index.css'
 
@@ -158,7 +158,8 @@ export default function PostDetail() {
     }
 
     try {
-      const posts = await getPosts({ page: 0 })
+      const remotePost = await getPostDetail({ postId: id })
+      const posts = remotePost ? [remotePost] : await getPosts({ page: 0 })
       const found = posts.find((item: Post) => getRecordId(item) === id)
         || MOCK_POSTS.find((item) => item.id === id)
         || localPosts.find((item: Post) => getRecordId(item) === id)
@@ -189,7 +190,7 @@ export default function PostDetail() {
   const author = getAuthor(post)
   const authorId = getAuthorId(post)
   const postId = getRecordId(post)
-  const isOwner = !isMissing && authorId === CURRENT_USER.id
+  const isOwner = !isMissing && (!!(post as any).canManage || authorId === CURRENT_USER.id)
   const body = (post.content || post.excerpt || '').split('\n').filter(Boolean)
   const images = post.images?.length ? post.images : isImageCover(post.cover) ? [post.cover!] : []
   const commentTotal = comments.reduce((total, comment) => total + 1 + (comment.replies?.length || 0), 0)
@@ -208,6 +209,7 @@ export default function PostDetail() {
   const handleToggleVisibility = () => {
     const nextVisibility = visibility === 'public' ? 'private' : 'public'
     setVisibility(nextVisibility)
+    updatePost({ postId, post: { visibility: nextVisibility } }).catch((e) => console.warn('[PostDetail] update visibility failed', e))
     Taro.showToast({ title: nextVisibility === 'private' ? '已设为私密' : '已设为公开', icon: 'none' })
   }
   const handleDeletePost = () => {
@@ -218,9 +220,16 @@ export default function PostDetail() {
       confirmColor: '#EF4444',
       success: (res) => {
         if (!res.confirm) return
-        setIsMissing(true)
-        Taro.showToast({ title: '已删除', icon: 'success' })
-        setTimeout(() => Taro.navigateBack(), 600)
+        deletePost({ postId })
+          .then(() => {
+            setIsMissing(true)
+            Taro.showToast({ title: '已删除', icon: 'success' })
+            setTimeout(() => Taro.navigateBack(), 600)
+          })
+          .catch((e) => {
+            console.warn('[PostDetail] delete failed', e)
+            Taro.showToast({ title: '删除失败', icon: 'none' })
+          })
       },
     })
   }

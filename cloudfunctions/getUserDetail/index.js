@@ -1,61 +1,101 @@
-// 云函数 - 获取用户详情（个人详情页）
 const cloud = require('wx-server-sdk')
+
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
+
 const db = cloud.database()
+const _ = db.command
 
-exports.main = async (event, context) => {
-  const { userId } = event
-  const { OPENID } = cloud.getWXContext()
+function toPublicUser(doc, relation) {
+  const stats = doc.stats || {}
+  const canTeach = doc.canTeach || doc.skills || doc.can || []
+  const wantToLearn = doc.wantToLearn || doc.learnWants || doc.want || []
+  const intro = doc.intro || doc.bio || ''
 
-  if (!userId) {
-    return { code: -1, msg: '缺少 userId' }
+  return {
+    _id: doc._id,
+    id: doc._id,
+    name: doc.name || '同学',
+    avatar: doc.avatar || '',
+    gender: doc.gender || 'private',
+    school: doc.school || '浙江大学',
+    college: doc.college || '',
+    major: doc.major || '',
+    grade: doc.grade || '',
+    campus: doc.campus || '',
+    intro,
+    bio: intro,
+    verified: !!doc.verified,
+    canTeach,
+    skills: canTeach,
+    can: canTeach,
+    wantToLearn,
+    learnWants: wantToLearn,
+    want: wantToLearn,
+    interests: doc.interests || [],
+    skillCount: Number(doc.skillCount ?? stats.skills ?? canTeach.length ?? 0),
+    postCount: Number(doc.postCount ?? stats.posts ?? 0),
+    followerCount: Number(doc.followerCount ?? stats.followers ?? 0),
+    followingCount: Number(doc.followingCount ?? stats.following ?? 0),
+    stats: {
+      skills: Number(doc.skillCount ?? stats.skills ?? canTeach.length ?? 0),
+      posts: Number(doc.postCount ?? stats.posts ?? 0),
+      followers: Number(doc.followerCount ?? stats.followers ?? 0),
+      following: Number(doc.followingCount ?? stats.following ?? 0),
+    },
+    isFollowing: relation.isFollowing,
+    isFollower: relation.isFollower,
+    isMutual: relation.isFollowing && relation.isFollower,
+    posts: relation.posts || [],
+    reviews: doc.reviews || [],
   }
+}
 
+exports.main = async (event = {}) => {
   try {
-    // 获取目标用户
-    const userResult = await db.collection('users').doc(userId).get()
-    const user = userResult.data
+    const { userId } = event
+    const { OPENID } = cloud.getWXContext()
+    if (!userId) return { code: -1, msg: '缺少 userId' }
 
-    if (!user) {
-      return { code: -2, msg: '用户不存在' }
+    const target = await db.collection('users').doc(userId).get()
+    if (!target.data) return { code: -2, msg: '用户不存在' }
+
+    let myId = ''
+    let isFollowing = false
+    let isFollower = false
+
+    if (OPENID) {
+      const current = await db.collection('users')
+        .where({ openid: OPENID })
+        .field({ _id: true, following: true, followers: true })
+        .limit(1)
+        .get()
+
+      if (current.data.length) {
+        const me = current.data[0]
+        myId = me._id
+        isFollowing = (me.following || []).includes(userId)
+        isFollower = (target.data.following || []).includes(myId)
+      }
     }
 
-    // 查询当前登录者是否已关注
-    const currentUserResult = await db.collection('users')
-      .where({ openid: OPENID })
-      .field({ following: true })
-      .get()
-
-    const isFollowing = currentUserResult.data.length > 0
-      ? (currentUserResult.data[0].following || []).includes(userId)
-      : false
-
-    // 获取该用户的帖子
-    const postsResult = await db.collection('posts')
-      .where({ userId })
+    const postsRes = await db.collection('posts')
+      .where(_.or([
+        { authorId: userId, visibility: _.neq('private') },
+        { userId, visibility: _.neq('private') },
+      ]))
       .orderBy('createdAt', 'desc')
       .limit(20)
       .get()
 
-    // 获取该用户的评价
-    // 评价存放在 users 文档内部或独立的 reviews 集合
-    // 先返回用户数据里的 reviews
-    // 完整版应拆为独立 reviews 集合，方便做分页和评分统计
+    const userData = toPublicUser(target.data, {
+      isFollowing,
+      isFollower,
+      posts: postsRes.data || [],
+    })
 
-    const { openid, phone, following, followers, ...safe } = user
-
-    return {
-      code: 0,
-      userData: {
-        ...safe,
-        is_following: isFollowing,
-        posts: postsResult.data || [],
-        // 假设 reviews 也在 user 文档里
-        reviews: user.reviews || [],
-      },
-    }
+    return { code: 0, userData }
   } catch (err) {
     console.error('[getUserDetail]', err)
-    return { code: -3, msg: '获取用户详情失败', error: err }
+    return { code: -3, msg: '获取用户详情失败', error: err.message || err }
   }
 }

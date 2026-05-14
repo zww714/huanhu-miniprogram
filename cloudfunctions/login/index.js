@@ -1,83 +1,109 @@
-// 云函数入口文件 - 用户登录/自动注册
 const cloud = require('wx-server-sdk')
+
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
+
 const db = cloud.database()
-const usersCollection = db.collection('users')
+const users = db.collection('users')
 
-/**
- * login 云函数
- * 传入: 无（cloud.getWXContext 自动获取 openid）
- * 返回: { openid, isNewUser, userData }
- *
- * 流程:
- * 1. 微信自动鉴权，获取 openid
- * 2. 查询数据库是否有该用户
- * 3. 如果是新用户 → 自动创建用户档案，返回默认数据
- * 4. 如果是老用户 → 返回已有用户数据
- */
-exports.main = async (event, context) => {
-  const { OPENID, APPID } = cloud.getWXContext()
+function normalizeUser(doc) {
+  const stats = doc.stats || {}
+  const canTeach = doc.canTeach || doc.skills || doc.can || []
+  const wantToLearn = doc.wantToLearn || doc.learnWants || doc.want || []
+  const intro = doc.intro || doc.bio || ''
 
-  if (!OPENID) {
-    return { code: -1, msg: '获取用户身份失败' }
+  return {
+    _id: doc._id,
+    id: doc._id,
+    name: doc.name || '微信用户',
+    avatar: doc.avatar || '',
+    gender: doc.gender || 'private',
+    school: doc.school || '浙江大学',
+    college: doc.college || '',
+    major: doc.major || '',
+    grade: doc.grade || '',
+    campus: doc.campus || '',
+    intro,
+    bio: intro,
+    verified: !!doc.verified,
+    canTeach,
+    skills: canTeach,
+    can: canTeach,
+    wantToLearn,
+    learnWants: wantToLearn,
+    want: wantToLearn,
+    interests: doc.interests || [],
+    skillCount: Number(doc.skillCount ?? stats.skills ?? canTeach.length ?? 0),
+    postCount: Number(doc.postCount ?? stats.posts ?? 0),
+    followerCount: Number(doc.followerCount ?? stats.followers ?? 0),
+    followingCount: Number(doc.followingCount ?? stats.following ?? 0),
+    stats: {
+      skills: Number(doc.skillCount ?? stats.skills ?? canTeach.length ?? 0),
+      posts: Number(doc.postCount ?? stats.posts ?? 0),
+      followers: Number(doc.followerCount ?? stats.followers ?? 0),
+      following: Number(doc.followingCount ?? stats.following ?? 0),
+    },
+    createdAt: doc.createdAt,
+    updatedAt: doc.updatedAt,
   }
+}
 
+exports.main = async () => {
   try {
-    // 查找是否已注册
-    const result = await usersCollection.where({ openid: OPENID }).get()
+    const { OPENID } = cloud.getWXContext()
+    if (!OPENID) return { code: -1, msg: '获取用户身份失败' }
 
-    if (result.data.length > 0) {
-      // 已有用户 → 更新最后登录时间
-      const user = result.data[0]
-      await usersCollection.doc(user._id).update({
-        data: { lastLogin: db.serverDate() }
+    const existing = await users.where({ openid: OPENID }).limit(1).get()
+    if (existing.data.length) {
+      const current = existing.data[0]
+      await users.doc(current._id).update({
+        data: {
+          lastLoginAt: db.serverDate(),
+          updatedAt: db.serverDate(),
+        },
       })
       return {
         code: 0,
         isNewUser: false,
-        userData: sanitizeUser(user),
+        currentUser: normalizeUser(current),
+        userData: normalizeUser(current),
       }
     }
 
-    // 新用户 → 创建默认档案
     const defaultUser = {
       openid: OPENID,
-      appid: APPID,
-      name: '',
+      name: '微信用户',
       avatar: '',
-      verified: false,
-      school: '',
+      gender: 'private',
+      school: '浙江大学',
       college: '',
+      major: '',
       grade: '',
-      bio: '',
-      phone: '',
-      stats: { skills: 0, posts: 0, followers: 0, following: 0 },
-      skills: [],
-      learnWants: [],
+      campus: '',
+      intro: '',
+      verified: false,
+      canTeach: [],
+      wantToLearn: [],
       interests: [],
-      following: [],
-      followers: [],
+      skillCount: 0,
+      postCount: 0,
+      followerCount: 0,
+      followingCount: 0,
       createdAt: db.serverDate(),
-      lastLogin: db.serverDate(),
+      updatedAt: db.serverDate(),
+      lastLoginAt: db.serverDate(),
     }
 
-    const addResult = await usersCollection.add({ data: defaultUser })
-    defaultUser._id = addResult._id
-    defaultUser.openid = OPENID
+    const added = await users.add({ data: defaultUser })
+    const currentUser = normalizeUser({ ...defaultUser, _id: added._id })
 
     return {
       code: 0,
       isNewUser: true,
-      userData: sanitizeUser(defaultUser),
+      currentUser,
+      userData: currentUser,
     }
   } catch (err) {
     console.error('[login]', err)
-    return { code: -2, msg: '登录失败', error: err }
+    return { code: -2, msg: '登录失败', error: err.message || err }
   }
-}
-
-// 去掉敏感字段，返回给前端
-function sanitizeUser(user) {
-  const { openid, phone, ...safe } = user
-  return safe
 }

@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { ScrollView, Text, View } from '@tarojs/components'
 import { CURRENT_USER, SKILLS_DETAIL, type SkillDetail, type SkillProof } from '../../utils/mock'
 import { PUBLIC_SKILLS } from '../../utils/publicProfiles'
+import { getSkillDetail } from '../../utils/api'
 import './index.css'
 
 const proofTypeText: Record<SkillProof['type'], string> = {
@@ -37,13 +38,45 @@ function publicSkillToDetail(skill: typeof PUBLIC_SKILLS[number]): SkillDetail {
 export default function SkillDetailPage() {
   const [skillId, setSkillId] = useState('')
   const [userId, setUserId] = useState('')
+  const [remoteSkill, setRemoteSkill] = useState<any>(null)
 
   useLoad((options) => {
     setSkillId(String(options?.skillId || options?.id || ''))
     setUserId(String(options?.userId || ''))
   })
 
+  useEffect(() => {
+    if (!skillId) return
+    let alive = true
+    getSkillDetail({ skillId, userId })
+      .then((data) => {
+        if (!alive || !data) return
+        setRemoteSkill(data)
+      })
+      .catch((e) => console.warn('[SkillDetail] getSkillDetail failed, fallback to mock', e))
+    return () => { alive = false }
+  }, [skillId, userId])
+
   const skill: SkillDetail | undefined = useMemo(() => {
+    if (remoteSkill) {
+      return {
+        id: remoteSkill.id || remoteSkill._id,
+        userId: remoteSkill.userId,
+        name: remoteSkill.name,
+        level: Number(remoteSkill.level || 1),
+        levelText: remoteSkill.levelText || (Number(remoteSkill.level || 1) >= 4 ? '熟练掌握' : '持续提升中'),
+        category: remoteSkill.category || '技能',
+        icon: remoteSkill.icon || String(remoteSkill.name || '技').slice(0, 1),
+        verified: !!remoteSkill.verified,
+        summary: remoteSkill.summary || remoteSkill.intro || remoteSkill.desc || '',
+        abilityDescription: remoteSkill.abilityDescription || remoteSkill.intro || remoteSkill.desc || '',
+        canHelp: remoteSkill.canHelp || [],
+        proofs: remoteSkill.proofs || [],
+        tags: remoteSkill.tags || [],
+        isOwner: !!remoteSkill.isOwner,
+      } as SkillDetail & { isOwner?: boolean }
+    }
+
     const publicSkill = PUBLIC_SKILLS.find((item) => item.id === skillId && (!userId || item.userId === userId))
     if (publicSkill) return publicSkillToDetail(publicSkill)
 
@@ -63,9 +96,9 @@ export default function SkillDetailPage() {
       verified: false,
       proofs: [],
     }
-  }, [skillId, userId])
+  }, [remoteSkill, skillId, userId])
 
-  const isOwner = !!skill && skill.userId === CURRENT_USER.id
+  const isOwner = !!skill && ((skill as any).isOwner || skill.userId === CURRENT_USER.id)
   const handleBack = () => Taro.navigateBack()
   const handleMore = () => Taro.showToast({ title: '更多功能后续开放', icon: 'none' })
   const handleEditSkill = () => Taro.navigateTo({ url: `/pages/edit-skills/index?skillId=${encodeURIComponent(skill?.id || '')}` })
