@@ -34,8 +34,7 @@ export default function UserFollowing() {
   }
 
   const followUser = (target: PublicUser) => {
-    const relation = getRelationForUser(target.id)
-    upsertRelation(target.id, { isFollowing: true, isMutual: relation.isFollower })
+    upsertRelation(target.id, { isFollowing: true, isFollower: false, isMutual: false })
     setTick((value) => value + 1)
     Taro.showToast({ title: '已关注', icon: 'success' })
   }

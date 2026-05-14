@@ -554,7 +554,7 @@ export default function Index() {
       {renderActiveFilterChips()}
       <View className='home-banner skill'>
         <Text className='banner-title'>和全校同学交换技能</Text>
-        <Text className='banner-desc'>搜索技能、学院、校区或年级，找到更合适的互助对象。</Text>
+        <Text className='banner-desc'>分享你的特长，学习感兴趣的知识</Text>
       </View>
       <View className='card-list'>
         {!filteredSkillUsers.length && renderEmpty()}
@@ -568,8 +568,8 @@ export default function Index() {
       {renderFilterTabs(PARTNER_CATEGORIES, partnerCategory, setPartnerCategory)}
       {renderActiveFilterChips()}
       <View className='home-banner partner'>
-        <Text className='banner-title'>找到同频搭子</Text>
-        <Text className='banner-desc'>按兴趣、校区和年级筛选，一起运动、摄影、学习或参加活动。</Text>
+        <Text className='banner-title'>找到兴趣相投的搭子</Text>
+        <Text className='banner-desc'>一起探索热爱，让校园生活更有趣</Text>
       </View>
       <View className='card-list'>
         {!filteredPartners.length && renderEmpty()}
@@ -582,6 +582,10 @@ export default function Index() {
     <View>
       {renderFilterTabs(ACTIVITY_CATEGORIES, activityCategory, setActivityCategory)}
       {renderActiveFilterChips()}
+      <View className='home-banner skill'>
+        <Text className='banner-title'>发现校园精彩活动</Text>
+        <Text className='banner-desc'>参与、分享、成长</Text>
+      </View>
       <View className='card-list'>
         {!filteredActivities.length && renderEmpty()}
         {filteredActivities.map(renderActivityCard)}
@@ -629,7 +633,7 @@ export default function Index() {
           <Text className='search-icon'>⌕</Text>
           <Input
             value={searchQuery}
-            placeholder='搜索技能、兴趣、学院、校区或活动'
+            placeholder='搜索技能、同学或关键词'
             confirmType='search'
             onInput={(event) => setSearchQuery(String(event.detail.value || ''))}
             className='search-input'

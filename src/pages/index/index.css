@@ -1,24 +1,25 @@
 /* postcss-pxtransform disable */
 
 page {
-  background: #F5F8FC;
+  background: #F6F8FC;
 }
 
 .home-page {
-  height: calc(100vh - 58px);
+  min-height: 100vh;
   position: relative;
-  background: #F5F8FC;
+  background: #F6F8FC;
   color: #1E293B;
 }
 
 .home-scroll {
-  height: calc(100vh - 58px);
+  min-height: 100vh;
 }
 
 .search-bar {
-  margin: 10px 14px 6px;
-  padding: 10px 10px 10px 12px;
-  border-radius: 14px;
+  height: 42px;
+  margin: 10px 14px 8px;
+  padding: 0 10px 0 12px;
+  border-radius: 16px;
   background: #FFFFFF;
   border: 1px solid #E2E8F0;
   box-shadow: 0 8px 22px rgba(15, 23, 42, 0.04);
@@ -35,7 +36,7 @@ page {
 
 .search-input {
   flex: 1;
-  height: 24px;
+  height: 30px;
   color: #1E293B;
   font-size: 14px;
 }
@@ -81,18 +82,20 @@ page {
 }
 
 .tab-row {
-  position: sticky;
-  top: 0;
   z-index: 10;
   display: flex;
-  padding: 8px 14px 0;
-  background: #FFFFFF;
+  height: 42px;
+  padding: 0 14px;
+  background: #F6F8FC;
   border-bottom: 1px solid #E2E8F0;
 }
 
 .tab-item {
   flex: 1;
-  padding: 9px 0 10px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   border-bottom: 2px solid transparent;
 }
@@ -112,16 +115,16 @@ page {
 }
 
 .category-scroll {
-  height: 42px;
+  height: 40px;
   white-space: nowrap;
-  background: #FFFFFF;
+  background: #F6F8FC;
 }
 
 .category-list {
   display: flex;
   gap: 8px;
-  height: 34px;
-  padding: 6px 14px 2px;
+  height: 32px;
+  padding: 5px 14px 3px;
 }
 
 .category-chip {
@@ -153,7 +156,7 @@ page {
   flex-wrap: wrap;
   gap: 7px;
   padding: 4px 14px 8px;
-  background: #FFFFFF;
+  background: #F6F8FC;
 }
 
 .active-filter {
@@ -169,9 +172,10 @@ page {
 }
 
 .home-banner {
+  min-height: 90px;
   margin: 8px 14px 12px;
-  padding: 16px;
-  border-radius: 16px;
+  padding: 14px 16px;
+  border-radius: 18px;
   border: 1px solid #DBEAFE;
   box-shadow: 0 8px 20px rgba(37, 99, 235, 0.06);
 }
@@ -187,7 +191,7 @@ page {
 .banner-title {
   display: block;
   color: #1E293B;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 900;
 }
 
@@ -195,12 +199,12 @@ page {
   display: block;
   margin-top: 5px;
   color: #64748B;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 18px;
 }
 
 .card-list {
-  padding: 0 14px 104px;
+  padding: 0 14px calc(24px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -210,13 +214,13 @@ page {
 .activity-card {
   background: #FFFFFF;
   border: 1px solid #E2E8F0;
-  border-radius: 16px;
+  border-radius: 18px;
   box-shadow: 0 8px 22px rgba(15, 23, 42, 0.04);
   overflow: hidden;
 }
 
 .user-card {
-  padding: 15px;
+  padding: 14px;
 }
 
 .card-top {
@@ -496,7 +500,7 @@ page {
 
 .empty-state {
   padding: 36px 16px;
-  border-radius: 16px;
+  border-radius: 18px;
   background: #FFFFFF;
   border: 1px solid #E2E8F0;
   text-align: center;
@@ -519,9 +523,9 @@ page {
 .float-publish {
   position: fixed;
   right: 22px;
-  bottom: calc(92px + env(safe-area-inset-bottom));
-  width: 52px;
-  height: 52px;
+  bottom: calc(74px + env(safe-area-inset-bottom));
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   background: #2563EB;
   display: flex;

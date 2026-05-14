@@ -27,7 +27,7 @@ function firstChar(name?: string) {
 
 function relationLabel(relation: PublicRelation) {
   if (relation.isSpecial) return '特别关注'
-  if (relation.isMutual) return '互相关注'
+  if (relation.isFollowing && relation.isFollower) return '互相关注'
   if (relation.isFollowing) return '已关注'
   return '关注TA'
 }
@@ -68,7 +68,8 @@ export default function UserDetail() {
   const follow = () => {
     refreshRelation({
       isFollowing: true,
-      isMutual: relation.isFollower,
+      isFollower: false,
+      isMutual: false,
       isSpecial: relation.isSpecial,
     })
     Taro.showToast({ title: '已关注', icon: 'success' })
@@ -101,7 +102,7 @@ export default function UserDetail() {
     const nextSpecial = !relation.isSpecial
     refreshRelation({
       isFollowing: true,
-      isMutual: relation.isFollower,
+      isMutual: relation.isFollowing && relation.isFollower,
       isSpecial: nextSpecial,
     })
     Taro.showToast({ title: nextSpecial ? '已设为特别关注' : '已取消特别关注', icon: 'success' })

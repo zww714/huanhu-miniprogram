@@ -427,7 +427,8 @@ export const PUBLIC_REVIEWS: PublicReview[] = [
 export const PUBLIC_RELATIONS: PublicRelation[] = [
   { userId: CURRENT_USER.id, targetUserId: 'u1', isFollowing: false, isFollower: true, isMutual: false, isSpecial: false, isBlocked: false },
   { userId: CURRENT_USER.id, targetUserId: 'u_photo', isFollowing: true, isFollower: false, isMutual: false, isSpecial: true, isBlocked: false },
-  { userId: CURRENT_USER.id, targetUserId: 'u_math', isFollowing: true, isFollower: true, isMutual: true, isSpecial: false, isBlocked: false },
+  { userId: CURRENT_USER.id, targetUserId: 'u_math', isFollowing: false, isFollower: false, isMutual: false, isSpecial: false, isBlocked: false },
+  { userId: CURRENT_USER.id, targetUserId: 'u_boardgame', isFollowing: true, isFollower: true, isMutual: true, isSpecial: false, isBlocked: false },
   { userId: CURRENT_USER.id, targetUserId: 'u_career', isFollowing: false, isFollower: true, isMutual: false, isSpecial: false, isBlocked: false },
 ]
 
