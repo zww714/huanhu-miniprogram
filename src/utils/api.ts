@@ -1215,6 +1215,58 @@ export async function deleteComment(params: { commentId: string }): Promise<any>
   throw new Error('本地模式不支持真实删除')
 }
 
+// ============ 点赞/收藏相关 ============
+
+export async function toggleLike(params: { targetType?: string; targetId: string }): Promise<{ liked: boolean; likeCount: number }> {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('toggleLike', { targetType: params.targetType || 'post', targetId: params.targetId })
+      return res.data || { liked: false, likeCount: 0 }
+    } catch (e) {
+      console.warn('[API] toggleLike cloud failed', e)
+      throw e
+    }
+  }
+  throw new Error('本地模式不支持真实点赞')
+}
+
+export async function toggleFavorite(params: { targetType?: string; targetId: string }): Promise<{ favorited: boolean; favoriteCount: number }> {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('toggleFavorite', { targetType: params.targetType || 'post', targetId: params.targetId })
+      return res.data || { favorited: false, favoriteCount: 0 }
+    } catch (e) {
+      console.warn('[API] toggleFavorite cloud failed', e)
+      throw e
+    }
+  }
+  throw new Error('本地模式不支持真实收藏')
+}
+
+export async function getInteractionStatus(params: { targetType?: string; targetId: string }): Promise<{ liked: boolean; favorited: boolean; likeCount: number; favoriteCount: number }> {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('getInteractionStatus', { targetType: params.targetType || 'post', targetId: params.targetId })
+      return res.data || { liked: false, favorited: false, likeCount: 0, favoriteCount: 0 }
+    } catch (e) {
+      console.warn('[API] getInteractionStatus cloud failed', e)
+    }
+  }
+  return { liked: false, favorited: false, likeCount: 0, favoriteCount: 0 }
+}
+
+export async function getMyFavorites(params?: { targetType?: string }): Promise<any[]> {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('getMyFavorites', { targetType: (params?.targetType) || 'post' })
+      return res.data || []
+    } catch (e) {
+      console.warn('[API] getMyFavorites cloud failed', e)
+    }
+  }
+  return []
+}
+
 export function setCloudMode(enabled: boolean) {
   ;(window as any).USE_CLOUD = enabled
 }

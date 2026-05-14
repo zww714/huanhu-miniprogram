@@ -9,7 +9,7 @@ import {
   type Comment,
   type CommentReply,
 } from '../../utils/mock'
-import { deletePost, getPostDetail, getPosts, updatePost, getComments, addComment, replyComment, deleteComment as apiDeleteComment } from '../../utils/api'
+import { deletePost, getPostDetail, getPosts, updatePost, getComments, addComment, replyComment, deleteComment as apiDeleteComment, toggleLike, toggleFavorite, getInteractionStatus } from '../../utils/api'
 import { openUnifiedUserProfile } from '../../utils/publicProfiles'
 import './index.css'
 
@@ -133,6 +133,7 @@ export default function PostDetail() {
   const [liked, setLiked] = useState(false)
   const [bookmarked, setBookmarked] = useState(false)
   const [likeCount, setLikeCount] = useState(0)
+  const [favoriteCount, setFavoriteCount] = useState(0)
   const [visibility, setVisibility] = useState<'public' | 'private'>('public')
   const [comments, setComments] = useState<Comment[]>(POST_COMMENTS)
   const [commentText, setCommentText] = useState('')
@@ -148,6 +149,7 @@ export default function PostDetail() {
       const nextPost = { ...found, ...(editedPosts[id] || {}) }
       setPost(nextPost)
       setLikeCount(Number(nextPost.likeCount ?? nextPost.likes ?? 0))
+      setFavoriteCount(Number(nextPost.favoriteCount ?? nextPost.collectCount ?? 0))
       setVisibility(nextPost.visibility || 'public')
       setIsMissing(false)
     }
@@ -196,6 +198,22 @@ export default function PostDetail() {
         })
         .catch((e) => {
           console.warn('[PostDetail] getComments failed, using mock', e)
+        })
+    }
+
+    // Load interaction status (liked / bookmarked)
+    if (id) {
+      getInteractionStatus({ targetId: id })
+        .then((status) => {
+          if (status) {
+            setLiked(status.liked)
+            setBookmarked(status.favorited)
+            setLikeCount(status.likeCount)
+            setFavoriteCount(status.favoriteCount)
+          }
+        })
+        .catch((e) => {
+          console.warn('[PostDetail] getInteractionStatus failed, using local', e)
         })
     }
   })
@@ -263,8 +281,7 @@ export default function PostDetail() {
       itemList: [bookmarked ? '取消收藏' : '收藏', '举报', '不感兴趣'],
       success: (res) => {
         if (res.tapIndex === 0) {
-          setBookmarked(!bookmarked)
-          Taro.showToast({ title: bookmarked ? '已取消收藏' : '已收藏', icon: 'none' })
+          handleBookmark()
         }
         if (res.tapIndex === 1) Taro.showToast({ title: '举报功能后续接入', icon: 'none' })
         if (res.tapIndex === 2) Taro.showToast({ title: '已减少推荐', icon: 'none' })
@@ -282,9 +299,52 @@ export default function PostDetail() {
     setReplyTarget({ commentId: comment.id, userId, userName })
   }
 
-  const handleLike = () => {
-    setLiked(!liked)
-    setLikeCount((count) => liked ? Math.max(0, count - 1) : count + 1)
+  const handleLike = async () => {
+    if (!postId) return
+    // Optimistic update
+    const wasLiked = liked
+    setLiked(!wasLiked)
+    setLikeCount((count) => wasLiked ? Math.max(0, count - 1) : count + 1)
+
+    try {
+      const res = await toggleLike({ targetId: postId })
+      setLiked(res.liked)
+      setLikeCount(res.likeCount)
+    } catch (e) {
+      // Revert on failure
+      console.warn('[PostDetail] toggleLike failed', e)
+      setLiked(wasLiked)
+      setLikeCount((count) => wasLiked ? count + 1 : Math.max(0, count - 1))
+      Taro.showToast({ title: '操作失败，请稍后再试', icon: 'none' })
+    }
+  }
+
+  const handleBookmark = async () => {
+    if (!postId) return
+    // Optimistic update
+    const wasBookmarked = bookmarked
+    setBookmarked(!wasBookmarked)
+    if (wasBookmarked) {
+      setFavoriteCount((count) => Math.max(0, count - 1))
+    } else {
+      setFavoriteCount((count) => count + 1)
+    }
+
+    try {
+      const res = await toggleFavorite({ targetId: postId })
+      setBookmarked(res.favorited)
+      setFavoriteCount(res.favoriteCount)
+    } catch (e) {
+      // Revert on failure
+      console.warn('[PostDetail] toggleFavorite failed', e)
+      setBookmarked(wasBookmarked)
+      if (wasBookmarked) {
+        setFavoriteCount((count) => count + 1)
+      } else {
+        setFavoriteCount((count) => Math.max(0, count - 1))
+      }
+      Taro.showToast({ title: '操作失败，请稍后再试', icon: 'none' })
+    }
   }
 
   const handleCommentLike = (commentId: string) => {
@@ -470,9 +530,9 @@ export default function PostDetail() {
                 <Text className='action-icon'>💬</Text>
                 <Text className='action-text'>{commentTotal}</Text>
               </View>
-              <View className='action' onClick={() => { setBookmarked(!bookmarked); Taro.showToast({ title: bookmarked ? '已取消收藏' : '已收藏', icon: 'none' }) }}>
+              <View className='action' onClick={handleBookmark}>
                 <Text className={bookmarked ? 'action-icon active-blue' : 'action-icon'}>☆</Text>
-                <Text className={bookmarked ? 'action-text active-blue' : 'action-text'}>收藏</Text>
+                <Text className={bookmarked ? 'action-text active-blue' : 'action-text'}>{favoriteCount}</Text>
               </View>
               {!isOwner && (
                 <>
