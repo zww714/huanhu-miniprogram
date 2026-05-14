@@ -9,6 +9,29 @@ const SKILL_FILTERS = ['全部', '热门', 'AI工具', 'Python', '数据分析',
 const ACTIVITY_CATEGORIES = ['全部', '技能交换', '兴趣', '志愿', '其他']
 const PARTNER_CATEGORIES = ['全部', '运动', '游戏', '摄影', '学习', '音乐', '旅行', '其他']
 
+const FILTER_GROUPS = [
+  { key: 'identity', label: '身份', options: ['全部', '本科生', '研究生', '博士生', '教职工'] },
+  { key: 'grade', label: '年级', options: ['全部', '大一', '大二', '大三', '大四', '研一', '研二', '研三', '博士在读'] },
+  { key: 'college', label: '学院', options: ['全部', '计算机学院', '物理学院', '外国语学院', '电气学院', '材料学院', '生命科学学院'] },
+  { key: 'major', label: '专业', options: ['全部', '计算机科学', '数据科学', '物理学', '英语', '电气工程', '材料科学'] },
+  { key: 'campus', label: '校区', options: ['全部', '紫金港', '玉泉', '西溪', '华家池', '之江'] },
+  { key: 'matchType', label: '匹配类型', options: ['全部', '我会匹配', '我想学匹配', '兴趣匹配', '活动匹配'] },
+] as const
+
+type FilterKey = (typeof FILTER_GROUPS)[number]['key']
+type FilterState = Record<FilterKey, string>
+
+const DEFAULT_FILTERS: FilterState = {
+  identity: '全部',
+  grade: '全部',
+  college: '全部',
+  major: '全部',
+  campus: '全部',
+  matchType: '全部',
+}
+
+type SkillItem = { name: string; level?: number; desc?: string }
+
 type SkillUser = {
   id?: string | number
   _id?: string
@@ -17,20 +40,25 @@ type SkillUser = {
   college?: string
   major?: string
   grade?: string
+  campus?: string
   verified?: boolean
   match?: number
+  matchRate?: number
   bio?: string
-  can?: { name: string; level: number }[]
-  skills?: { name: string; level: number }[]
+  intro?: string
+  type?: string
+  can?: SkillItem[]
+  skills?: SkillItem[]
+  canTeach?: Array<string | SkillItem>
   want?: string[]
   learnWants?: string[]
-}
-
-type PartnerUser = SkillUser & {
-  tags?: string[]
+  wantToLearn?: string[]
   interests?: string[]
+  tags?: string[]
   lookingFor?: string
 }
+
+type PartnerUser = SkillUser
 
 type Activity = {
   id?: string
@@ -38,36 +66,168 @@ type Activity = {
   title: string
   time: string
   location: string
-  participants: number
+  campus?: string
+  description?: string
+  participants?: number
+  participantCount?: number
   maxParticipants?: number
   cover?: string
   organizer?: string
   tags?: string[]
   category?: string
+  status?: string
 }
 
-function getRecordId(item: { id?: string | number; _id?: string }) {
-  return String(item.id || item._id || '')
+function textOf(value: unknown) {
+  return String(value || '').trim()
+}
+
+function lower(value: unknown) {
+  return textOf(value).toLowerCase()
+}
+
+function includesText(value: unknown, keyword: string) {
+  return !!keyword && lower(value).includes(keyword)
+}
+
+function getRecordId(item: { id?: string | number; _id?: string; name?: string }) {
+  return String(item.id || item._id || item.name || '')
 }
 
 function firstChar(name?: string) {
   return name ? name.charAt(0) : '同'
 }
 
+function normalizeSkill(item: string | SkillItem): SkillItem {
+  return typeof item === 'string' ? { name: item } : item
+}
+
 function userSkills(user: SkillUser) {
-  const skills = user.can?.length ? user.can : user.skills || []
-  return skills
+  const raw = user.canTeach?.length ? user.canTeach : user.can?.length ? user.can : user.skills || []
+  return raw
+    .map(normalizeSkill)
     .filter((skill) => !!skill?.name)
     .map((skill) => ({
-      name: skill.name,
+      ...skill,
       level: Number((skill.level as any)?.$numberInt || skill.level || 0),
     }))
 }
 
 function userWants(user: SkillUser) {
-  return (user.want?.length ? user.want : user.learnWants || [])
+  return (user.wantToLearn?.length ? user.wantToLearn : user.want?.length ? user.want : user.learnWants || [])
     .filter(Boolean)
     .map(String)
+}
+
+function userInterestLabels(user: SkillUser) {
+  return Array.from(new Set([...(user.interests || []), ...(user.tags || [])].filter(Boolean).map(String)))
+}
+
+function getUserCampus(user: SkillUser) {
+  const id = Number(user.id || user._id || 0)
+  return user.campus || ['紫金港', '玉泉', '西溪', '紫金港', '华家池', '之江'][Math.abs(id) % 6] || '紫金港'
+}
+
+function getUserCollege(user: SkillUser) {
+  if (user.college && user.college !== '浙江大学') return user.college
+  if (lower(user.major).includes('计算机')) return '计算机学院'
+  if (lower(user.major).includes('物理')) return '物理学院'
+  if (lower(user.major).includes('英语')) return '外国语学院'
+  if (lower(user.major).includes('电')) return '电气学院'
+  if (lower(user.major).includes('材料')) return '材料学院'
+  return user.college || '计算机学院'
+}
+
+function getUserMajor(user: SkillUser) {
+  return user.major || '计算机科学'
+}
+
+function getUserIntro(user: SkillUser) {
+  return user.intro || user.bio || user.lookingFor || '正在寻找可以一起交流的同学。'
+}
+
+function getIdentity(user: SkillUser) {
+  const type = user.type || ''
+  const grade = user.grade || ''
+  if (type.includes('教职工') || grade.includes('教职工')) return '教职工'
+  if (type.includes('博士') || grade.includes('博士')) return '博士生'
+  if (type.includes('研究生') || grade.includes('研')) return '研究生'
+  return '本科生'
+}
+
+function getMatchRate(user: SkillUser) {
+  return Number(user.matchRate || user.match || 82)
+}
+
+function getActivityCampus(activity: Activity) {
+  if (activity.campus) return activity.campus
+  if (activity.location.includes('紫金港')) return '紫金港'
+  if (activity.location.includes('玉泉')) return '玉泉'
+  if (activity.location.includes('西溪')) return '西溪'
+  if (activity.location.includes('华家池')) return '华家池'
+  if (activity.location.includes('之江')) return '之江'
+  return '紫金港'
+}
+
+function userKeywordReasons(user: SkillUser, keyword: string, channel: 'skill' | 'partner') {
+  if (!keyword) return []
+  const reasons: string[] = []
+  const skills = userSkills(user)
+  const wants = userWants(user)
+  const interests = userInterestLabels(user)
+
+  const matchedSkill = skills.find((skill) => includesText(skill.name, keyword))
+  if (matchedSkill) reasons.push(`匹配：我会 ${matchedSkill.name}`)
+
+  const matchedWant = wants.find((item) => includesText(item, keyword))
+  if (matchedWant) reasons.push(`匹配：想学 ${matchedWant}`)
+
+  const matchedInterest = interests.find((item) => includesText(item, keyword))
+  if (matchedInterest) reasons.push(`匹配：兴趣 ${matchedInterest}`)
+
+  if (includesText(user.name, keyword)) reasons.push('匹配：姓名')
+  if (includesText(getUserCollege(user), keyword)) reasons.push(`匹配：学院 ${getUserCollege(user)}`)
+  if (includesText(getUserMajor(user), keyword)) reasons.push(`匹配：专业 ${getUserMajor(user)}`)
+  if (includesText(user.grade, keyword)) reasons.push(`匹配：年级 ${user.grade}`)
+  if (includesText(getUserCampus(user), keyword)) reasons.push(`匹配：校区 ${getUserCampus(user)}`)
+  if (includesText(getUserIntro(user), keyword)) reasons.push(channel === 'partner' ? '匹配：搭子简介' : '匹配：个人介绍')
+  if (includesText(user.lookingFor, keyword)) reasons.push(`匹配：${user.lookingFor}`)
+
+  return Array.from(new Set(reasons)).slice(0, 3)
+}
+
+function activityKeywordReasons(activity: Activity, keyword: string) {
+  if (!keyword) return []
+  const reasons: string[] = []
+  const tag = (activity.tags || []).find((item) => includesText(item, keyword))
+  if (includesText(activity.title, keyword)) reasons.push(`命中：活动标题包含 ${textOf(keyword)}`)
+  if (tag) reasons.push(`命中：标签 ${tag}`)
+  if (includesText(activity.category, keyword)) reasons.push(`命中：分类 ${activity.category}`)
+  if (includesText(activity.location, keyword)) reasons.push(`命中：地点 ${activity.location}`)
+  if (includesText(getActivityCampus(activity), keyword)) reasons.push(`命中：校区 ${getActivityCampus(activity)}`)
+  if (includesText(activity.organizer, keyword)) reasons.push(`命中：组织者 ${activity.organizer}`)
+  if (includesText(activity.description, keyword)) reasons.push('命中：活动说明')
+  return Array.from(new Set(reasons)).slice(0, 3)
+}
+
+function matchesUserFilters(user: SkillUser, filters: FilterState, channel: 'skill' | 'partner') {
+  if (filters.identity !== '全部' && getIdentity(user) !== filters.identity) return false
+  if (filters.grade !== '全部' && user.grade !== filters.grade) return false
+  if (filters.college !== '全部' && getUserCollege(user) !== filters.college) return false
+  if (filters.major !== '全部' && !getUserMajor(user).includes(filters.major)) return false
+  if (filters.campus !== '全部' && getUserCampus(user) !== filters.campus) return false
+  if (filters.matchType === '我会匹配' && !userSkills(user).length) return false
+  if (filters.matchType === '我想学匹配' && !userWants(user).length) return false
+  if (filters.matchType === '兴趣匹配' && !userInterestLabels(user).length) return false
+  if (filters.matchType === '活动匹配') return false
+  if (channel === 'skill' && filters.matchType === '兴趣匹配') return false
+  return true
+}
+
+function matchesActivityFilters(activity: Activity, filters: FilterState) {
+  if (filters.campus !== '全部' && getActivityCampus(activity) !== filters.campus) return false
+  if (filters.matchType !== '全部' && filters.matchType !== '活动匹配') return false
+  return true
 }
 
 function mergePendingSkill(users: SkillUser[]) {
@@ -88,7 +248,6 @@ function mergePendingSkill(users: SkillUser[]) {
           name: pending.name,
           level,
           desc: pending.desc || '',
-          tags: [pending.name],
         }],
       }
     }
@@ -127,9 +286,7 @@ function mergePendingActivity(activities: Activity[]) {
 
   const pendingId = pending.id || pending._id || `pending_${pending.title}`
   const exists = activities.some((activity) => (activity.id || activity._id || activity.title) === pendingId)
-  if (exists) return activities
-
-  return [{ ...pending, id: pendingId }, ...activities]
+  return exists ? activities : [{ ...pending, id: pendingId }, ...activities]
 }
 
 export default function Index() {
@@ -138,6 +295,10 @@ export default function Index() {
   const [activityCategory, setActivityCategory] = useState(0)
   const [partnerCategory, setPartnerCategory] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
+  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS)
+  const [draftFilters, setDraftFilters] = useState<FilterState>(DEFAULT_FILTERS)
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [expandedTags, setExpandedTags] = useState<Record<string, boolean>>({})
   const [skillUsers, setSkillUsers] = useState<SkillUser[]>([])
   const [partners, setPartners] = useState<PartnerUser[]>([])
   const [activities, setActivities] = useState<Activity[]>([])
@@ -145,14 +306,11 @@ export default function Index() {
 
   useLoad((options) => {
     const tab = Number(options?.tab)
-    if ([0, 1, 2].includes(tab)) {
-      setActiveTab(tab)
-    }
+    if ([0, 1, 2].includes(tab)) setActiveTab(tab)
   })
 
   useEffect(() => {
     let alive = true
-
     async function loadHomeData() {
       setLoading(true)
       try {
@@ -161,99 +319,72 @@ export default function Index() {
           getPartners(),
           getActivities({ page: 0 }),
         ])
-
         if (!alive) return
-        const mergedUsers = mergePendingSkill(usersData || [])
-        setSkillUsers(mergedUsers)
+        setSkillUsers(mergePendingSkill(usersData || []))
         setPartners(mergePendingPartner(partnersData || []))
         setActivities(mergePendingActivity(activitiesData || []))
       } finally {
         if (alive) setLoading(false)
       }
     }
-
     loadHomeData()
-    return () => {
-      alive = false
-    }
+    return () => { alive = false }
   }, [])
 
+  const keyword = lower(searchQuery)
+  const activeFilterChips = FILTER_GROUPS
+    .filter((group) => filters[group.key] !== '全部')
+    .map((group) => ({ key: group.key, label: group.label, value: filters[group.key] }))
+
   const filteredSkillUsers = useMemo(() => {
-    const filter = SKILL_FILTERS[filterIndex]
-    const keyword = searchQuery.trim().toLowerCase()
+    const category = SKILL_FILTERS[filterIndex]
     return skillUsers.filter((user) => {
-      const skills = userSkills(user)
-      const wants = userWants(user)
-      const matchesFilter = !filter || filter === '全部' || filter === '热门'
+      const categoryMatch = category === '全部' || category === '热门'
         ? true
-        : skills.some((skill) => skill.name.includes(filter))
-      const searchable = [
-        user.name,
-        user.college,
-        user.major,
-        user.grade,
-        user.bio,
-        ...skills.map((skill) => skill.name),
-        ...wants,
-      ].filter(Boolean).join(' ').toLowerCase()
-      return matchesFilter && (!keyword || searchable.includes(keyword))
+        : userSkills(user).some((skill) => skill.name.includes(category)) || userWants(user).some((item) => item.includes(category))
+      const keywordMatch = !keyword || userKeywordReasons(user, keyword, 'skill').length > 0
+      return categoryMatch && keywordMatch && matchesUserFilters(user, filters, 'skill')
     })
-  }, [filterIndex, searchQuery, skillUsers])
+  }, [filterIndex, filters, keyword, skillUsers])
 
   const filteredPartners = useMemo(() => {
     const category = PARTNER_CATEGORIES[partnerCategory]
     return partners.filter((user) => {
-      const keyword = searchQuery.trim().toLowerCase()
-      const labels = [...(user.tags || []), ...(user.interests || [])]
-      const matchesCategory = !category || category === '全部'
-        ? true
-        : labels.some((label) => label.includes(category))
-      const searchable = [
-        user.name,
-        user.college,
-        user.major,
-        user.grade,
-        user.bio,
-        user.lookingFor,
-        ...labels,
-      ].filter(Boolean).join(' ').toLowerCase()
-      return matchesCategory && (!keyword || searchable.includes(keyword))
+      const labels = [...userInterestLabels(user), ...userWants(user), user.lookingFor].filter(Boolean).map(String)
+      const categoryMatch = category === '全部' ? true : labels.some((label) => label.includes(category))
+      const keywordMatch = !keyword || userKeywordReasons(user, keyword, 'partner').length > 0
+      return categoryMatch && keywordMatch && matchesUserFilters(user, filters, 'partner')
     })
-  }, [partnerCategory, partners, searchQuery])
+  }, [filters, keyword, partnerCategory, partners])
 
   const filteredActivities = useMemo(() => {
     const category = ACTIVITY_CATEGORIES[activityCategory]
-    const keyword = searchQuery.trim().toLowerCase()
     return activities.filter((activity) => {
-      const matchesCategory = !category || category === '全部' ? true : activity.category === category
-      const searchable = [
-        activity.title,
-        activity.organizer,
-        activity.time,
-        activity.location,
-        activity.category,
-        ...(activity.tags || []),
-      ].filter(Boolean).join(' ').toLowerCase()
-      return matchesCategory && (!keyword || searchable.includes(keyword))
+      const categoryMatch = category === '全部' ? true : activity.category === category || activity.tags?.some((tag) => tag.includes(category))
+      const keywordMatch = !keyword || activityKeywordReasons(activity, keyword).length > 0
+      return categoryMatch && keywordMatch && matchesActivityFilters(activity, filters)
     })
-  }, [activityCategory, activities, searchQuery])
+  }, [activities, activityCategory, filters, keyword])
 
   const handleStartChat = (user: SkillUser | PartnerUser) => {
-    const id = getRecordId(user) || encodeURIComponent(user.name)
+    const id = getRecordId(user)
     const category = activeTab === 1 ? '兴趣搭子' : '技能交换'
     Taro.navigateTo({
       url: `/pages/contact-request/index?userId=${encodeURIComponent(id)}&name=${encodeURIComponent(user.name)}&category=${encodeURIComponent(category)}&source=home`,
     })
   }
+
   const handlePublish = () => {
     const mode = activeTab === 1 ? 'partner' : activeTab === 2 ? 'activity' : 'skill'
     Taro.navigateTo({ url: `/pages/publish/index?mode=${mode}` })
   }
+
   const handleUserClick = (user: SkillUser) => {
     const id = getRecordId(user)
     const query = id ? `id=${encodeURIComponent(id)}` : `name=${encodeURIComponent(user.name)}`
     Taro.navigateTo({ url: `/pages/user-detail/index?${query}` })
   }
+
   const handleActivityRegister = (activity: Activity, isFull: boolean) => {
     if (isFull) {
       Taro.showToast({ title: '活动已满', icon: 'none' })
@@ -265,297 +396,256 @@ export default function Index() {
       `organizer=${encodeURIComponent(activity.organizer || '')}`,
       `time=${encodeURIComponent(activity.time)}`,
       `location=${encodeURIComponent(activity.location)}`,
-      `participants=${encodeURIComponent(String(activity.participants || 0))}`,
+      `participants=${encodeURIComponent(String(activity.participants || activity.participantCount || 0))}`,
       `maxParticipants=${encodeURIComponent(String(activity.maxParticipants || ''))}`,
     ].join('&')
     Taro.navigateTo({ url: `/pages/activity-register/index?${query}` })
   }
 
-  const renderStars = (level = 0) =>
-    Array(5).fill(0).map((_, i) => (
-      <Text
-        key={i}
-        style={{
-          color: i < level ? '#F59E0B' : '#E2E8F0',
-          fontSize: '10px',
-          marginRight: '1px',
-        }}
-      >
-        {'\u2605'}
-      </Text>
-    ))
+  const toggleTagGroup = (key: string) => {
+    setExpandedTags((current) => ({ ...current, [key]: !current[key] }))
+  }
 
-  const renderEmpty = (text: string) => (
-    <View style={{ padding: '32px 16px', textAlign: 'center' }}>
-      <Text style={{ fontSize: '13px', color: '#94A3B8' }}>
-        {loading ? '正在加载真实数据...' : text}
-      </Text>
+  const clearFilter = (key: FilterKey) => {
+    setFilters((current) => ({ ...current, [key]: '全部' }))
+  }
+
+  const openFilter = () => {
+    setDraftFilters(filters)
+    setFilterOpen(true)
+  }
+
+  const renderEmpty = () => (
+    <View className='empty-state'>
+      <Text className='empty-title'>{loading ? '正在加载内容...' : '没有找到相关内容'}</Text>
+      <Text className='empty-desc'>换个关键词试试，或发布你的需求</Text>
     </View>
   )
 
-  const renderFilter = (
-    filters: string[],
-    value: number,
-    onChange: (index: number) => void,
-    extraStyle: Record<string, string | number> = {}
-  ) => (
-    <ScrollView scrollX showScrollbar={false} style={{ height: '40px', whiteSpace: 'nowrap', ...extraStyle }}>
-      <View style={{ padding: '0 16px', display: 'flex', gap: '8px', height: '32px' }}>
-        {filters.map((tag, i) => (
-          <View
-            key={tag}
-            onClick={() => onChange(i)}
-            style={{
-              display: 'inline-flex',
-              padding: '5px 16px',
-              borderRadius: '100px',
-              fontSize: '13px',
-              fontWeight: value === i ? '600' : '400',
-              backgroundColor: value === i ? '#2563EB' : '#F1F5F9',
-              color: value === i ? '#FFF' : '#64748B',
-            }}
-          >
-            {tag}
+  const renderFilterTabs = (items: string[], value: number, onChange: (index: number) => void) => (
+    <ScrollView scrollX showScrollbar={false} className='category-scroll'>
+      <View className='category-list'>
+        {items.map((tag, index) => (
+          <View key={tag} className={value === index ? 'category-chip active' : 'category-chip'} onClick={() => onChange(index)}>
+            <Text>{tag}</Text>
           </View>
         ))}
       </View>
     </ScrollView>
   )
 
-  const renderSkillExchange = () => (
-    <View>
-      {renderFilter(SKILL_FILTERS, filterIndex, setFilterIndex, { marginTop: '4px' })}
+  const renderReasonTags = (reasons: string[]) => (
+    <View className='reason-row'>
+      {(reasons.length ? reasons : ['根据你的技能和兴趣推荐']).map((reason) => (
+        <Text className='reason-tag' key={reason}>{reason}</Text>
+      ))}
+    </View>
+  )
 
-      <View
-        style={{
-          margin: '0 16px 10px',
-          height: '110px',
-          borderRadius: '14px',
-          overflow: 'hidden',
-          position: 'relative',
-          background: 'linear-gradient(135deg, #3B82F6 0%, #6366F1 42%, #EC4899 100%)',
-        }}
-      >
-        <View style={{ position: 'absolute', top: '-20px', right: '-10px', width: '100px', height: '100px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.12)' }} />
-        <View style={{ position: 'absolute', bottom: '-30px', left: '-20px', width: '120px', height: '120px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.08)' }} />
-        <View style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 20px' }}>
-          <Text style={{ fontSize: '20px', fontWeight: '700', color: '#FFF', lineHeight: '28px' }}>
-            和全校同学交换技能
-          </Text>
-          <Text style={{ fontSize: '13px', color: 'rgba(255,255,255,0.78)', marginTop: '4px' }}>
-            分享你的特长，学习感兴趣的知识
-          </Text>
+  const renderTagGroup = (
+    title: string,
+    tags: string[],
+    groupKey: string,
+    tone: 'can' | 'want' | 'interest'
+  ) => {
+    const expanded = !!expandedTags[groupKey]
+    const visible = expanded ? tags : tags.slice(0, 3)
+    const rest = Math.max(0, tags.length - 3)
+    if (!tags.length) return null
+    return (
+      <View className='tag-section'>
+        <Text className={`tag-title ${tone}`}>{title}</Text>
+        <View className='tag-wrap'>
+          {visible.map((tag) => <Text className={`user-tag ${tone}`} key={tag}>{tag}</Text>)}
+          {!expanded && rest > 0 && (
+            <View className='user-tag more' onClick={() => toggleTagGroup(groupKey)}>
+              <Text>+{rest}</Text>
+            </View>
+          )}
+          {expanded && rest > 0 && (
+            <View className='user-tag more' onClick={() => toggleTagGroup(groupKey)}>
+              <Text>收起</Text>
+            </View>
+          )}
         </View>
       </View>
+    )
+  }
 
-      <View style={{ padding: '0 16px 88px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        {!filteredSkillUsers.length && renderEmpty('暂无匹配的技能用户')}
-        {filteredSkillUsers.map((user) => (
-          <View
-            key={getRecordId(user) || user.name}
-            style={{ backgroundColor: '#FFF', borderRadius: '14px', padding: '16px', border: '1px solid #E2E8F0' }}
-          >
-            <View style={{ display: 'flex', gap: '12px' }}>
-              <View
-                onClick={() => handleUserClick(user)}
-                style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: '#2563EB', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-              >
-                <Text style={{ fontSize: '20px', fontWeight: '700', color: '#FFF' }}>{firstChar(user.name)}</Text>
-              </View>
-              <View style={{ flex: 1 }}>
-                <View style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <Text style={{ fontSize: '16px', fontWeight: '600', color: '#1E293B' }}>{user.name}</Text>
-                  {user.verified && <Text style={{ fontSize: '12px', color: '#2563EB' }}>✓</Text>}
-                  {!!user.match && (
-                    <View style={{ marginLeft: 'auto', backgroundColor: '#EFF6FF', borderRadius: '100px', padding: '2px 8px' }}>
-                      <Text style={{ fontSize: '11px', color: '#2563EB', fontWeight: '500' }}>{user.match}% 匹配</Text>
-                    </View>
-                  )}
-                </View>
-                <Text style={{ fontSize: '13px', color: '#64748B', marginTop: '2px' }}>
-                  {user.college || user.grade || '浙江大学'} · {user.major || '技能交换'}
-                </Text>
-                {!!user.grade && <Text style={{ fontSize: '12px', color: '#94A3B8' }}>{user.grade}</Text>}
-              </View>
+  const renderUserCard = (user: SkillUser, channel: 'skill' | 'partner') => {
+    const id = getRecordId(user)
+    const skills = userSkills(user).map((skill) => skill.level ? `${skill.name} Lv.${skill.level}` : skill.name)
+    const wants = userWants(user)
+    const interests = userInterestLabels(user)
+    const reasons = userKeywordReasons(user, keyword, channel)
+    return (
+      <View className='user-card' key={id || user.name}>
+        <View className='card-top'>
+          <View className='avatar' onClick={() => handleUserClick(user)}>
+            <Text>{firstChar(user.name)}</Text>
+          </View>
+          <View className='user-main'>
+            <View className='name-line'>
+              <Text className='user-name'>{user.name}</Text>
+              {user.verified && <Text className='verify-mark'>✓</Text>}
+              <Text className='match-pill'>{getMatchRate(user)}% 匹配</Text>
             </View>
+            <Text className='user-meta' numberOfLines={1}>
+              {getUserCollege(user)} · {getUserMajor(user)} · {user.grade || '在读'} · {getUserCampus(user)}
+            </Text>
+          </View>
+        </View>
 
-            {!!user.bio && <Text style={{ fontSize: '13px', color: '#475569', marginTop: '10px', lineHeight: '1.5' }}>{user.bio}</Text>}
+        <Text className='user-intro' numberOfLines={2}>{getUserIntro(user)}</Text>
+        {renderReasonTags(reasons)}
+        {renderTagGroup('我会', skills, `${id}-can`, 'can')}
+        {renderTagGroup(channel === 'partner' ? '兴趣' : '想学', channel === 'partner' ? interests : wants, `${id}-want`, channel === 'partner' ? 'interest' : 'want')}
 
-            <View style={{ marginTop: '10px' }}>
-              <Text style={{ fontSize: '12px', color: '#2563EB', fontWeight: '500', marginBottom: '4px' }}>我会</Text>
-              <View style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                {userSkills(user).slice(0, 3).map((skill) => (
-                  <View key={skill.name} style={{ display: 'flex', alignItems: 'center', gap: '2px', backgroundColor: '#F0FDF4', borderRadius: '100px', padding: '3px 10px' }}>
-                    <Text style={{ fontSize: '12px', color: '#10B981' }}>{skill.name}</Text>
-                    {renderStars(skill.level)}
-                  </View>
-                ))}
-                {userSkills(user).length > 3 && (
-                  <View style={{ backgroundColor: '#EEF2FF', borderRadius: '100px', padding: '3px 10px' }}>
-                    <Text style={{ fontSize: '12px', color: '#2563EB', fontWeight: '600' }}>+{userSkills(user).length - 3}</Text>
-                  </View>
-                )}
-              </View>
-            </View>
+        <View className='card-footer'>
+          <Text className='identity-text'>{getIdentity(user)}</Text>
+          <View className='contact-btn' onClick={() => handleStartChat(user)}>
+            <Text>联系TA</Text>
+          </View>
+        </View>
+      </View>
+    )
+  }
 
-            <View style={{ marginTop: '8px' }}>
-              <Text style={{ fontSize: '12px', color: '#EA580C', fontWeight: '500', marginBottom: '4px' }}>想学</Text>
-              <View style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                {userWants(user).slice(0, 3).map((want) => (
-                  <View key={want} style={{ backgroundColor: '#FFF7ED', borderRadius: '100px', padding: '3px 10px' }}>
-                    <Text style={{ fontSize: '12px', color: '#EA580C' }}>{want}</Text>
-                  </View>
-                ))}
-                {userWants(user).length > 3 && (
-                  <View style={{ backgroundColor: '#FFF7ED', borderRadius: '100px', padding: '3px 10px' }}>
-                    <Text style={{ fontSize: '12px', color: '#EA580C', fontWeight: '600' }}>+{userWants(user).length - 3}</Text>
-                  </View>
-                )}
-              </View>
-            </View>
-
-            <View onClick={() => handleStartChat(user)} style={{ marginTop: '12px', marginLeft: 'auto', width: '112px', padding: '8px 0', backgroundColor: '#2563EB', borderRadius: '999px', textAlign: 'center' }}>
-              <Text style={{ fontSize: '14px', color: '#FFF', fontWeight: '500' }}>发起联系</Text>
+  const renderActivityCard = (activity: Activity) => {
+    const participants = Number(activity.participants || activity.participantCount || 0)
+    const isFull = participants >= (activity.maxParticipants || 999)
+    const reasons = activityKeywordReasons(activity, keyword)
+    return (
+      <View className='activity-card' key={activity.id || activity._id || activity.title}>
+        <View className='activity-cover' style={{ background: activity.cover || 'linear-gradient(135deg, #2563EB 0%, #06B6D4 100%)' }}>
+          <Text className='activity-title'>{activity.title}</Text>
+          <Text className='activity-sub'>{activity.time} · {activity.location}</Text>
+        </View>
+        <View className='activity-body'>
+          {renderReasonTags(reasons)}
+          {!!activity.description && <Text className='activity-desc' numberOfLines={2}>{activity.description}</Text>}
+          <View className='activity-tags'>
+            {(activity.tags || []).map((tag) => <Text className='activity-tag' key={tag}>{tag}</Text>)}
+          </View>
+          <View className='activity-footer'>
+            <Text className='activity-meta'>{activity.organizer || '校园组织'} · {participants}/{activity.maxParticipants || '∞'} 人</Text>
+            <View className={isFull ? 'activity-btn disabled' : 'activity-btn'} onClick={() => handleActivityRegister(activity, isFull)}>
+              <Text>{isFull ? '已满' : '报名'}</Text>
             </View>
           </View>
-        ))}
+        </View>
+      </View>
+    )
+  }
+
+  const renderActiveFilterChips = () => (
+    <View className='active-filter-row'>
+      {activeFilterChips.map((chip) => (
+        <View className='active-filter' key={chip.key} onClick={() => clearFilter(chip.key)}>
+          <Text>{chip.label}：{chip.value} ×</Text>
+        </View>
+      ))}
+    </View>
+  )
+
+  const renderSkillExchange = () => (
+    <View>
+      {renderFilterTabs(SKILL_FILTERS, filterIndex, setFilterIndex)}
+      {renderActiveFilterChips()}
+      <View className='home-banner skill'>
+        <Text className='banner-title'>和全校同学交换技能</Text>
+        <Text className='banner-desc'>搜索技能、学院、校区或年级，找到更合适的互助对象。</Text>
+      </View>
+      <View className='card-list'>
+        {!filteredSkillUsers.length && renderEmpty()}
+        {filteredSkillUsers.map((user) => renderUserCard(user, 'skill'))}
       </View>
     </View>
   )
 
   const renderInterestPartners = () => (
     <View>
-      {renderFilter(PARTNER_CATEGORIES, partnerCategory, setPartnerCategory, { marginTop: '4px', marginBottom: '4px' })}
-      <View style={{ margin: '0 16px 12px', padding: '14px 16px', borderRadius: '16px', background: 'linear-gradient(135deg, #EFF6FF 0%, #FFFFFF 100%)', border: '1px solid #DBEAFE', boxShadow: '0 8px 20px rgba(37,99,235,0.06)' }}>
-        <Text style={{ display: 'block', fontSize: '15px', fontWeight: '800', color: '#1E293B' }}>找到同频搭子</Text>
-        <Text style={{ display: 'block', marginTop: '4px', fontSize: '12px', lineHeight: '18px', color: '#64748B' }}>按兴趣快速筛选，一起约拍、运动、桌游或参加校园活动。</Text>
+      {renderFilterTabs(PARTNER_CATEGORIES, partnerCategory, setPartnerCategory)}
+      {renderActiveFilterChips()}
+      <View className='home-banner partner'>
+        <Text className='banner-title'>找到同频搭子</Text>
+        <Text className='banner-desc'>按兴趣、校区和年级筛选，一起运动、摄影、学习或参加活动。</Text>
       </View>
-      <View style={{ padding: '0 16px 88px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        {!filteredPartners.length && renderEmpty('暂无匹配的兴趣搭子')}
-        {filteredPartners.map((user) => (
-          <View key={getRecordId(user) || user.name} style={{ backgroundColor: '#FFF', borderRadius: '14px', padding: '16px', border: '1px solid #E2E8F0' }}>
-            <View style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '10px' }}>
-              <View onClick={() => handleUserClick(user)} style={{ width: '44px', height: '44px', borderRadius: '50%', backgroundColor: '#2563EB', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Text style={{ fontSize: '18px', fontWeight: '700', color: '#FFF' }}>{firstChar(user.name)}</Text>
-              </View>
-              <View style={{ flex: 1, minWidth: 0 }}>
-                <View style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <Text style={{ fontSize: '15px', fontWeight: '600', color: '#1E293B' }}>{user.name}</Text>
-                  {user.verified && <Text style={{ fontSize: '12px', color: '#2563EB' }}>✓</Text>}
-                </View>
-                <Text style={{ fontSize: '13px', color: '#64748B', marginTop: '2px', lineHeight: '1.4' }}>
-                  {user.bio || `${user.college || '浙江大学'} · ${user.grade || ''}`}
-                </Text>
-              </View>
-              {!!user.match && (
-                <View style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <Text style={{ fontSize: '20px', fontWeight: '700', color: '#2563EB', lineHeight: '24px' }}>{user.match}%</Text>
-                  <Text style={{ fontSize: '11px', color: '#94A3B8' }}>匹配度</Text>
-                </View>
-              )}
-            </View>
-            <View style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-              <View style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1, flexWrap: 'wrap' }}>
-                <Text style={{ fontSize: '12px', color: '#64748B' }}>寻找：</Text>
-                <View style={{ padding: '3px 10px', backgroundColor: '#EFF6FF', borderRadius: '100px' }}>
-                  <Text style={{ fontSize: '12px', color: '#2563EB', fontWeight: '500' }}>
-                    {user.lookingFor || (user.learnWants || user.want || ['兴趣搭子'])[0]}
-                  </Text>
-                </View>
-              </View>
-              <View onClick={() => handleStartChat(user)} style={{ padding: '6px 16px', backgroundColor: '#2563EB', borderRadius: '100px', flexShrink: 0 }}>
-                <Text style={{ fontSize: '13px', color: '#FFF', fontWeight: '500' }}>联系TA</Text>
-              </View>
-            </View>
-          </View>
-        ))}
+      <View className='card-list'>
+        {!filteredPartners.length && renderEmpty()}
+        {filteredPartners.map((user) => renderUserCard(user, 'partner'))}
       </View>
     </View>
   )
 
   const renderActivities = () => (
     <View>
-      {renderFilter(ACTIVITY_CATEGORIES, activityCategory, setActivityCategory, { marginBottom: '8px' })}
-      <View style={{ padding: '0 16px 88px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-        {!filteredActivities.length && renderEmpty('暂无匹配的社区活动')}
-        {filteredActivities.map((activity) => {
-          const isFull = activity.participants >= (activity.maxParticipants || 999)
-          return (
-            <View key={activity.id || activity._id || activity.title} style={{ backgroundColor: '#FFF', borderRadius: '14px', overflow: 'hidden', border: '1px solid #E2E8F0' }}>
-              <View style={{ height: '90px', position: 'relative', background: activity.cover || 'linear-gradient(135deg, #3B82F6 0%, #6366F1 100%)' }}>
-                <View style={{ position: 'absolute', top: '-15px', right: '-5px', width: '70px', height: '70px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.1)' }} />
-                <View style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', padding: '0 16px' }}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: '16px', fontWeight: '600', color: '#FFF', lineHeight: '22px' }}>{activity.title}</Text>
-                    <View style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
-                      <Text style={{ fontSize: '11px', color: 'rgba(255,255,255,0.82)' }}>⏰ {activity.time}</Text>
-                      <Text style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)' }}>·</Text>
-                      <Text style={{ fontSize: '11px', color: 'rgba(255,255,255,0.82)' }}>📍 {activity.location}</Text>
-                    </View>
-                  </View>
-                </View>
-              </View>
-              <View style={{ padding: '10px 14px' }}>
-                <View style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                  <View style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1, flexWrap: 'wrap' }}>
-                    {!!activity.organizer && <Text style={{ fontSize: '11px', color: '#64748B' }}>{activity.organizer}</Text>}
-                    {(activity.tags || []).map((tag) => (
-                      <View key={tag} style={{ padding: '1px 6px', backgroundColor: '#F1F5F9', borderRadius: '100px' }}>
-                        <Text style={{ fontSize: '10px', color: '#64748B' }}>{tag}</Text>
-                      </View>
-                    ))}
-                  </View>
+      {renderFilterTabs(ACTIVITY_CATEGORIES, activityCategory, setActivityCategory)}
+      {renderActiveFilterChips()}
+      <View className='card-list'>
+        {!filteredActivities.length && renderEmpty()}
+        {filteredActivities.map(renderActivityCard)}
+      </View>
+    </View>
+  )
+
+  const renderFilterPanel = () => filterOpen && (
+    <View className='filter-mask'>
+      <View className='filter-panel'>
+        <View className='filter-head'>
+          <Text className='filter-title'>筛选</Text>
+          <Text className='filter-close' onClick={() => setFilterOpen(false)}>×</Text>
+        </View>
+        <ScrollView scrollY className='filter-scroll' showScrollbar={false}>
+          {FILTER_GROUPS.map((group) => (
+            <View className='filter-group' key={group.key}>
+              <Text className='filter-label'>{group.label}</Text>
+              <View className='filter-options'>
+                {group.options.map((option) => (
                   <View
-                    onClick={() => handleActivityRegister(activity, isFull)}
-                    style={{ padding: '5px 14px', borderRadius: '100px', backgroundColor: isFull ? '#F1F5F9' : '#2563EB', flexShrink: 0 }}
+                    key={option}
+                    className={draftFilters[group.key] === option ? 'filter-option active' : 'filter-option'}
+                    onClick={() => setDraftFilters((current) => ({ ...current, [group.key]: option }))}
                   >
-                    <Text style={{ fontSize: '12px', color: isFull ? '#94A3B8' : '#FFF', fontWeight: '500' }}>{isFull ? '已满' : '报名'}</Text>
+                    <Text>{option}</Text>
                   </View>
-                </View>
-                <View style={{ marginTop: '6px' }}>
-                  <Text style={{ fontSize: '11px', color: '#94A3B8' }}>
-                    {activity.participants}/{activity.maxParticipants || '∞'} 人已报名
-                  </Text>
-                </View>
+                ))}
               </View>
             </View>
-          )
-        })}
+          ))}
+        </ScrollView>
+        <View className='filter-actions'>
+          <View className='reset-btn' onClick={() => setDraftFilters(DEFAULT_FILTERS)}><Text>重置</Text></View>
+          <View className='confirm-btn' onClick={() => { setFilters(draftFilters); setFilterOpen(false) }}><Text>确认</Text></View>
+        </View>
       </View>
     </View>
   )
 
   return (
-    <View style={{ height: 'calc(100vh - 58px)', position: 'relative', backgroundColor: '#F8FAFC' }}>
-      <ScrollView scrollY showScrollbar={false} style={{ height: 'calc(100vh - 58px)' }}>
-        <View style={{ margin: '10px 16px 4px', padding: '10px 14px', backgroundColor: '#FFF', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #E2E8F0' }}>
-          <Text style={{ fontSize: '16px' }}>🔍</Text>
+    <View className='home-page'>
+      <ScrollView scrollY showScrollbar={false} className='home-scroll'>
+        <View className='search-bar'>
+          <Text className='search-icon'>⌕</Text>
           <Input
             value={searchQuery}
-            placeholder='搜索课程、技能或同学......'
+            placeholder='搜索技能、兴趣、学院、校区或活动'
             confirmType='search'
             onInput={(event) => setSearchQuery(String(event.detail.value || ''))}
-            style={{ flex: 1, height: '22px', fontSize: '14px', color: '#1E293B' }}
+            className='search-input'
             placeholderStyle='color: #94A3B8; font-size: 14px;'
           />
+          {!!searchQuery && <Text className='clear-search' onClick={() => setSearchQuery('')}>×</Text>}
+          <View className='filter-entry' onClick={openFilter}>
+            <Text>筛选</Text>
+            {!!activeFilterChips.length && <Text className='filter-count'>{activeFilterChips.length}</Text>}
+          </View>
         </View>
 
-        <View style={{ display: 'flex', backgroundColor: '#FFF', padding: '8px 16px', borderBottom: '1px solid #E2E8F0', position: 'sticky', top: 0, zIndex: 10 }}>
-          {TABS.map((tab, i) => (
-            <View
-              key={tab}
-              onClick={() => setActiveTab(i)}
-              style={{
-                flex: 1,
-                padding: '8px 0',
-                textAlign: 'center',
-                fontSize: '15px',
-                fontWeight: activeTab === i ? '600' : '400',
-                color: activeTab === i ? '#2563EB' : '#64748B',
-                borderBottom: activeTab === i ? '2px solid #2563EB' : '2px solid transparent',
-              }}
-            >
-              {tab}
+        <View className='tab-row'>
+          {TABS.map((tab, index) => (
+            <View key={tab} className={activeTab === index ? 'tab-item active' : 'tab-item'} onClick={() => setActiveTab(index)}>
+              <Text>{tab}</Text>
             </View>
           ))}
         </View>
@@ -565,9 +655,10 @@ export default function Index() {
         {activeTab === 2 && renderActivities()}
       </ScrollView>
 
-      <View onClick={handlePublish} style={{ position: 'fixed', bottom: '84px', right: '24px', width: '56px', height: '56px', borderRadius: '50%', backgroundColor: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 12px 24px rgba(37,99,235,0.28)', zIndex: 100 }}>
-        <Text style={{ fontSize: '28px', color: '#FFF', lineHeight: '28px' }}>+</Text>
+      <View className='float-publish' onClick={handlePublish}>
+        <Text>+</Text>
       </View>
+      {renderFilterPanel()}
     </View>
   )
 }

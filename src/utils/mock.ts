@@ -7,11 +7,19 @@ export interface SkillUser {
   college: string
   major: string
   grade: string
+  campus?: string
   verified: boolean
   match: number
+  matchRate?: number
   bio: string
+  intro?: string
+  type?: string
   can: { name: string; level: number }[]
+  canTeach?: { name: string; level: number }[]
   want: string[]
+  wantToLearn?: string[]
+  interests?: string[]
+  tags?: string[]
 }
 
 export interface Post {
@@ -48,12 +56,16 @@ export interface Activity {
   title: string
   time: string
   location: string
+  campus?: string
   participants: number
+  participantCount?: number
   maxParticipants?: number
   cover?: string
   organizer?: string
   tags: string[]
   category: string
+  description?: string
+  status?: string
 }
 
 export const HOT_ACTIVITIES = [
@@ -70,44 +82,50 @@ export const ACTIVITIES: Activity[] = [
   {
     id: 'a1', title: '周末相约紫金港 · 校园摄影采风',
     time: '5月10日 14:00', location: '紫金港校区 月牙楼',
-    participants: 12, maxParticipants: 30, tags: ['摄影', '户外'], category: '兴趣',
+    campus: '紫金港', participants: 12, participantCount: 12, maxParticipants: 30, tags: ['摄影', '户外'], category: '兴趣',
+    description: '面向摄影新手和爱好者的校园采风活动，可以一起交流构图、调色和器材。',
     cover: 'linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%)',
-    organizer: '摄影协会',
+    organizer: '摄影协会', status: '报名中',
   },
   {
     id: 'a2', title: 'AI工具分享会 · 用AI提升科研效率',
     time: '5月12日 19:00', location: '紫金港校区 北教',
-    participants: 28, maxParticipants: 50, tags: ['AI', '科研'], category: '技能交换',
+    campus: '紫金港', participants: 28, participantCount: 28, maxParticipants: 50, tags: ['AI', '科研'], category: '技能交换',
+    description: '分享文献整理、Prompt 模板、代码辅助和论文写作中的 AI 工具使用方法。',
     cover: 'linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%)',
-    organizer: 'AI研习社',
+    organizer: 'AI研习社', status: '报名中',
   },
   {
     id: 'a3', title: '周末志愿行 · 社区服务公益活动',
     time: '5月14日 08:30', location: '西湖区 翠苑社区',
-    participants: 9, maxParticipants: 20, tags: ['志愿', '公益'], category: '志愿',
+    campus: '西溪', participants: 9, participantCount: 9, maxParticipants: 20, tags: ['志愿', '公益'], category: '志愿',
+    description: '社区公益服务活动，适合想参与志愿服务、认识同学的同学报名。',
     cover: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
-    organizer: '青年志愿者协会',
+    organizer: '青年志愿者协会', status: '报名中',
   },
   {
     id: 'a4', title: '求职分享 · 大厂面试经验交流',
     time: '5月15日 18:30', location: '玉泉校区 曹光彪楼',
-    participants: 45, maxParticipants: 80, tags: ['求职', '面试'], category: '其他',
+    campus: '玉泉', participants: 45, participantCount: 45, maxParticipants: 80, tags: ['求职', '面试'], category: '其他',
+    description: '邀请有实习和秋招经验的同学分享简历准备、项目复盘和面试节奏。',
     cover: 'linear-gradient(135deg, #F59E0B 0%, #EF4444 100%)',
-    organizer: '职业发展中心',
+    organizer: '职业发展中心', status: '报名中',
   },
   {
     id: 'a5', title: '英语角 · 跨文化交流下午茶',
     time: '5月17日 15:00', location: '紫金港校区 咖啡吧',
-    participants: 18, maxParticipants: 25, tags: ['英语', '交流'], category: '兴趣',
+    campus: '紫金港', participants: 18, participantCount: 18, maxParticipants: 25, tags: ['英语', '交流'], category: '兴趣',
+    description: '轻松英语交流局，适合练口语、认识国际同学和准备留学申请的同学。',
     cover: 'linear-gradient(135deg, #EC4899 0%, #F472B6 100%)',
-    organizer: '英语协会',
+    organizer: '英语协会', status: '报名中',
   },
   {
     id: 'a6', title: 'Python技能交换 · 从入门到项目实战',
     time: '5月20日 14:00', location: '紫金港校区 机房',
-    participants: 15, maxParticipants: 30, tags: ['编程', 'Python'], category: '技能交换',
+    campus: '紫金港', participants: 15, participantCount: 15, maxParticipants: 30, tags: ['编程', 'Python'], category: '技能交换',
+    description: '从脚本、数据处理到简单 Web 项目，适合想快速建立 Python 实战感的同学。',
     cover: 'linear-gradient(135deg, #2563EB 0%, #06B6D4 100%)',
-    organizer: '计算机学院学生会',
+    organizer: '计算机学院学生会', status: '报名中',
   },
 ]
 
@@ -167,27 +185,30 @@ export interface CommentReply {
 export const SKILL_USERS: SkillUser[] = [
   {
     id: 1, name: '陈同学', avatar: '/assets/avatar.png',
-    college: '浙江大学', major: '物理学', grade: '博士在读',
-    verified: true, match: 92,
+    college: '物理学院', major: '物理学', grade: '博士在读', campus: '紫金港', type: '博士生',
+    verified: true, match: 92, matchRate: 92,
     bio: '擅长用AI和编程工具帮助同学快速上手科研与项目实践。',
-    can: [{ name: 'AI工具', level: 5 }, { name: 'Python', level: 4 }, { name: '数据分析', level: 3 }],
-    want: ['摄影', '产品设计'],
+    can: [{ name: 'AI工具', level: 5 }, { name: 'Python', level: 4 }, { name: '数据分析', level: 3 }, { name: '论文写作', level: 3 }],
+    canTeach: [{ name: 'AI工具', level: 5 }, { name: 'Python', level: 4 }, { name: '数据分析', level: 3 }, { name: '论文写作', level: 3 }],
+    want: ['摄影', '产品设计', '羽毛球', '桌游'], wantToLearn: ['摄影', '产品设计', '羽毛球', '桌游'], interests: ['科研', 'AI', '摄影'],
   },
   {
     id: 2, name: '小熊软糖', avatar: '/assets/avatar.png',
-    college: '浙江大学', major: '计算机科学与技术', grade: '博士在读',
-    verified: true, match: 89,
+    college: '计算机学院', major: '计算机科学', grade: '研一', campus: '玉泉', type: '研究生',
+    verified: true, match: 89, matchRate: 89,
     bio: '擅长英语学习方法与翻译技巧，帮助提升语言应用能力。',
     can: [{ name: '英语', level: 5 }, { name: '写作', level: 4 }, { name: '翻译', level: 3 }],
-    want: ['Python', '数据分析'],
+    canTeach: [{ name: '英语', level: 5 }, { name: '写作', level: 4 }, { name: '翻译', level: 3 }],
+    want: ['Python', '数据分析'], wantToLearn: ['Python', '数据分析'], interests: ['英语', '学习'],
   },
   {
     id: 3, name: '橘子汽水', avatar: '/assets/avatar.png',
-    college: '浙江大学', major: '电子工程', grade: '博士在读',
-    verified: true, match: 87,
+    college: '电气学院', major: '电气工程', grade: '大三', campus: '紫金港', type: '本科生',
+    verified: true, match: 87, matchRate: 87,
     bio: '擅长嵌入式开发与硬件调试，喜欢动手解决实际问题。',
     can: [{ name: 'MATLAB', level: 5 }, { name: 'AI工具', level: 3 }, { name: '嵌入式开发', level: 2 }],
-    want: ['AI工具', '摄影'],
+    canTeach: [{ name: 'MATLAB', level: 5 }, { name: 'AI工具', level: 3 }, { name: '嵌入式开发', level: 2 }],
+    want: ['AI工具', '摄影'], wantToLearn: ['AI工具', '摄影'], interests: ['硬件', '摄影'],
   },
 ]
 
@@ -562,13 +583,13 @@ export const USER_POSTS = [
 
 // ========== PARTNER USERS ==========
 export const PARTNER_USERS = [
-  { id: 1, name: '陈思思', avatar: '', bio: '喜欢周末去西湖边骑行，找一起骑行的伙伴！', lookingFor: '骑行搭子', match: 90, verified: true, tags: ['运动'] },
-  { id: 2, name: '赵子轩', avatar: '', bio: '刚入坑桌游，想找人一起玩狼人杀和阿瓦隆。', lookingFor: '桌游搭子', match: 87, verified: false, tags: ['游戏'] },
-  { id: 3, name: '林晓晓', avatar: '', bio: '摄影爱好者，周末喜欢扫街，找摄影小伙伴互拍。', lookingFor: '摄影搭子', match: 83, verified: true, tags: ['摄影'] },
-  { id: 4, name: '周明远', avatar: '', bio: '考研党，每天图书馆打卡，找一起学习监督的研友！', lookingFor: '学习搭子', match: 92, verified: true, tags: ['学习'] },
-  { id: 5, name: '吴悦然', avatar: '', bio: '民谣吉他爱好者，想组校园乐队，找主唱和鼓手！', lookingFor: '乐队搭子', match: 78, verified: false, tags: ['音乐'] },
-  { id: 6, name: '孙浩宇', avatar: '', bio: '周末喜欢爬山露营，已经走过杭州十条徒步路线啦', lookingFor: '旅行搭子', match: 85, verified: true, tags: ['旅行'] },
-  { id: 7, name: '郑雅文', avatar: '', bio: '烘焙达人，会做各种蛋糕甜点，想找人一起探店。', lookingFor: '美食搭子', match: 81, verified: false, tags: ['其他'] },
+  { id: 1, name: '陈思思', avatar: '', college: '生命科学学院', major: '数据科学', grade: '大二', campus: '紫金港', type: '本科生', bio: '喜欢周末去西湖边骑行，找一起骑行的伙伴！', lookingFor: '骑行搭子', match: 90, matchRate: 90, verified: true, tags: ['运动'], interests: ['骑行', '运动'], wantToLearn: ['摄影'] },
+  { id: 2, name: '赵子轩', avatar: '', college: '计算机学院', major: '计算机科学', grade: '大三', campus: '玉泉', type: '本科生', bio: '刚入坑桌游，想找人一起玩狼人杀和阿瓦隆。', lookingFor: '桌游搭子', match: 87, matchRate: 87, verified: false, tags: ['游戏'], interests: ['桌游', '游戏'], wantToLearn: ['产品设计'] },
+  { id: 3, name: '林晓晓', avatar: '', college: '外国语学院', major: '英语', grade: '研一', campus: '西溪', type: '研究生', bio: '摄影爱好者，周末喜欢扫街，找摄影小伙伴互拍。', lookingFor: '摄影搭子', match: 83, matchRate: 83, verified: true, tags: ['摄影'], interests: ['摄影', '修图', '徒步', '桌游'], wantToLearn: ['AI工具'] },
+  { id: 4, name: '周明远', avatar: '', college: '数学科学学院', major: '数据科学', grade: '研一', campus: '紫金港', type: '研究生', bio: '考研党，每天图书馆打卡，找一起学习监督的研友！', lookingFor: '学习搭子', match: 92, matchRate: 92, verified: true, tags: ['学习'], interests: ['学习', '自习'], wantToLearn: ['Python'] },
+  { id: 5, name: '吴悦然', avatar: '', college: '外国语学院', major: '英语', grade: '大一', campus: '西溪', type: '本科生', bio: '民谣吉他爱好者，想组校园乐队，找主唱和鼓手！', lookingFor: '乐队搭子', match: 78, matchRate: 78, verified: false, tags: ['音乐'], interests: ['音乐', '吉他'], wantToLearn: ['摄影'] },
+  { id: 6, name: '孙浩宇', avatar: '', college: '材料学院', major: '材料科学', grade: '研二', campus: '玉泉', type: '研究生', bio: '周末喜欢爬山露营，已经走过杭州十条徒步路线啦', lookingFor: '旅行搭子', match: 85, matchRate: 85, verified: true, tags: ['旅行'], interests: ['旅行', '徒步'], wantToLearn: ['数据分析'] },
+  { id: 7, name: '郑雅文', avatar: '', college: '管理学院', major: '数据科学', grade: '大四', campus: '紫金港', type: '本科生', bio: '烘焙达人，会做各种蛋糕甜点，想找人一起探店。', lookingFor: '美食搭子', match: 81, matchRate: 81, verified: false, tags: ['其他'], interests: ['美食', '探店'], wantToLearn: ['产品设计'] },
 ]
 
 // ========== CONTACTS ==========
