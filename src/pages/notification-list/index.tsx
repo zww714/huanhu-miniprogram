@@ -2,15 +2,16 @@ import { useState } from 'react'
 import Taro, { useDidShow, useLoad } from '@tarojs/taro'
 import { Image, ScrollView, Text, View } from '@tarojs/components'
 import { type AppNotification, type NotificationType } from '../../utils/mock'
+import { getNotifications as apiGetNotifications, markNotificationsRead as apiMarkRead, deleteNotification as apiDeleteNotification, getNotificationUnreadCounts as apiGetUnreadCounts } from '../../utils/api'
 import {
   blockNotificationType,
   getBlockedNotificationTypes,
-  getVisibleNotifications,
-  markTypeRead,
+  getVisibleNotifications as localGetVisible,
+  markTypeRead as localMarkTypeRead,
   notificationTitles,
-  removeNotification,
+  removeNotification as localRemove,
+  updateNotification as localUpdate,
   updateMessageTabUnread,
-  updateNotification,
 } from '../../utils/notifications'
 import { openUnifiedUserProfile } from '../../utils/publicProfiles'
 import './index.css'
@@ -50,9 +51,21 @@ export default function NotificationList() {
   const [items, setItems] = useState<AppNotification[]>([])
   const [blocked, setBlocked] = useState(false)
 
-  const refresh = (nextType = type) => {
+  const refresh = async (nextType = type) => {
     setBlocked(getBlockedNotificationTypes().includes(nextType))
-    setItems(getVisibleNotifications(nextType))
+    // 优先从云端加载
+    try {
+      const res = await apiGetNotifications({ type: nextType, filter: 'all', page: 0, pageSize: 50 })
+      if (res.data && res.data.length) {
+        setItems(res.data)
+        updateMessageTabUnread()
+        return
+      }
+    } catch (e) {
+      console.warn('[NotificationList] cloud getNotifications failed', e)
+    }
+    // 降级到本地
+    setItems(localGetVisible(nextType))
     updateMessageTabUnread()
   }
 
@@ -74,8 +87,12 @@ export default function NotificationList() {
   })
 
   const handleBack = () => Taro.navigateBack()
-  const markOne = (item: AppNotification, read: boolean) => {
-    updateNotification(item.id, { read })
+  const markOne = async (item: AppNotification, read: boolean) => {
+    try {
+      await apiMarkRead({ ids: [item.id] })
+    } catch (e) {
+      localUpdate(item.id, { read })
+    }
     refresh()
   }
 
@@ -85,9 +102,13 @@ export default function NotificationList() {
       content: '确定要删除这条通知吗？',
       confirmText: '删除',
       confirmColor: '#EF4444',
-      success: (res) => {
+      success: async (res) => {
         if (!res.confirm) return
-        removeNotification(item.id)
+        try {
+          await apiDeleteNotification({ id: item.id })
+        } catch (e) {
+          localRemove(item.id)
+        }
         refresh()
         Taro.showToast({ title: '已删除', icon: 'success' })
       },
@@ -120,14 +141,24 @@ export default function NotificationList() {
     })
   }
 
-  const handleAllRead = () => {
-    markTypeRead(type)
+  const handleAllRead = async () => {
+    try {
+      await apiMarkRead({ type, all: true })
+    } catch (e) {
+      localMarkTypeRead(type)
+    }
     refresh()
     Taro.showToast({ title: '已全部标为已读', icon: 'success' })
   }
 
-  const handleNoticeTap = (item: AppNotification) => {
-    if (!item.read) updateNotification(item.id, { read: true })
+  const handleNoticeTap = async (item: AppNotification) => {
+    if (!item.read) {
+      try {
+        await apiMarkRead({ ids: [item.id] })
+      } catch (e) {
+        localUpdate(item.id, { read: true })
+      }
+    }
     if (item.targetType === 'post' && item.targetId) {
       Taro.navigateTo({ url: `/pages/post-detail/index?postId=${encodeURIComponent(item.targetId)}` })
       return

@@ -2,8 +2,8 @@ import { useState } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
 import { CONVERSATIONS, type NotificationType } from '../../utils/mock'
-import { getChatConversations } from '../../utils/api'
-import { getUnreadCounts, markAllNotificationsRead, updateMessageTabUnread } from '../../utils/notifications'
+import { getChatConversations, getNotificationUnreadCounts } from '../../utils/api'
+import { getUnreadCounts as localGetUnreadCounts, markAllNotificationsRead as localMarkAllRead, updateMessageTabUnread } from '../../utils/notifications'
 import './index.css'
 
 const NAV_BUTTONS: Array<{ name: string; desc: string; key: NotificationType; color: string; icon: string }> = [
@@ -43,11 +43,17 @@ function normalizeBaseConversations() {
 
 export default function Messages() {
   const [conversations, setConversations] = useState<Conversation[]>([])
-  const [unreadCounts, setUnreadCounts] = useState(getUnreadCounts())
+  const [unreadCounts, setUnreadCounts] = useState(localGetUnreadCounts())
 
   useDidShow(() => {
-    const nextUnreadCounts = getUnreadCounts()
-    setUnreadCounts(nextUnreadCounts)
+    // 优先从云同步未读数
+    getNotificationUnreadCounts().then((cloudCounts) => {
+      setUnreadCounts(cloudCounts)
+      updateMessageTabUnread()
+    }).catch(() => {
+      const nextUnreadCounts = localGetUnreadCounts()
+      setUnreadCounts(nextUnreadCounts)
+    })
 
     async function loadConversations() {
       try {
@@ -76,8 +82,8 @@ export default function Messages() {
   const totalUnread = notificationUnreadTotal + chatUnreadTotal
 
   const handleAllRead = () => {
-    markAllNotificationsRead()
-    setUnreadCounts(getUnreadCounts())
+    localMarkAllRead()
+    setUnreadCounts(localGetUnreadCounts())
     setConversations((current) => {
       const next = current.map((item) => ({ ...item, unread: 0, unreadCount: 0 }))
       updateMessageTabUnread(0)

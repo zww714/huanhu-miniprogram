@@ -84,6 +84,27 @@ exports.main = async (event = {}) => {
       .limit(1).get()
     const isMutual = reverseRes.data.length > 0
 
+    // 创建关注通知
+    const isExisting = existRes.data.length > 0 && existRes.data[0].status === 'active'
+    if (!isExisting && myId !== targetUserId) {
+      const notiData = {
+        userId: targetUserId,
+        type: 'follows',
+        title: '新的关注',
+        content: `${myUser.name || '同学'} 关注了你`,
+        fromUserId: myId,
+        fromUserName: myUser.name || '同学',
+        targetType: 'user',
+        targetId: myId,
+        targetTitle: myUser.name || '',
+        read: false,
+        createdAt: db.serverDate(),
+      }
+      await db.collection('notifications').add({ data: notiData }).catch((e) => {
+        console.warn('[followUser] create notification failed', e)
+      })
+    }
+
     return {
       code: 0,
       data: {

@@ -1117,6 +1117,55 @@ export async function blockUser(params: { targetUserId: string; isBlocked?: bool
   return { isBlocked: true, isFollowing: false }
 }
 
+// ----- 通知系统 -----
+export async function getNotificationUnreadCounts() {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('notification', { action: 'getUnreadCounts' })
+      return res.data || { likes: 0, follows: 0, comments: 0, system: 0 }
+    } catch (e) {
+      console.warn('[API] getNotificationUnreadCounts failed', e)
+    }
+  }
+  return { likes: 0, follows: 0, comments: 0, system: 0 }
+}
+
+export async function getNotifications(params: { type?: string; filter?: string; page?: number; pageSize?: number }) {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('notification', { action: 'getNotifications', ...params })
+      return { data: res.data || [], total: res.total || 0 }
+    } catch (e) {
+      console.warn('[API] getNotifications failed', e)
+    }
+  }
+  return { data: [], total: 0 }
+}
+
+export async function markNotificationsRead(params: { ids?: string[]; type?: string; all?: boolean }) {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('notification', { action: 'markRead', ...params })
+      return res.data || { marked: true }
+    } catch (e) {
+      console.warn('[API] markNotificationsRead failed', e)
+    }
+  }
+  return { marked: true }
+}
+
+export async function deleteNotification(params: { id: string }) {
+  if (USE_CLOUD) {
+    try {
+      const res = await callCloudFunction('notification', { action: 'delete', ...params })
+      return res.data || { deleted: true }
+    } catch (e) {
+      console.warn('[API] deleteNotification failed', e)
+    }
+  }
+  return { deleted: true }
+}
+
 // ----- 更新资料 -----
 export async function updateProfile(params: { field?: string; value?: any; profile?: Record<string, any> } | Record<string, any>) {
   if (USE_CLOUD) {

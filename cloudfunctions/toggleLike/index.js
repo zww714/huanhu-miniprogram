@@ -80,6 +80,33 @@ exports.main = async (event = {}) => {
       data: { likes: likeCount },
     }).catch(() => {})
 
+    // 点赞时创建通知（只在新点赞时，不是取消）
+    if (liked && targetType === 'post') {
+      // 查帖子作者
+      const postRes = await db.collection('posts').doc(targetId).get().catch(() => ({ data: null }))
+      if (postRes.data) {
+        const postAuthorId = postRes.data.authorId || postRes.data.userId || ''
+        if (postAuthorId && postAuthorId !== myId) {
+          const notiData = {
+            userId: postAuthorId,
+            type: 'likes',
+            title: '收到新的点赞',
+            content: `${userRes2?.data?.[0]?.name || '同学'} 赞了你的发布`,
+            fromUserId: myId,
+            fromUserName: userRes2?.data?.[0]?.name || '同学',
+            targetType: 'post',
+            targetId,
+            targetTitle: postRes.data.title || '',
+            read: false,
+            createdAt: db.serverDate(),
+          }
+          await db.collection('notifications').add({ data: notiData }).catch((e) => {
+            console.warn('[toggleLike] create notification failed', e)
+          })
+        }
+      }
+    }
+
     return { code: 0, data: { liked, likeCount } }
   } catch (err) {
     console.error('[toggleLike]', err)

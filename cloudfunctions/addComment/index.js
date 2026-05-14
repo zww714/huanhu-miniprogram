@@ -90,6 +90,27 @@ exports.main = async (event = {}) => {
         status: 'normal',
       },
     }
+
+    // 创建评论通知
+    const notiTargetId = myId
+    if (postAuthorId && postAuthorId !== notiTargetId) {
+      const notiData = {
+        userId: postAuthorId,
+        type: 'comments',
+        title: '收到新的评论',
+        content: `${normalizedAuthor.name || '同学'} 评论了你的发布`,
+        fromUserId: myId,
+        fromUserName: normalizedAuthor.name || '同学',
+        targetType: 'post',
+        targetId: postId,
+        targetTitle: postTitle || '',
+        read: false,
+        createdAt: db.serverDate(),
+      }
+      await db.collection('notifications').add({ data: notiData }).catch((e) => {
+        console.warn('[addComment] create notification failed', e)
+      })
+    }
   } catch (err) {
     console.error('[addComment]', err)
     return { code: -10, msg: '评论失败', error: err.message || err }
