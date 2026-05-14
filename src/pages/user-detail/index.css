@@ -11,6 +11,27 @@ page {
   box-sizing: border-box;
 }
 
+.user-page.public-page {
+  background: linear-gradient(180deg, #EFF6FF 0%, #F8FAFC 220px);
+}
+
+.public-page .profile-head {
+  margin: 8px 16px 0;
+  padding: 18px;
+  border-radius: 20px;
+  border: 1px solid #DBEAFE;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.08);
+}
+
+.public-page .stat-row {
+  margin: 14px 16px 0;
+  padding: 14px 8px;
+  border-radius: 16px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+}
+
 .nav-bar {
   height: 64px;
   padding: 16px 16px 0;
@@ -202,6 +223,10 @@ page {
   gap: 12px;
 }
 
+.public-page .action-row {
+  padding: 14px 32px 12px;
+}
+
 .primary-btn,
 .secondary-btn {
   height: 38px;
@@ -229,6 +254,29 @@ page {
 
 .secondary-btn.following {
   color: #667085;
+}
+
+.public-hint {
+  margin: 0 16px 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #EEF6FF;
+  border: 1px solid #BFDBFE;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.public-hint-title {
+  color: #1D4ED8;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.public-hint-desc {
+  color: #64748B;
+  font-size: 12px;
+  line-height: 18px;
 }
 
 .msg-icon {
@@ -347,6 +395,32 @@ page {
 .content-card {
   overflow: hidden;
   margin-bottom: 0;
+}
+
+.public-page .content-card {
+  border-color: #BFDBFE;
+}
+
+.public-post-heading {
+  padding: 14px 14px 10px;
+  background: #F8FBFF;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.public-post-title {
+  display: block;
+  color: #0F172A;
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 800;
+}
+
+.public-post-subtitle {
+  display: block;
+  margin-top: 3px;
+  color: #64748B;
+  font-size: 12px;
+  line-height: 17px;
 }
 
 .tab-row {

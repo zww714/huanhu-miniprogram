@@ -18,8 +18,8 @@ import {
 import './index.css'
 
 const tabs = [
-  { key: 'posts', label: '鍙戝竷' },
-  { key: 'reviews', label: '璇勪环' },
+  { key: 'posts', label: '发布作品' },
+  { key: 'reviews', label: '收到评价' },
 ]
 
 type ProfilePost = {
@@ -132,7 +132,7 @@ function buildCurrentUser(): DetailUser {
     name: profile.name,
     verified: true,
     school: profile.school,
-    major: `${profile.college} 路 ${profile.grade}${profile.campus ? ` 路 ${profile.campus}` : ''}`,
+    major: `${profile.college} · ${profile.grade}${profile.campus ? ` · ${profile.campus}` : ''}`,
     gender: profile.gender,
     campus: profile.campus,
     bio: profile.bio,
@@ -366,7 +366,7 @@ export default function UserDetail() {
   })
 
   return (
-    <ScrollView scrollY className='user-page' showScrollbar={false} enhanced bounces={false}>
+    <ScrollView scrollY className={detailUser.isSelf ? 'user-page self-page' : 'user-page public-page'} showScrollbar={false} enhanced bounces={false}>
       <View className='nav-bar'>
         <Text className='back-icon' onClick={handleBack}>‹</Text>
       </View>
@@ -427,6 +427,13 @@ export default function UserDetail() {
         )}
       </View>
 
+      {!detailUser.isSelf && (
+        <View className='public-hint'>
+          <Text className='public-hint-title'>TA 的公开主页</Text>
+          <Text className='public-hint-desc'>这里只能查看资料、作品和评价，不提供编辑或管理入口。</Text>
+        </View>
+      )}
+
       <View className='info-card'>
         <View className='section-title blue'>
           <Text>我会</Text>
@@ -465,6 +472,14 @@ export default function UserDetail() {
       </View>
 
       <View className='content-card'>
+        {!detailUser.isSelf && activeTab === 'posts' && (
+          <View className='public-post-heading'>
+            <View>
+              <Text className='public-post-title'>TA 的全部公开发布</Text>
+              <Text className='public-post-subtitle'>共 {posts.length} 条，点击可进入帖子详情查看</Text>
+            </View>
+          </View>
+        )}
         <View className='tab-row'>
           {tabs.map(tab => (
             <View
@@ -524,7 +539,7 @@ export default function UserDetail() {
               <View className='profile-post-item' key={review.id}>
                 <View className='profile-post-head'>
                   <Text className='profile-post-title'>{review.reviewerName}</Text>
-                  <Text className='profile-post-type'>{review.rating ? 评分  : review.createdAt}</Text>
+                  <Text className='profile-post-type'>{review.rating ? `评分 ${review.rating}` : review.createdAt}</Text>
                 </View>
                 <View className='profile-post-tags'>
                   {review.tags.map((tag) => <Text className='profile-post-tag' key={tag}>{tag}</Text>)}
