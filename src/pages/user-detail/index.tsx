@@ -1,4 +1,4 @@
-import { View, Text, ScrollView } from '@tarojs/components'
+﻿import { View, Text, ScrollView } from '@tarojs/components'
 import Taro, { useDidShow, useLoad } from '@tarojs/taro'
 import { useMemo, useState } from 'react'
 import { getPosts } from '../../utils/api'
@@ -18,8 +18,8 @@ import {
 import './index.css'
 
 const tabs = [
-  { key: 'posts', label: '发布' },
-  { key: 'reviews', label: '评价' },
+  { key: 'posts', label: '鍙戝竷' },
+  { key: 'reviews', label: '璇勪环' },
 ]
 
 type ProfilePost = {
@@ -54,6 +54,7 @@ type DetailUser = {
   wants: string[]
   interests: string[]
   reviews: Array<{ id: string; reviewerName: string; rating?: number; tags: string[]; content: string; relatedTitle?: string; createdAt: string }>
+  recentPosts?: ProfilePost[]
   isSelf: boolean
 }
 
@@ -83,6 +84,15 @@ function getRouteIdentity(options: Record<string, unknown>) {
     id: decodeURIComponent(String(options.userId || options.id || '')),
     name: decodeURIComponent(String(options.name || '')),
   }
+}
+
+function findUserDetail(id: string, name: string) {
+  return Object.entries(USER_DETAILS).find(([key, raw]: [string, any]) => (
+    key === name
+    || raw.name === name
+    || String(raw.id || raw.userId || '') === id
+    || (!!id && String(raw.id || raw.userId || '') === `u${id}`)
+  ))
 }
 
 function getStats(stats: any, postsFallback = 0) {
@@ -122,7 +132,7 @@ function buildCurrentUser(): DetailUser {
     name: profile.name,
     verified: true,
     school: profile.school,
-    major: `${profile.college} · ${profile.grade}${profile.campus ? ` · ${profile.campus}` : ''}`,
+    major: `${profile.college} 路 ${profile.grade}${profile.campus ? ` 路 ${profile.campus}` : ''}`,
     gender: profile.gender,
     campus: profile.campus,
     bio: profile.bio,
@@ -148,6 +158,17 @@ function buildCurrentUser(): DetailUser {
 }
 
 function buildFromUserDetail(raw: any, id: string): DetailUser {
+  const recentPosts = (raw.recentPosts || []).map((post: any) => ({
+    ...post,
+    authorId: id,
+    userId: id,
+    excerpt: post.excerpt || post.title,
+    tags: post.tags || raw.tags || [],
+    categoryTag: post.categoryTag || '个人发布',
+    author: { id, userId: id, name: raw.name, avatar: raw.avatar, college: raw.college, grade: raw.grade },
+  }))
+  const normalizedSkills = normalizeSkillChips(raw)
+
   return {
     id,
     name: raw.name || '同学',
@@ -155,11 +176,18 @@ function buildFromUserDetail(raw: any, id: string): DetailUser {
     school: raw.school || '浙江大学',
     major: [raw.college, raw.grade].filter(Boolean).join(' · ') || raw.major || '在读',
     bio: raw.bio || '正在寻找可以一起交流的同学。',
-    stats: getStats(raw.stats, raw.recentPosts?.length || raw.posts?.length || 0),
-    skillChips: normalizeSkillChips(raw),
+    stats: getStats({ ...raw.stats, posts: raw.stats?.posts ?? recentPosts.length }, recentPosts.length || raw.posts?.length || 0),
+    skillChips: normalizedSkills.length
+      ? normalizedSkills
+      : (raw.tags || []).slice(0, 4).map((tag: string, index: number) => ({
+        name: tag.replace(/^.+\s/, ''),
+        level: Math.max(1, 4 - index),
+        featured: index === 0,
+      })),
     wants: raw.learn_wants || raw.wants || [],
-    interests: raw.interests || [],
+    interests: raw.interests || raw.tags || [],
     reviews: normalizeReviews(raw),
+    recentPosts,
     isSelf: false,
   }
 }
@@ -207,15 +235,17 @@ function resolveUser(id: string, name: string): DetailUser {
     return buildCurrentUser()
   }
 
-  const detailEntry = Object.entries(USER_DETAILS).find(([key, raw]: [string, any]) => (
-    key === name || raw.name === name || String(raw.id || raw.userId || '') === id
-  ))
+  const detailEntry = findUserDetail(id, name)
   if (detailEntry) return buildFromUserDetail(detailEntry[1], String(detailEntry[1].id || detailEntry[1].userId || detailEntry[0]))
 
   const listUser = [...SKILL_USERS, ...PARTNER_USERS].find((raw: any) => (
     String(raw.id || raw.userId || '') === id || raw.name === name
   ))
-  if (listUser) return buildFromListUser(listUser)
+  if (listUser) {
+    const relatedDetail = findUserDetail(String((listUser as any).id || ''), (listUser as any).name || '')
+    if (relatedDetail) return buildFromUserDetail(relatedDetail[1], String(relatedDetail[1].id || relatedDetail[1].userId || relatedDetail[0]))
+    return buildFromListUser(listUser)
+  }
 
   const postAuthor = MOCK_POSTS.find((post) => (
     post.authorId === id || post.userId === id || post.author?.name === name
@@ -247,6 +277,19 @@ function mergePendingPost(posts: ProfilePost[]) {
   return exists ? posts : [pending, ...posts]
 }
 
+function getPublicPostsForUser(user: DetailUser) {
+  const fromMock = MOCK_POSTS.filter((post) => (
+    post.authorId === user.id
+    || post.userId === user.id
+    || post.author?.id === user.id
+    || post.author?.userId === user.id
+    || post.author?.name === user.name
+  ))
+
+  const merged = [...fromMock, ...(user.recentPosts || [])]
+  return merged.filter((post, index) => merged.findIndex((item) => getPostId(item) === getPostId(post)) === index)
+}
+
 export default function UserDetail() {
   const [following, setFollowing] = useState(false)
   const [activeTab, setActiveTab] = useState('posts')
@@ -268,8 +311,27 @@ export default function UserDetail() {
   }
   const goChat = () => {
     Taro.navigateTo({
-      url: `/pages/contact-request/index?userId=${encodeURIComponent(detailUser.id)}&name=${encodeURIComponent(detailUser.name)}&category=${encodeURIComponent('个人主页')}&source=user-detail`,
+      url: `/pages/chat/index?id=${encodeURIComponent(detailUser.id)}&name=${encodeURIComponent(detailUser.name)}&category=${encodeURIComponent('个人主页')}`,
     })
+  }
+
+  const openPost = (post: ProfilePost) => {
+    const postId = getPostId(post)
+    Taro.setStorageSync('pendingPost', {
+      ...post,
+      id: postId,
+      authorId: detailUser.id,
+      userId: detailUser.id,
+      author: {
+        id: detailUser.id,
+        userId: detailUser.id,
+        name: detailUser.name,
+        avatar: '',
+        college: detailUser.school,
+        grade: detailUser.major,
+      },
+    })
+    Taro.navigateTo({ url: `/pages/post-detail/index?postId=${encodeURIComponent(postId)}&from=user-detail` })
   }
 
   useDidShow(() => {
@@ -285,10 +347,13 @@ export default function UserDetail() {
           || post.userId === detailUser.id
           || post.author?.name === detailUser.name
         ))
-        setPosts(mergePendingPost(matched))
+        const localPosts = getPublicPostsForUser(detailUser)
+        const merged = [...matched, ...localPosts]
+        const unique = merged.filter((post, index) => merged.findIndex((item) => getPostId(item) === getPostId(post)) === index)
+        setPosts(mergePendingPost(unique))
       } catch (e) {
         console.warn('[UserDetail] load posts failed', e)
-        if (alive) setPosts(mergePendingPost([]))
+        if (alive) setPosts(mergePendingPost(getPublicPostsForUser(detailUser)))
       } finally {
         if (alive) setLoadingPosts(false)
       }
@@ -329,7 +394,7 @@ export default function UserDetail() {
             key={item.key}
             onClick={() => item.key === 'posts' ? setActiveTab('posts') : toast(item.label)}
           >
-            <Text className='stat-value'>{item.value}</Text>
+            <Text className='stat-value'>{item.key === 'posts' ? posts.length : item.value}</Text>
             <Text className='stat-label'>{item.label}</Text>
           </View>
         ))}
@@ -348,7 +413,7 @@ export default function UserDetail() {
         ) : (
           <>
             <View className='primary-btn' onClick={goChat}>
-              <Text className='msg-icon'>◆</Text>
+              <Text className='msg-icon'>✦</Text>
               <Text>发消息</Text>
             </View>
             <View
@@ -423,11 +488,11 @@ export default function UserDetail() {
               <View
                 className='profile-post-item'
                 key={getPostId(post)}
-                onClick={() => Taro.navigateTo({ url: `/pages/post-detail/index?postId=${encodeURIComponent(getPostId(post))}` })}
+                onClick={() => openPost(post)}
               >
                 <View className='profile-post-head'>
                   <Text className='profile-post-title'>{post.title}</Text>
-                  <Text className='profile-post-type'>{post.categoryTag || `${post.mainCategory || '动态'} · 发布`}</Text>
+                  <Text className='profile-post-type'>{post.categoryTag || ((post.mainCategory || '动态') + ' · 发布')}</Text>
                 </View>
                 <Text className='profile-post-content' numberOfLines={2}>
                   {post.excerpt || post.content || '暂无内容'}
@@ -459,7 +524,7 @@ export default function UserDetail() {
               <View className='profile-post-item' key={review.id}>
                 <View className='profile-post-head'>
                   <Text className='profile-post-title'>{review.reviewerName}</Text>
-                  <Text className='profile-post-type'>{review.rating ? `★ ${review.rating}` : review.createdAt}</Text>
+                  <Text className='profile-post-type'>{review.rating ? 评分  : review.createdAt}</Text>
                 </View>
                 <View className='profile-post-tags'>
                   {review.tags.map((tag) => <Text className='profile-post-tag' key={tag}>{tag}</Text>)}
