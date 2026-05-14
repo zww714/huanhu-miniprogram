@@ -381,7 +381,7 @@ export default function Index() {
 
   const handleUserClick = (user: SkillUser) => {
     const id = getRecordId(user)
-    const query = id ? `id=${encodeURIComponent(id)}` : `name=${encodeURIComponent(user.name)}`
+    const query = id ? `userId=${encodeURIComponent(id)}` : `name=${encodeURIComponent(user.name)}`
     Taro.navigateTo({ url: `/pages/user-detail/index?${query}` })
   }
 

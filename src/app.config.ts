@@ -32,6 +32,10 @@ export default defineAppConfig({
     'pages/skill-proof-detail/index',
     'pages/interest-detail/index',
     'pages/user-detail/index',
+    'pages/user-skills/index',
+    'pages/user-posts/index',
+    'pages/user-followers/index',
+    'pages/user-following/index',
   ],
   window: {
     navigationBarTitleText: '换乎ZJU版',

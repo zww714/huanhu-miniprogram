@@ -246,11 +246,38 @@ page {
 .section-title {
   position: relative;
   padding-left: 12px;
-  margin-bottom: 14px;
   color: #0F172A;
   font-size: 16px;
   line-height: 22px;
   font-weight: 900;
+}
+
+.section-head,
+.content-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.section-head {
+  margin-bottom: 14px;
+}
+
+.section-head .section-title {
+  margin-bottom: 0;
+}
+
+.section-title {
+  margin-bottom: 14px;
+}
+
+.view-all {
+  flex-shrink: 0;
+  color: #2563EB;
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 800;
 }
 
 .section-title::before {

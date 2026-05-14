@@ -8,7 +8,7 @@ export default function MessageFollows() {
   return (
     <View style={{ minHeight: '100vh', backgroundColor: '#F8FAFC', padding: '12px' }}>
       {users.map((user, index) => (
-        <View key={user.id} onClick={() => Taro.navigateTo({ url: `/pages/user-detail/index?name=${encodeURIComponent(user.name)}` })} style={{ display: 'flex', alignItems: 'center', backgroundColor: '#FFF', borderRadius: '12px', padding: '14px', marginBottom: '10px', border: '1px solid #DCFCE7' }}>
+        <View key={user.id} onClick={() => Taro.navigateTo({ url: `/pages/user-detail/index?userId=${encodeURIComponent(String(user.id))}&name=${encodeURIComponent(user.name)}` })} style={{ display: 'flex', alignItems: 'center', backgroundColor: '#FFF', borderRadius: '12px', padding: '14px', marginBottom: '10px', border: '1px solid #DCFCE7' }}>
           <View style={{ width: '42px', height: '42px', borderRadius: '50%', backgroundColor: '#DCFCE7', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '12px' }}>
             <Text style={{ color: '#16A34A', fontWeight: '700' }}>{user.name.charAt(0)}</Text>
           </View>

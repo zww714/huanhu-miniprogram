@@ -341,6 +341,32 @@ page {
   font-weight: 800;
 }
 
+.owner-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.owner-actions .contact-btn,
+.secondary-action {
+  flex: 1;
+}
+
+.secondary-action {
+  height: 46px;
+  border-radius: 12px;
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.secondary-action text {
+  color: #2563EB;
+  font-size: 16px;
+  font-weight: 800;
+}
+
 .empty-wrap {
   margin: 80px 24px 0;
   padding: 28px 18px;

@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { ScrollView, Text, View } from '@tarojs/components'
-import { SKILLS_DETAIL, type SkillDetail, type SkillProof } from '../../utils/mock'
+import { CURRENT_USER, SKILLS_DETAIL, type SkillDetail, type SkillProof } from '../../utils/mock'
+import { PUBLIC_SKILLS } from '../../utils/publicProfiles'
 import './index.css'
 
 const proofTypeText: Record<SkillProof['type'], string> = {
@@ -15,6 +16,24 @@ function getLevelPercent(level: number) {
   return `${Math.min(Math.max(level, 1), 5) * 20}%`
 }
 
+function publicSkillToDetail(skill: typeof PUBLIC_SKILLS[number]): SkillDetail {
+  return {
+    id: skill.id,
+    userId: skill.userId,
+    name: skill.name,
+    level: skill.level,
+    levelText: skill.level >= 5 ? '专家级应用' : skill.level >= 4 ? '熟练掌握' : '持续提升中',
+    category: '技能交换',
+    icon: skill.name.slice(0, 1),
+    verified: skill.proofCount > 0,
+    summary: skill.intro,
+    abilityDescription: skill.intro,
+    canHelp: skill.tags.map((tag) => `${tag} 交流`),
+    proofs: [],
+    tags: skill.tags,
+  }
+}
+
 export default function SkillDetailPage() {
   const [skillId, setSkillId] = useState('')
   const [userId, setUserId] = useState('')
@@ -25,6 +44,9 @@ export default function SkillDetailPage() {
   })
 
   const skill: SkillDetail | undefined = useMemo(() => {
+    const publicSkill = PUBLIC_SKILLS.find((item) => item.id === skillId && (!userId || item.userId === userId))
+    if (publicSkill) return publicSkillToDetail(publicSkill)
+
     const exact = SKILLS_DETAIL.find((item) => {
       const matchesSkill = item.id === skillId
       const matchesUser = !userId || item.userId === userId
@@ -43,8 +65,11 @@ export default function SkillDetailPage() {
     }
   }, [skillId, userId])
 
+  const isOwner = !!skill && skill.userId === CURRENT_USER.id
   const handleBack = () => Taro.navigateBack()
-  const handleMore = () => Taro.showToast({ title: '更多功能稍后开放', icon: 'none' })
+  const handleMore = () => Taro.showToast({ title: '更多功能后续开放', icon: 'none' })
+  const handleEditSkill = () => Taro.navigateTo({ url: `/pages/edit-skills/index?skillId=${encodeURIComponent(skill?.id || '')}` })
+  const handleSubmitProof = () => Taro.showToast({ title: '证明材料提交功能后续接入', icon: 'none' })
   const handleContact = () => {
     if (!skill) return
     Taro.navigateTo({
@@ -71,7 +96,7 @@ export default function SkillDetailPage() {
         </View>
         <View className='empty-wrap'>
           <Text className='empty-title'>没有找到该技能</Text>
-          <Text className='empty-desc'>可能是技能已被删除，或跳转参数缺少 skillId。</Text>
+          <Text className='empty-desc'>可能是技能已删除，或跳转参数缺少 skillId。</Text>
         </View>
       </View>
     )
@@ -168,9 +193,20 @@ export default function SkillDetailPage() {
       </ScrollView>
 
       <View className='bottom-bar'>
-        <View className='contact-btn' onClick={handleContact}>
-          <Text>联系TA</Text>
-        </View>
+        {isOwner ? (
+          <View className='owner-actions'>
+            <View className='secondary-action' onClick={handleEditSkill}>
+              <Text>编辑技能</Text>
+            </View>
+            <View className='contact-btn' onClick={handleSubmitProof}>
+              <Text>提交证明</Text>
+            </View>
+          </View>
+        ) : (
+          <View className='contact-btn' onClick={handleContact}>
+            <Text>联系TA</Text>
+          </View>
+        )}
       </View>
     </View>
   )
