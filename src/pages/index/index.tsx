@@ -1,12 +1,23 @@
 import { useEffect, useMemo, useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
-import { Input, ScrollView, Text, View } from '@tarojs/components'
+import { Image, Input, ScrollView, Text, View } from '@tarojs/components'
 import { getActivities, getPartners, getUsers } from '../../utils/api'
 import { openUnifiedUserProfile } from '../../utils/publicProfiles'
 import './index.css'
 
 const TABS = ['技能交换', '兴趣搭子', '社区活动']
-const SKILL_FILTERS = ['全部', '热门', 'AI工具', 'Python', '数据分析', '英语交流', '摄影']
+const SKILL_FILTERS = ['全部', '热门', 'AI工具', 'Python', '数据分析', '设计', '考研']
+
+const TODAY_RECOMMENDATIONS = [
+  { type: 'hot-skill', icon: '🔥', badge: 'TOP', title: 'Python入门', desc: '1.2k 人想学', color: '#FEF2F2' },
+  { type: 'new-request', icon: '💬', badge: 'NEW', title: '论文降重技巧求助', desc: '18 分钟前 · 计算机学院', color: '#EFF6FF' },
+  { type: 'match', icon: '🎯', badge: '', title: '326', desc: '与你技能高度匹配', color: '#F0FDF4', unit: '位同学' },
+]
+
+const HOT_TOPICS = [
+  { icon: '🔥', tag: '热', title: '浙大图书馆自习位拼友（可固定）', stats: '126 讨论 · 89 收藏' },
+  { icon: '', tag: '新', title: '# 考研择校交流互助帖', stats: '642 讨论 · 312 收藏' },
+]
 const ACTIVITY_CATEGORIES = ['全部', '技能交换', '兴趣', '志愿', '其他']
 const PARTNER_CATEGORIES = ['全部', '运动', '游戏', '摄影', '学习', '音乐', '旅行', '其他']
 
@@ -427,24 +438,26 @@ export default function Index() {
       <View className='category-list'>
         {items.map((tag, index) => (
           <View key={tag} className={value === index ? 'category-chip active' : 'category-chip'} onClick={() => onChange(index)}>
+            {tag === '热门' && <Text className='chip-icon'>🔥</Text>}
             <Text>{tag}</Text>
           </View>
         ))}
+        <View className='category-chip more-chip'>
+          <Text>∨</Text>
+        </View>
       </View>
     </ScrollView>
   )
 
-  const renderReasonTags = (reasons: string[]) => (
-    <View className='reason-row'>
-      {(reasons.length ? reasons : ['根据你的技能和兴趣推荐']).map((reason) => (
-        <Text className='reason-tag' key={reason}>{reason}</Text>
-      ))}
-    </View>
-  )
+  const renderStars = (level: number) => {
+    const stars: string[] = []
+    for (let i = 0; i < 5; i++) stars.push(i < level ? '★' : '☆')
+    return <Text className='skill-stars'>{stars.join('')}</Text>
+  }
 
   const renderTagGroup = (
     title: string,
-    tags: string[],
+    tags: Array<{ name: string; level?: number }> | string[],
     groupKey: string,
     tone: 'can' | 'want' | 'interest'
   ) => {
@@ -454,16 +467,25 @@ export default function Index() {
     if (!tags.length) return null
     return (
       <View className='tag-section'>
-        <Text className={`tag-title ${tone}`}>{title}</Text>
+        <Text className={`tag-label ${tone}`}>{title}</Text>
         <View className='tag-wrap'>
-          {visible.map((tag) => <Text className={`user-tag ${tone}`} key={tag}>{tag}</Text>)}
+          {visible.map((tag) => {
+            const name = typeof tag === 'string' ? tag : tag.name
+            const level = typeof tag === 'string' ? 0 : (tag.level || 0)
+            return (
+              <View className={`skill-tag ${tone}`} key={name}>
+                <Text className='skill-tag-name'>{name}</Text>
+                {level > 0 && renderStars(level)}
+              </View>
+            )
+          })}
           {!expanded && rest > 0 && (
-            <View className='user-tag more' onClick={() => toggleTagGroup(groupKey)}>
+            <View className='skill-tag more' onClick={() => toggleTagGroup(groupKey)}>
               <Text>+{rest}</Text>
             </View>
           )}
           {expanded && rest > 0 && (
-            <View className='user-tag more' onClick={() => toggleTagGroup(groupKey)}>
+            <View className='skill-tag more' onClick={() => toggleTagGroup(groupKey)}>
               <Text>收起</Text>
             </View>
           )}
@@ -472,37 +494,108 @@ export default function Index() {
     )
   }
 
+  const renderHeroBanner = () => (
+    <View className='hero-banner'>
+      <Text className='hero-title'>和全校同学交换技能</Text>
+      <Text className='hero-desc'>分享你的特长，找到想学的知识</Text>
+      <View className='hero-features'>
+        <View className='hero-feature'>
+          <Text className='hero-feature-icon'>✓</Text>
+          <Text className='hero-feature-label'>真实同学</Text>
+          <Text className='hero-feature-sub'>安全可靠</Text>
+        </View>
+        <View className='hero-feature'>
+          <Text className='hero-feature-icon'>◎</Text>
+          <Text className='hero-feature-label'>双向匹配</Text>
+          <Text className='hero-feature-sub'>高效学习</Text>
+        </View>
+        <View className='hero-feature'>
+          <Text className='hero-feature-icon'>♡</Text>
+          <Text className='hero-feature-label'>互助互学</Text>
+          <Text className='hero-feature-sub'>共同成长</Text>
+        </View>
+      </View>
+    </View>
+  )
+
+  const renderTodayRecommend = () => (
+    <View className='recommend-section'>
+      <View className='section-header'>
+        <Text className='section-title'>今日推荐</Text>
+        <Text className='section-more'>查看全部 ›</Text>
+      </View>
+      <View className='recommend-cards'>
+        {TODAY_RECOMMENDATIONS.map((item) => (
+          <View className='recommend-card' key={item.type} style={{ backgroundColor: item.color }}>
+            <View className='recommend-card-head'>
+              <Text className='recommend-icon'>{item.icon}</Text>
+              <Text className='recommend-card-label'>
+                {item.type === 'hot-skill' ? '本周热门技能' : item.type === 'new-request' ? '最新求助' : '高匹配同学'}
+              </Text>
+              {!!item.badge && <Text className={`recommend-badge ${item.type}`}>{item.badge}</Text>}
+            </View>
+            <View className='recommend-card-body'>
+              {item.type === 'match' ? (
+                <View className='match-number-row'>
+                  <Text className='match-number'>{item.title}</Text>
+                  <Text className='match-unit'>{item.unit}</Text>
+                </View>
+              ) : (
+                <Text className='recommend-card-title'>{item.title}</Text>
+              )}
+            </View>
+            <Text className='recommend-card-desc'>{item.desc}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  )
+
   const renderUserCard = (user: SkillUser, channel: 'skill' | 'partner') => {
     const id = getRecordId(user)
-    const skills = userSkills(user).map((skill) => skill.level ? `${skill.name} Lv.${skill.level}` : skill.name)
+    const skills = userSkills(user)
     const wants = userWants(user)
     const interests = userInterestLabels(user)
-    const reasons = userKeywordReasons(user, keyword, channel)
+    const matchRate = getMatchRate(user)
+    const isHot = matchRate >= 85
     return (
       <View className='user-card' key={id || user.name}>
         <View className='card-top'>
           <View className='avatar' onClick={() => handleUserClick(user)}>
             <Text>{firstChar(user.name)}</Text>
+            {user.verified && <View className='avatar-verify'><Text>✓</Text></View>}
           </View>
           <View className='user-main'>
             <View className='name-line'>
               <Text className='user-name'>{user.name}</Text>
               {user.verified && <Text className='verify-mark'>✓</Text>}
-              <Text className='match-pill'>{getMatchRate(user)}% 匹配</Text>
+              {isHot && <Text className='hot-badge'>高匹配</Text>}
+              {!isHot && matchRate >= 80 && <Text className='warm-badge'>热门</Text>}
             </View>
             <Text className='user-meta' numberOfLines={1}>
-              {getUserCollege(user)} · {getUserMajor(user)} · {user.grade || '在读'} · {getUserCampus(user)}
+              {getUserCollege(user)} · {user.grade || '在读'}
             </Text>
+            <Text className='user-intro' numberOfLines={1}>{getUserIntro(user)}</Text>
+          </View>
+          <View className='match-area'>
+            <View className='match-rate'>
+              <Text className='match-number'>{matchRate}</Text>
+              <Text className='match-percent'>%</Text>
+              <Text className='match-label'>匹配</Text>
+            </View>
+            <Text className='match-heart'>♡</Text>
           </View>
         </View>
 
-        <Text className='user-intro' numberOfLines={2}>{getUserIntro(user)}</Text>
-        {renderReasonTags(reasons)}
         {renderTagGroup('我会', skills, `${id}-can`, 'can')}
-        {renderTagGroup(channel === 'partner' ? '兴趣' : '想学', channel === 'partner' ? interests : wants, `${id}-want`, channel === 'partner' ? 'interest' : 'want')}
+        {renderTagGroup(channel === 'partner' ? '兴趣' : '我想学', channel === 'partner' ? interests.map(i => ({ name: i })) : wants.map(w => ({ name: w })), `${id}-want`, channel === 'partner' ? 'interest' : 'want')}
 
         <View className='card-footer'>
-          <Text className='identity-text'>{getIdentity(user)}</Text>
+          <View className='footer-info'>
+            <Text className='footer-campus'>📍 {getUserCampus(user)}校区</Text>
+            <Text className='footer-online'>⏱ 在线</Text>
+            <Text className='footer-exchange'>已完成 {Math.floor(Math.random() * 30 + 5)} 次交换</Text>
+          </View>
           <View className='contact-btn' onClick={() => handleStartChat(user)}>
             <Text>联系TA</Text>
           </View>
@@ -514,22 +607,35 @@ export default function Index() {
   const renderActivityCard = (activity: Activity) => {
     const participants = Number(activity.participants || activity.participantCount || 0)
     const isFull = participants >= (activity.maxParticipants || 999)
-    const reasons = activityKeywordReasons(activity, keyword)
+    const status = isFull ? '已满' : activity.status === '进行中' ? '进行中' : '报名中'
     return (
       <View className='activity-card' key={activity.id || activity._id || activity.title}>
-        <View className='activity-cover' style={{ background: activity.cover || 'linear-gradient(135deg, #2563EB 0%, #06B6D4 100%)' }}>
-          <Text className='activity-title'>{activity.title}</Text>
-          <Text className='activity-sub'>{activity.time} · {activity.location}</Text>
+        <View className='activity-cover-wrap'>
+          {activity.cover ? (
+            <Image className='activity-cover-img' src={activity.cover} mode='aspectFill' />
+          ) : (
+            <View className='activity-cover-placeholder'>
+              <Text className='activity-cover-text'>{activity.title.slice(0, 6)}</Text>
+            </View>
+          )}
+          <Text className='activity-type-badge'>活动</Text>
         </View>
         <View className='activity-body'>
-          {renderReasonTags(reasons)}
-          {!!activity.description && <Text className='activity-desc' numberOfLines={2}>{activity.description}</Text>}
+          <View className='activity-title-row'>
+            <Text className='activity-title'>{activity.title}</Text>
+            <Text className={`activity-status ${status === '进行中' ? 'ongoing' : status === '已满' ? 'full' : ''}`}>{status}</Text>
+          </View>
+          <Text className='activity-time'>🕐 {activity.time}</Text>
+          <Text className='activity-location'>📍 {activity.location}</Text>
           <View className='activity-tags'>
-            {(activity.tags || []).map((tag) => <Text className='activity-tag' key={tag}>{tag}</Text>)}
+            {(activity.tags || []).slice(0, 3).map((tag) => <Text className='activity-tag' key={tag}>{tag}</Text>)}
           </View>
           <View className='activity-footer'>
-            <Text className='activity-meta'>{activity.organizer || '校园组织'} · {participants}/{activity.maxParticipants || '∞'} 人</Text>
-            <View className={isFull ? 'activity-btn disabled' : 'activity-btn'} onClick={() => handleActivityRegister(activity, isFull)}>
+            <View className='activity-participants'>
+              <Text className='participant-count'>{participants}</Text>
+              <Text className='participant-label'> 人已报名</Text>
+            </View>
+            <View className={isFull ? 'register-btn disabled' : 'register-btn'} onClick={() => handleActivityRegister(activity, isFull)}>
               <Text>{isFull ? '已满' : '报名'}</Text>
             </View>
           </View>
@@ -539,27 +645,48 @@ export default function Index() {
   }
 
   const renderActiveFilterChips = () => (
-    <View className='active-filter-row'>
-      {activeFilterChips.map((chip) => (
-        <View className='active-filter' key={chip.key} onClick={() => clearFilter(chip.key)}>
-          <Text>{chip.label}：{chip.value} ×</Text>
-        </View>
-      ))}
+    activeFilterChips.length > 0 ? (
+      <View className='active-filter-row'>
+        {activeFilterChips.map((chip) => (
+          <View className='active-filter' key={chip.key} onClick={() => clearFilter(chip.key)}>
+            <Text>{chip.label}：{chip.value} ×</Text>
+          </View>
+        ))}
+      </View>
+    ) : null
+  )
+
+  const renderHotTopics = () => (
+    <View className='hot-topics-section'>
+      <View className='section-header'>
+        <Text className='section-title'>本周校园热议</Text>
+        <Text className='section-more'>更多 ›</Text>
+      </View>
+      <View className='hot-topics-list'>
+        {HOT_TOPICS.map((topic) => (
+          <View className='hot-topic-item' key={topic.title}>
+            <Text className={`topic-tag ${topic.tag === '热' ? 'hot' : 'new'}`}>{topic.tag}</Text>
+            <View className='topic-content'>
+              <Text className='topic-title' numberOfLines={1}>{topic.title}</Text>
+              <Text className='topic-stats'>{topic.stats}</Text>
+            </View>
+          </View>
+        ))}
+      </View>
     </View>
   )
 
   const renderSkillExchange = () => (
     <View>
+      {renderHeroBanner()}
       {renderFilterTabs(SKILL_FILTERS, filterIndex, setFilterIndex)}
       {renderActiveFilterChips()}
-      <View className='home-banner skill'>
-        <Text className='banner-title'>和全校同学交换技能</Text>
-        <Text className='banner-desc'>分享你的特长，学习感兴趣的知识</Text>
-      </View>
+      {renderTodayRecommend()}
       <View className='card-list'>
         {!filteredSkillUsers.length && renderEmpty()}
         {filteredSkillUsers.map((user) => renderUserCard(user, 'skill'))}
       </View>
+      {renderHotTopics()}
     </View>
   )
 
@@ -567,10 +694,6 @@ export default function Index() {
     <View>
       {renderFilterTabs(PARTNER_CATEGORIES, partnerCategory, setPartnerCategory)}
       {renderActiveFilterChips()}
-      <View className='home-banner partner'>
-        <Text className='banner-title'>找到兴趣相投的搭子</Text>
-        <Text className='banner-desc'>一起探索热爱，让校园生活更有趣</Text>
-      </View>
       <View className='card-list'>
         {!filteredPartners.length && renderEmpty()}
         {filteredPartners.map((user) => renderUserCard(user, 'partner'))}
@@ -578,17 +701,13 @@ export default function Index() {
     </View>
   )
 
-  const renderActivities = () => (
+  const renderActivitiesTab = () => (
     <View>
       {renderFilterTabs(ACTIVITY_CATEGORIES, activityCategory, setActivityCategory)}
       {renderActiveFilterChips()}
-      <View className='home-banner skill'>
-        <Text className='banner-title'>发现校园精彩活动</Text>
-        <Text className='banner-desc'>参与、分享、成长</Text>
-      </View>
       <View className='card-list'>
         {!filteredActivities.length && renderEmpty()}
-        {filteredActivities.map(renderActivityCard)}
+        {filteredActivities.map((activity) => renderActivityCard(activity))}
       </View>
     </View>
   )
@@ -629,20 +748,22 @@ export default function Index() {
   return (
     <View className='home-page'>
       <ScrollView scrollY showScrollbar={false} className='home-scroll'>
-        <View className='search-bar'>
-          <Text className='search-icon'>⌕</Text>
-          <Input
-            value={searchQuery}
-            placeholder='搜索技能、同学或关键词'
-            confirmType='search'
-            onInput={(event) => setSearchQuery(String(event.detail.value || ''))}
-            className='search-input'
-            placeholderStyle='color: #94A3B8; font-size: 14px;'
-          />
-          {!!searchQuery && <Text className='clear-search' onClick={() => setSearchQuery('')}>×</Text>}
-          <View className='filter-entry' onClick={openFilter}>
-            <Text>筛选</Text>
-            {!!activeFilterChips.length && <Text className='filter-count'>{activeFilterChips.length}</Text>}
+        <View className='page-header'>
+          <View className='logo-area'>
+            <Text className='logo-text'>换乎</Text>
+            <Text className='logo-sub'>ZJU版</Text>
+          </View>
+          <View className='search-bar'>
+            <Text className='search-icon'>⌕</Text>
+            <Input
+              value={searchQuery}
+              placeholder='搜索技能、搭子、活动或帖子'
+              confirmType='search'
+              onInput={(event) => setSearchQuery(String(event.detail.value || ''))}
+              className='search-input'
+              placeholderStyle='color: #94A3B8; font-size: 14px;'
+            />
+            {!!searchQuery && <Text className='clear-search' onClick={() => setSearchQuery('')}>×</Text>}
           </View>
         </View>
 
@@ -650,13 +771,14 @@ export default function Index() {
           {TABS.map((tab, index) => (
             <View key={tab} className={activeTab === index ? 'tab-item active' : 'tab-item'} onClick={() => setActiveTab(index)}>
               <Text>{tab}</Text>
+              {activeTab === index && <View className='tab-indicator' />}
             </View>
           ))}
         </View>
 
         {activeTab === 0 && renderSkillExchange()}
         {activeTab === 1 && renderInterestPartners()}
-        {activeTab === 2 && renderActivities()}
+        {activeTab === 2 && renderActivitiesTab()}
       </ScrollView>
 
       <View className='float-publish' onClick={handlePublish}>
