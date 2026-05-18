@@ -1,0 +1,32 @@
+@import '../../../styles/tokens.scss';
+
+.search-bar {
+  min-height: 72rpx;
+  border-radius: $radius-pill;
+  background: $color-card-bg;
+  border: 1rpx solid $color-border;
+  box-shadow: $shadow-search;
+  padding: 0 28rpx;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.search-bar__icon {
+  color: $color-text-tertiary;
+  font-size: 34rpx;
+  line-height: 1;
+  margin-right: 16rpx;
+}
+
+.search-bar__input {
+  flex: 1;
+  height: 72rpx;
+  color: $color-text-primary;
+  font-size: $font-body;
+  line-height: 72rpx;
+}
+
+.search-bar__input::placeholder {
+  color: $color-text-tertiary;
+}

@@ -1,0 +1,47 @@
+@import '../../../styles/tokens.scss';
+
+.tag-chip {
+  min-height: 54rpx;
+  padding: 0 24rpx;
+  border-radius: $radius-pill;
+  background: $color-tag-bg;
+  color: $color-text-secondary;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  transition: transform 0.16s ease, opacity 0.16s ease;
+}
+
+.tag-chip__text {
+  font-size: $font-tag;
+  line-height: 1;
+  color: inherit;
+  white-space: nowrap;
+}
+
+.tag-chip--active,
+.tag-chip--primary {
+  background: $color-primary;
+  color: #fff;
+}
+
+.tag-chip--success {
+  background: #DCFCE7;
+  color: $color-success;
+}
+
+.tag-chip--warning {
+  background: #FFEDD5;
+  color: $color-warning;
+}
+
+.tag-chip--danger {
+  background: #FEE2E2;
+  color: $color-danger;
+}
+
+.tag-chip--pressed {
+  transform: scale(0.96);
+  opacity: 0.88;
+}

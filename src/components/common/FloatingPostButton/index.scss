@@ -1,0 +1,27 @@
+@import '../../../styles/tokens.scss';
+
+.floating-post-button {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: $radius-pill;
+  background: $color-primary;
+  color: #fff;
+  box-shadow: $shadow-floating;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.16s ease, opacity 0.16s ease;
+}
+
+.floating-post-button--pressed {
+  transform: scale(0.94);
+  opacity: 0.9;
+}
+
+.floating-post-button__plus {
+  color: #fff;
+  font-size: 58rpx;
+  line-height: 1;
+  font-weight: 300;
+  transform: translateY(-2rpx);
+}
