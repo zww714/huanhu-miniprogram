@@ -647,7 +647,7 @@ export default function Index() {
 
   return (
     <View className='home-page'>
-      <ScrollView scrollY showScrollbar={false} className='home-scroll'>
+      <View className='home-scroll'>
         <View className='home-topbar'>
           <View className='home-brand'>
             <Text className='home-brand-main'>换乎</Text>
@@ -674,7 +674,7 @@ export default function Index() {
         {activeTab === 0 ? renderSkillExchange() : null}
         {activeTab === 1 ? renderInterestPartners() : null}
         {activeTab === 2 ? renderActivities() : null}
-      </ScrollView>
+      </View>
 
       <FloatingPostButton className='home-floating-post' onClick={handlePublish} />
     </View>

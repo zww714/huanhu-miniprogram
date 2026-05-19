@@ -7,23 +7,23 @@ page {
 .home-page {
   min-height: 100vh;
   background:
-    radial-gradient(circle at 12% 0%, rgba(37, 99, 235, 0.08), transparent 280rpx),
-    linear-gradient(180deg, #FFFFFF 0%, $color-page-bg 42%);
+    radial-gradient(circle at 12% 0%, rgba(37, 99, 235, 0.08), transparent 260rpx),
+    linear-gradient(180deg, #FFFFFF 0%, $color-page-bg 520rpx);
   color: $color-text-primary;
   position: relative;
 }
 
 .home-scroll {
-  height: 100vh;
   box-sizing: border-box;
-  padding-bottom: calc(130rpx + env(safe-area-inset-bottom));
+  min-height: 100vh;
+  padding-bottom: calc(140rpx + env(safe-area-inset-bottom));
 }
 
 .home-topbar {
   display: flex;
   align-items: center;
-  gap: 24rpx;
-  padding: 22rpx $space-page-x 18rpx;
+  gap: 22rpx;
+  padding: 18rpx $space-page-x 14rpx;
 }
 
 .home-brand {
@@ -35,14 +35,14 @@ page {
 
 .home-brand-main {
   color: $color-primary;
-  font-size: $font-brand-title;
+  font-size: 42rpx;
   font-weight: 900;
   line-height: 1;
 }
 
 .home-brand-sub {
   color: $color-primary;
-  font-size: 24rpx;
+  font-size: 25rpx;
   font-weight: 800;
   line-height: 1;
 }
@@ -50,18 +50,32 @@ page {
 .home-search {
   flex: 1;
   min-width: 0;
+  min-height: 64rpx;
+  height: 64rpx;
+  padding-left: 24rpx;
+  padding-right: 24rpx;
+  box-shadow: none;
+}
+
+.home-search .search-bar__input {
+  height: 64rpx;
+  line-height: 64rpx;
+}
+
+.home-search .search-bar__icon {
+  font-size: 32rpx;
 }
 
 .home-tabs {
   display: flex;
   align-items: center;
-  height: 92rpx;
+  height: 84rpx;
   padding: 0 $space-page-x;
 }
 
 .home-tab {
   flex: 1;
-  height: 92rpx;
+  height: 84rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -70,15 +84,15 @@ page {
 
 .home-tab text {
   color: #53627C;
-  font-size: $font-primary-tab;
+  font-size: 29rpx;
   font-weight: 700;
 }
 
 .home-tab-line {
   position: absolute;
-  bottom: 8rpx;
+  bottom: 6rpx;
   left: 50%;
-  width: 36rpx;
+  width: 38rpx;
   height: 8rpx;
   border-radius: $radius-pill;
   background: transparent;
@@ -95,7 +109,7 @@ page {
 }
 
 .home-hero {
-  margin: 0 $space-page-x $space-card-gap;
+  margin: 2rpx $space-page-x 24rpx;
   border-radius: $radius-xl;
   overflow: hidden;
   background: linear-gradient(135deg, #0B66FF 0%, #1677FF 52%, #43A5FF 100%);
@@ -104,8 +118,8 @@ page {
 }
 
 .home-hero-content {
-  min-height: 190rpx;
-  padding: 42rpx 44rpx 24rpx;
+  min-height: 220rpx;
+  padding: 52rpx 46rpx 28rpx;
   position: relative;
   z-index: 2;
 }
@@ -113,14 +127,14 @@ page {
 .home-hero-title {
   display: block;
   color: #FFFFFF;
-  font-size: 42rpx;
+  font-size: 44rpx;
   font-weight: 900;
   line-height: 1.16;
 }
 
 .home-hero-desc {
   display: block;
-  margin-top: 16rpx;
+  margin-top: 18rpx;
   color: rgba(255, 255, 255, 0.9);
   font-size: 26rpx;
   font-weight: 500;
@@ -128,25 +142,48 @@ page {
 
 .home-hero-art {
   position: absolute;
-  border-radius: 28rpx;
-  background: rgba(255, 255, 255, 0.18);
-  border: 1rpx solid rgba(255, 255, 255, 0.28);
+  border-radius: 24rpx;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1rpx solid rgba(255, 255, 255, 0.36);
+  box-shadow: 0 16rpx 34rpx rgba(0, 55, 180, 0.2);
   transform: rotate(-14deg);
 }
 
 .home-hero-art--one {
-  width: 150rpx;
-  height: 92rpx;
-  right: 72rpx;
-  top: 42rpx;
+  width: 160rpx;
+  height: 104rpx;
+  right: 64rpx;
+  top: 44rpx;
 }
 
 .home-hero-art--two {
-  width: 100rpx;
-  height: 66rpx;
-  right: 210rpx;
-  top: 92rpx;
+  width: 112rpx;
+  height: 72rpx;
+  right: 226rpx;
+  top: 110rpx;
   transform: rotate(18deg);
+}
+
+.home-hero-art--one::after {
+  content: '';
+  position: absolute;
+  width: 72rpx;
+  height: 22rpx;
+  left: 28rpx;
+  top: 28rpx;
+  border-radius: $radius-pill;
+  background: rgba(255, 255, 255, 0.44);
+}
+
+.home-hero-art--two::after {
+  content: '';
+  position: absolute;
+  width: 58rpx;
+  height: 18rpx;
+  right: 20rpx;
+  top: 24rpx;
+  border-radius: $radius-pill;
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .home-hero-features {
@@ -154,7 +191,7 @@ page {
   grid-template-columns: repeat(3, 1fr);
   background: rgba(255, 255, 255, 0.96);
   border-radius: $radius-xl $radius-xl 0 0;
-  padding: 22rpx 18rpx;
+  padding: 24rpx 12rpx;
   position: relative;
   z-index: 3;
 }
@@ -163,7 +200,8 @@ page {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10rpx;
+  gap: 9rpx;
+  min-width: 0;
 }
 
 .home-hero-feature-icon {
@@ -198,14 +236,14 @@ page {
 
 .home-filter-scroll {
   white-space: nowrap;
-  height: 78rpx;
+  height: 74rpx;
 }
 
 .home-filter-list {
   display: flex;
   align-items: center;
   gap: $space-tag-gap;
-  padding: 8rpx $space-page-x 14rpx;
+  padding: 6rpx $space-page-x 12rpx;
   box-sizing: border-box;
 }
 
@@ -233,7 +271,7 @@ page {
 }
 
 .home-recommend-section {
-  padding: 0 0 22rpx;
+  padding: 0 0 20rpx;
   border-radius: $radius-lg;
   background: rgba(255, 255, 255, 0.86);
   border: 1rpx solid rgba(226, 232, 240, 0.86);
@@ -244,7 +282,7 @@ page {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24rpx 28rpx 18rpx;
+  padding: 22rpx 28rpx 16rpx;
 }
 
 .home-section-title {
@@ -262,13 +300,13 @@ page {
 .home-recommend-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16rpx;
+  gap: 18rpx;
   padding: 0 20rpx;
 }
 
 .home-recommend-card {
-  min-height: 134rpx;
-  padding: 18rpx;
+  min-height: 146rpx;
+  padding: 18rpx 16rpx;
   border-radius: $radius-md;
   box-sizing: border-box;
 }
@@ -289,8 +327,8 @@ page {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8rpx;
-  margin-bottom: 14rpx;
+  gap: 6rpx;
+  margin-bottom: 12rpx;
 }
 
 .home-recommend-label {
@@ -315,7 +353,7 @@ page {
 
 .home-recommend-title {
   color: $color-text-primary;
-  font-size: 28rpx;
+  font-size: 27rpx;
   font-weight: 900;
   line-height: 1.2;
 }
@@ -323,7 +361,7 @@ page {
 .home-recommend-desc {
   margin-top: 8rpx;
   color: $color-text-secondary;
-  font-size: 22rpx;
+  font-size: 21rpx;
   line-height: 1.25;
 }
 
@@ -331,7 +369,7 @@ page {
   display: flex;
   flex-direction: column;
   gap: $space-card-gap;
-  padding: 0 $space-page-x $space-card-gap;
+  padding: 0 $space-page-x 24rpx;
 }
 
 .home-user-card,
@@ -344,19 +382,19 @@ page {
 }
 
 .home-user-card {
-  padding: 28rpx;
+  padding: 28rpx 28rpx 24rpx;
   box-sizing: border-box;
 }
 
 .home-user-card-main {
   display: flex;
   align-items: flex-start;
-  gap: 22rpx;
+  gap: 20rpx;
 }
 
 .home-avatar-wrap {
-  width: 96rpx;
-  height: 96rpx;
+  width: 104rpx;
+  height: 104rpx;
   border-radius: $radius-pill;
   background: linear-gradient(135deg, $color-primary 0%, #60A5FA 100%);
   display: flex;
@@ -368,8 +406,8 @@ page {
 }
 
 .home-avatar-img {
-  width: 96rpx;
-  height: 96rpx;
+  width: 104rpx;
+  height: 104rpx;
   border-radius: $radius-pill;
 }
 
@@ -461,7 +499,7 @@ page {
 }
 
 .home-match-side {
-  width: 128rpx;
+  width: 126rpx;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -508,7 +546,7 @@ page {
   display: flex;
   align-items: flex-start;
   gap: 14rpx;
-  margin-top: 20rpx;
+  margin-top: 18rpx;
 }
 
 .home-tag-label {
@@ -573,7 +611,7 @@ page {
   align-items: center;
   justify-content: space-between;
   gap: 18rpx;
-  margin-top: 24rpx;
+  margin-top: 22rpx;
 }
 
 .home-user-foot-info {
@@ -610,7 +648,7 @@ page {
 
 .home-activity-card {
   display: flex;
-  margin: 0 $space-page-x $space-card-gap;
+  margin: 0 $space-page-x 22rpx;
   padding: 22rpx;
   box-sizing: border-box;
   gap: 22rpx;
@@ -749,7 +787,8 @@ page {
 }
 
 .home-topic-section {
-  padding-bottom: 18rpx;
+  padding-bottom: 20rpx;
+  margin-bottom: 0;
 }
 
 .home-topic-grid {
@@ -839,7 +878,7 @@ page {
 
 .home-floating-post {
   position: fixed;
-  right: $space-floating-right;
-  bottom: calc($space-floating-bottom + env(safe-area-inset-bottom));
+  right: 28rpx;
+  bottom: calc(120rpx + env(safe-area-inset-bottom));
   z-index: $z-floating-button;
 }
