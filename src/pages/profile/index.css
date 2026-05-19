@@ -1,20 +1,19 @@
 /* postcss-pxtransform disable */
 
 page {
-  background: #F6FAFF;
+  background: #F7FAFF;
 }
 
 .profile-scroll {
-  height: calc(100vh - 58px);
+  height: 100vh;
   background:
-    radial-gradient(circle at 12% 0%, rgba(37, 99, 235, 0.1), transparent 220px),
-    linear-gradient(180deg, #F7FBFF 0%, #FFFFFF 48%, #F6F8FC 100%);
+    radial-gradient(circle at 12% 0%, rgba(37, 99, 235, 0.08), transparent 220px),
+    linear-gradient(180deg, #F7FAFF 0%, #FFFFFF 46%, #F7FAFF 100%);
 }
 
 .profile-page {
-  min-height: 100%;
   box-sizing: border-box;
-  padding: 32rpx 32rpx calc(180rpx + env(safe-area-inset-bottom));
+  padding: 24rpx 28rpx calc(88rpx + env(safe-area-inset-bottom));
   color: #0F172A;
 }
 
@@ -23,25 +22,25 @@ page {
 .menu-card {
   background: #FFFFFF;
   border: 1rpx solid rgba(226, 232, 240, 0.82);
-  box-shadow: 0 12rpx 36rpx rgba(27, 86, 180, 0.06);
+  box-shadow: 0 10rpx 28rpx rgba(27, 86, 180, 0.055);
 }
 
 .profile-card {
   border-radius: 32rpx;
-  padding: 32rpx;
+  padding: 30rpx 28rpx;
   box-sizing: border-box;
 }
 
 .profile-main-row {
   display: flex;
   align-items: flex-start;
-  gap: 22rpx;
+  gap: 20rpx;
 }
 
 .avatar-wrap {
   position: relative;
-  width: 96rpx;
-  height: 96rpx;
+  width: 124rpx;
+  height: 124rpx;
   flex-shrink: 0;
 }
 
@@ -54,10 +53,10 @@ page {
 
 .avatar,
 .avatar-image {
-  width: 96rpx;
-  height: 96rpx;
+  width: 124rpx;
+  height: 124rpx;
   border-radius: 50%;
-  box-shadow: 0 14rpx 32rpx rgba(37, 99, 235, 0.18);
+  box-shadow: 0 16rpx 34rpx rgba(37, 99, 235, 0.18);
 }
 
 .avatar {
@@ -73,7 +72,7 @@ page {
 }
 
 .avatar text {
-  font-size: 36rpx;
+  font-size: 46rpx;
   line-height: 1;
   font-weight: 800;
   color: #FFFFFF;
@@ -83,8 +82,8 @@ page {
   position: absolute;
   right: -4rpx;
   bottom: -4rpx;
-  width: 34rpx;
-  height: 34rpx;
+  width: 38rpx;
+  height: 38rpx;
   border-radius: 50%;
   background: #2563EB;
   border: 4rpx solid #FFFFFF;
@@ -95,7 +94,7 @@ page {
 
 .avatar-edit-tip text {
   color: #FFFFFF;
-  font-size: 18rpx;
+  font-size: 20rpx;
   line-height: 1;
   font-weight: 800;
 }
@@ -113,10 +112,10 @@ page {
 }
 
 .profile-name {
-  max-width: 240rpx;
+  max-width: 238rpx;
   color: #0F172A;
-  font-size: 38rpx;
-  line-height: 48rpx;
+  font-size: 40rpx;
+  line-height: 50rpx;
   font-weight: 800;
 }
 
@@ -143,21 +142,21 @@ page {
   display: block;
   margin-top: 8rpx;
   color: #64748B;
-  font-size: 24rpx;
-  line-height: 34rpx;
+  font-size: 26rpx;
+  line-height: 36rpx;
 }
 
 .profile-bio {
   display: block;
-  margin-top: 14rpx;
+  margin-top: 12rpx;
   color: #475569;
-  font-size: 26rpx;
+  font-size: 28rpx;
   line-height: 38rpx;
 }
 
 .rating-card {
-  width: 118rpx;
-  min-height: 132rpx;
+  width: 124rpx;
+  min-height: 144rpx;
   border-radius: 28rpx;
   background: linear-gradient(180deg, #FFFFFF 0%, #F8FBFF 100%);
   box-shadow: 0 12rpx 30rpx rgba(37, 99, 235, 0.12);
@@ -171,32 +170,32 @@ page {
 
 .rating-label {
   color: #94A3B8;
-  font-size: 22rpx;
-  line-height: 28rpx;
+  font-size: 23rpx;
+  line-height: 30rpx;
   font-weight: 700;
 }
 
 .rating-score {
   margin-top: 2rpx;
   color: #2563EB;
-  font-size: 42rpx;
-  line-height: 50rpx;
+  font-size: 44rpx;
+  line-height: 52rpx;
   font-weight: 900;
 }
 
 .rating-stars {
   margin-top: 2rpx;
   color: #2563EB;
-  font-size: 16rpx;
+  font-size: 18rpx;
   line-height: 20rpx;
   letter-spacing: -1rpx;
 }
 
 .profile-tag-lines {
-  margin-top: 26rpx;
+  margin-top: 24rpx;
   display: flex;
   flex-direction: column;
-  gap: 14rpx;
+  gap: 12rpx;
 }
 
 .profile-tag-line {
@@ -212,8 +211,8 @@ page {
   border-radius: 14rpx;
   background: #EAF2FF;
   color: #2563EB;
-  font-size: 22rpx;
-  line-height: 28rpx;
+  font-size: 23rpx;
+  line-height: 30rpx;
   font-weight: 800;
 }
 
@@ -221,13 +220,13 @@ page {
   flex: 1;
   min-width: 0;
   color: #475569;
-  font-size: 25rpx;
+  font-size: 26rpx;
   line-height: 34rpx;
 }
 
 .edit-profile-btn {
   height: 76rpx;
-  margin-top: 30rpx;
+  margin-top: 26rpx;
   border-radius: 999rpx;
   border: 2rpx solid #2563EB;
   background: #FFFFFF;
@@ -238,17 +237,19 @@ page {
 
 .edit-profile-btn text {
   color: #2563EB;
-  font-size: 26rpx;
-  line-height: 34rpx;
+  font-size: 27rpx;
+  line-height: 36rpx;
   font-weight: 800;
 }
 
 .stats-card {
   margin-top: 24rpx;
   border-radius: 30rpx;
-  padding: 24rpx 0;
+  min-height: 160rpx;
+  padding: 22rpx 0;
   display: flex;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .stat-item {
@@ -257,55 +258,67 @@ page {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6rpx;
+  gap: 8rpx;
+  justify-content: center;
+  position: relative;
 }
 
 .stat-item.with-line {
-  border-right: 1rpx solid #EEF2F7;
+  border-right: 0;
+}
+
+.stat-item.with-line::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 24rpx;
+  width: 1rpx;
+  height: 76rpx;
+  background: #E8EEF8;
 }
 
 .stat-icon {
-  width: 42rpx;
-  height: 42rpx;
-  border-radius: 16rpx;
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 18rpx;
   background: #EAF2FF;
   color: #2563EB;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20rpx;
+  font-size: 21rpx;
   line-height: 1;
   font-weight: 900;
 }
 
 .stat-value {
   color: #0F172A;
-  font-size: 38rpx;
+  font-size: 40rpx;
   line-height: 46rpx;
   font-weight: 900;
 }
 
 .stat-label {
   color: #64748B;
-  font-size: 23rpx;
-  line-height: 30rpx;
+  font-size: 25rpx;
+  line-height: 32rpx;
   font-weight: 600;
 }
 
 .menu-card {
-  margin-top: 28rpx;
+  margin-top: 24rpx;
   border-radius: 32rpx;
   overflow: hidden;
 }
 
 .menu-row {
-  height: 144rpx;
+  height: 136rpx;
   box-sizing: border-box;
-  padding: 0 32rpx;
+  padding: 0 28rpx;
   display: flex;
   align-items: center;
-  gap: 24rpx;
-  border-bottom: 1rpx solid #EEF2F7;
+  gap: 22rpx;
+  border-bottom: 1rpx solid #EEF2F8;
 }
 
 .menu-row.last {
@@ -350,19 +363,19 @@ page {
 
 .menu-label {
   color: #0F172A;
-  font-size: 29rpx;
-  line-height: 38rpx;
-  font-weight: 800;
+  font-size: 31rpx;
+  line-height: 40rpx;
+  font-weight: 700;
 }
 
 .menu-desc {
-  color: #94A3B8;
-  font-size: 23rpx;
-  line-height: 30rpx;
+  color: #8A96AA;
+  font-size: 25rpx;
+  line-height: 32rpx;
 }
 
 .menu-arrow {
-  color: #CBD5E1;
+  color: #A8B2C3;
   font-size: 40rpx;
   line-height: 1;
   font-weight: 500;

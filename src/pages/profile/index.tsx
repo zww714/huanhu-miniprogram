@@ -16,10 +16,10 @@ import {
 } from '../../utils/mock'
 
 const QUICK_ENTRIES = [
-  { key: 'favorites', icon: '★', label: '我的收藏', desc: '收藏的帖子和技能', url: '/pages/my-favorites/index', tone: 'blue' },
+  { key: 'favorites', icon: '☆', label: '我的收藏', desc: '收藏的帖子和技能', url: '/pages/my-favorites/index', tone: 'blue' },
   { key: 'history', icon: '◷', label: '浏览记录', desc: '最近看过的内容', url: '', tone: 'green' },
-  { key: 'activities', icon: '日', label: '我的活动', desc: '报名和参与记录', url: '/pages/my-activities/index', tone: 'blue' },
-  { key: 'settings', icon: '⚙', label: '设置', desc: '账号与隐私', url: '/pages/settings/index', tone: 'purple' },
+  { key: 'activities', icon: '□', label: '我的活动', desc: '报名和参与记录', url: '/pages/my-activities/index', tone: 'blue' },
+  { key: 'settings', icon: '◇', label: '设置', desc: '账号与隐私', url: '/pages/settings/index', tone: 'purple' },
 ]
 
 export default function Profile() {
@@ -215,10 +215,10 @@ export default function Profile() {
 
         <View className='stats-card'>
           {[
-            { label: '技能', value: statValues.skills, icon: '技', url: `/pages/my-skills/index?userId=${encodeURIComponent(userId)}&self=1` },
-            { label: '发布', value: statValues.posts, icon: '发', url: '/pages/my-posts/index' },
-            { label: '粉丝', value: statValues.followers, icon: '粉', url: '/pages/my-followers/index' },
-            { label: '关注', value: statValues.following, icon: '关', url: '/pages/my-following/index' },
+            { label: '技能', value: statValues.skills, icon: '</>', url: `/pages/my-skills/index?userId=${encodeURIComponent(userId)}&self=1` },
+            { label: '发布', value: statValues.posts, icon: '+', url: '/pages/my-posts/index' },
+            { label: '粉丝', value: statValues.followers, icon: '○', url: '/pages/my-followers/index' },
+            { label: '关注', value: statValues.following, icon: '◎', url: '/pages/my-following/index' },
           ].map((item, index) => (
             <View key={item.label} className={`stat-item ${index < 3 ? 'with-line' : ''}`} onClick={() => safeGo(item.url)}>
               <Text className='stat-icon'>{item.icon}</Text>
