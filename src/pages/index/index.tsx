@@ -15,7 +15,7 @@ const ACTIVITY_FILTERS = ['全部', '热门', '讲座', '工作坊', '比赛', '
 
 const TODAY_RECOMMENDATIONS = [
   { id: 'hot-skill', label: '本周热门技能', title: 'Python入门', desc: '1.2k 人想学', badge: 'TOP', tone: 'hot' },
-  { id: 'new-help', label: '最新求助', title: '论文降重技巧求助', desc: '18 分钟前 · 计算机学院', badge: 'NEW', tone: 'new' },
+  { id: 'new-help', label: '最新求助', title: '论文降重技巧求助', desc: '18分钟前 · 计算机学院', badge: 'NEW', tone: 'new' },
   { id: 'match', label: '高匹配同学', title: '326 位同学', desc: '与你技能高度匹配', badge: '', tone: 'match' },
 ]
 
@@ -360,7 +360,7 @@ export default function Index() {
       return
     }
     if (id === 'match') {
-      Taro.pageScrollTo?.({ scrollTop: 520, duration: 250 })
+      Taro.pageScrollTo?.({ scrollTop: 560, duration: 250 })
       return
     }
     setSearchQuery('Python')
@@ -412,6 +412,7 @@ export default function Index() {
 
   const renderHeroBanner = () => (
     <View className='home-hero'>
+      <View className='home-hero-paper' />
       <View className='home-hero-art home-hero-art--one' />
       <View className='home-hero-art home-hero-art--two' />
       <View className='home-hero-content'>
@@ -420,7 +421,7 @@ export default function Index() {
       </View>
       <View className='home-hero-features'>
         {[
-          ['盾', '真实同学', '安全可靠'],
+          ['盾', '真实同学', '安全可信'],
           ['双', '双向匹配', '高效学习'],
           ['心', '互助互学', '共同成长'],
         ].map((item) => (
@@ -437,22 +438,24 @@ export default function Index() {
   )
 
   const renderFilters = () => (
-    <ScrollView scrollX showScrollbar={false} className='home-filter-scroll'>
-      <View className='home-filter-list'>
-        {filters.map((item, index) => (
-          <TagChip
-            key={item}
-            text={item}
-            active={activeFilter === index}
-            type={activeFilter === index ? 'primary' : item === '热门' ? 'warning' : 'default'}
-            onClick={() => setActiveFilter(index)}
-          />
-        ))}
-        <View className='home-filter-more'>
-          <Text>⌄</Text>
+    <View className='home-filter-row'>
+      <ScrollView scrollX showScrollbar={false} className='home-filter-scroll'>
+        <View className='home-filter-list'>
+          {filters.map((item, index) => (
+            <TagChip
+              key={item}
+              text={item}
+              active={activeFilter === index}
+              type={activeFilter === index ? 'primary' : item === '热门' ? 'warning' : 'default'}
+              onClick={() => setActiveFilter(index)}
+            />
+          ))}
         </View>
+      </ScrollView>
+      <View className='home-filter-more'>
+        <Text>⌄</Text>
       </View>
-    </ScrollView>
+    </View>
   )
 
   const renderTodayRecommend = () => (
@@ -465,11 +468,11 @@ export default function Index() {
         {TODAY_RECOMMENDATIONS.map((item) => (
           <View className={`home-recommend-card home-recommend-card--${item.tone}`} key={item.id} onClick={() => handleRecommendationClick(item.id)}>
             <View className='home-recommend-head'>
-              <Text className='home-recommend-label'>{item.label}</Text>
+              <Text className='home-recommend-label' numberOfLines={1}>{item.label}</Text>
               {item.badge ? <Text className='home-recommend-badge'>{item.badge}</Text> : null}
             </View>
-            <Text className='home-recommend-title'>{item.title}</Text>
-            <Text className='home-recommend-desc'>{item.desc}</Text>
+            <Text className='home-recommend-title' numberOfLines={1}>{item.title}</Text>
+            <Text className='home-recommend-desc' numberOfLines={1}>{item.desc}</Text>
           </View>
         ))}
       </View>

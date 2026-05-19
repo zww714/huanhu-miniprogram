@@ -1,5 +1,9 @@
 @import '../../styles/tokens.scss';
 
+$home-page-x: 28rpx;
+$home-section-gap: 24rpx;
+$home-card-radius: 24rpx;
+
 page {
   background: $color-page-bg;
 }
@@ -16,33 +20,34 @@ page {
 .home-scroll {
   box-sizing: border-box;
   min-height: 100vh;
-  padding-bottom: calc(140rpx + env(safe-area-inset-bottom));
+  padding-bottom: calc(180rpx + env(safe-area-inset-bottom));
 }
 
 .home-topbar {
   display: flex;
   align-items: center;
-  gap: 22rpx;
-  padding: 18rpx $space-page-x 14rpx;
+  gap: 20rpx;
+  padding: 20rpx $home-page-x 12rpx;
 }
 
 .home-brand {
+  width: 158rpx;
   display: flex;
   align-items: baseline;
-  gap: 8rpx;
+  gap: 7rpx;
   flex-shrink: 0;
 }
 
 .home-brand-main {
   color: $color-primary;
-  font-size: 42rpx;
+  font-size: 40rpx;
   font-weight: 900;
   line-height: 1;
 }
 
 .home-brand-sub {
   color: $color-primary;
-  font-size: 25rpx;
+  font-size: 22rpx;
   font-weight: 800;
   line-height: 1;
 }
@@ -52,30 +57,31 @@ page {
   min-width: 0;
   min-height: 64rpx;
   height: 64rpx;
-  padding-left: 24rpx;
-  padding-right: 24rpx;
+  border-radius: 32rpx;
+  padding: 0 24rpx;
   box-shadow: none;
 }
 
 .home-search .search-bar__input {
   height: 64rpx;
   line-height: 64rpx;
+  font-size: 25rpx;
 }
 
 .home-search .search-bar__icon {
-  font-size: 32rpx;
+  font-size: 30rpx;
 }
 
 .home-tabs {
   display: flex;
   align-items: center;
-  height: 84rpx;
-  padding: 0 $space-page-x;
+  height: 72rpx;
+  padding: 0 $home-page-x;
 }
 
 .home-tab {
   flex: 1;
-  height: 84rpx;
+  height: 72rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -83,17 +89,17 @@ page {
 }
 
 .home-tab text {
-  color: #53627C;
-  font-size: 29rpx;
-  font-weight: 700;
+  color: #53627A;
+  font-size: 30rpx;
+  font-weight: 600;
 }
 
 .home-tab-line {
   position: absolute;
-  bottom: 6rpx;
+  bottom: 2rpx;
   left: 50%;
-  width: 38rpx;
-  height: 8rpx;
+  width: 34rpx;
+  height: 6rpx;
   border-radius: $radius-pill;
   background: transparent;
   transform: translateX(-50%);
@@ -101,7 +107,7 @@ page {
 
 .home-tab--active text {
   color: $color-primary;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .home-tab--active .home-tab-line {
@@ -109,8 +115,8 @@ page {
 }
 
 .home-hero {
-  margin: 2rpx $space-page-x 24rpx;
-  border-radius: $radius-xl;
+  margin: 10rpx $home-page-x $home-section-gap;
+  border-radius: $home-card-radius;
   overflow: hidden;
   background: linear-gradient(135deg, #0B66FF 0%, #1677FF 52%, #43A5FF 100%);
   box-shadow: 0 18rpx 42rpx rgba(37, 99, 235, 0.22);
@@ -118,31 +124,46 @@ page {
 }
 
 .home-hero-content {
+  height: 220rpx;
   min-height: 220rpx;
-  padding: 52rpx 46rpx 28rpx;
+  padding: 44rpx 40rpx 0;
   position: relative;
   z-index: 2;
+  box-sizing: border-box;
 }
 
 .home-hero-title {
   display: block;
   color: #FFFFFF;
-  font-size: 44rpx;
+  font-size: 40rpx;
   font-weight: 900;
-  line-height: 1.16;
+  line-height: 1.18;
 }
 
 .home-hero-desc {
   display: block;
-  margin-top: 18rpx;
+  margin-top: 16rpx;
   color: rgba(255, 255, 255, 0.9);
   font-size: 26rpx;
   font-weight: 500;
 }
 
+.home-hero-paper {
+  position: absolute;
+  right: 168rpx;
+  top: 30rpx;
+  width: 0;
+  height: 0;
+  border-left: 38rpx solid transparent;
+  border-right: 38rpx solid transparent;
+  border-bottom: 72rpx solid rgba(255, 255, 255, 0.76);
+  transform: rotate(42deg);
+  z-index: 1;
+}
+
 .home-hero-art {
   position: absolute;
-  border-radius: 24rpx;
+  border-radius: 22rpx;
   background: rgba(255, 255, 255, 0.2);
   border: 1rpx solid rgba(255, 255, 255, 0.36);
   box-shadow: 0 16rpx 34rpx rgba(0, 55, 180, 0.2);
@@ -150,70 +171,73 @@ page {
 }
 
 .home-hero-art--one {
-  width: 160rpx;
-  height: 104rpx;
-  right: 64rpx;
-  top: 44rpx;
+  width: 166rpx;
+  height: 108rpx;
+  right: 54rpx;
+  top: 52rpx;
 }
 
 .home-hero-art--two {
-  width: 112rpx;
-  height: 72rpx;
-  right: 226rpx;
-  top: 110rpx;
+  width: 118rpx;
+  height: 76rpx;
+  right: 220rpx;
+  top: 116rpx;
   transform: rotate(18deg);
 }
 
-.home-hero-art--one::after {
+.home-hero-art--one::after,
+.home-hero-art--two::after {
   content: '';
   position: absolute;
+  border-radius: $radius-pill;
+  background: rgba(255, 255, 255, 0.48);
+}
+
+.home-hero-art--one::after {
   width: 72rpx;
   height: 22rpx;
   left: 28rpx;
   top: 28rpx;
-  border-radius: $radius-pill;
-  background: rgba(255, 255, 255, 0.44);
 }
 
 .home-hero-art--two::after {
-  content: '';
-  position: absolute;
   width: 58rpx;
   height: 18rpx;
   right: 20rpx;
   top: 24rpx;
-  border-radius: $radius-pill;
-  background: rgba(255, 255, 255, 0.5);
 }
 
 .home-hero-features {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  min-height: 70rpx;
   background: rgba(255, 255, 255, 0.96);
-  border-radius: $radius-xl $radius-xl 0 0;
-  padding: 24rpx 12rpx;
+  border-radius: $home-card-radius $home-card-radius 0 0;
+  padding: 16rpx 12rpx;
   position: relative;
   z-index: 3;
+  box-sizing: border-box;
 }
 
 .home-hero-feature {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 9rpx;
+  gap: 8rpx;
   min-width: 0;
 }
 
 .home-hero-feature-icon {
-  width: 36rpx;
-  height: 36rpx;
+  width: 34rpx;
+  height: 34rpx;
   border-radius: $radius-pill;
   background: $color-primary-light;
   color: $color-primary;
-  font-size: 20rpx;
+  font-size: 18rpx;
   font-weight: 900;
   text-align: center;
-  line-height: 36rpx;
+  line-height: 34rpx;
+  flex-shrink: 0;
 }
 
 .home-hero-feature-title,
@@ -224,27 +248,56 @@ page {
 
 .home-hero-feature-title {
   color: $color-primary;
-  font-size: 22rpx;
+  font-size: 24rpx;
   font-weight: 900;
 }
 
 .home-hero-feature-desc {
   margin-top: 4rpx;
   color: $color-text-secondary;
-  font-size: 20rpx;
+  font-size: 22rpx;
+}
+
+.home-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 0 $home-page-x;
+  margin-bottom: $home-section-gap;
+  box-sizing: border-box;
 }
 
 .home-filter-scroll {
+  flex: 1;
+  min-width: 0;
+  height: 56rpx;
   white-space: nowrap;
-  height: 74rpx;
 }
 
 .home-filter-list {
   display: flex;
   align-items: center;
-  gap: $space-tag-gap;
-  padding: 6rpx $space-page-x 12rpx;
+  gap: 16rpx;
+  padding: 0;
   box-sizing: border-box;
+}
+
+.home-filter-list .tag-chip {
+  height: 56rpx;
+  min-height: 56rpx;
+  padding: 0 28rpx;
+  border-radius: 28rpx;
+  background: #F3F6FA;
+  flex-shrink: 0;
+}
+
+.home-filter-list .tag-chip--active {
+  background: $color-primary;
+}
+
+.home-filter-list .tag-chip__text {
+  font-size: 25rpx;
+  font-weight: 700;
 }
 
 .home-filter-more {
@@ -267,22 +320,23 @@ page {
 }
 
 .home-section {
-  margin: 0 $space-page-x $space-card-gap;
+  margin: 0 $home-page-x $home-section-gap;
 }
 
 .home-recommend-section {
-  padding: 0 0 20rpx;
-  border-radius: $radius-lg;
-  background: rgba(255, 255, 255, 0.86);
+  padding: 24rpx;
+  border-radius: $home-card-radius;
+  background: rgba(255, 255, 255, 0.9);
   border: 1rpx solid rgba(226, 232, 240, 0.86);
   box-shadow: $shadow-card;
+  box-sizing: border-box;
 }
 
 .home-section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 22rpx 28rpx 16rpx;
+  padding: 0 0 18rpx;
 }
 
 .home-section-title {
@@ -300,15 +354,17 @@ page {
 .home-recommend-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 18rpx;
-  padding: 0 20rpx;
+  gap: 16rpx;
+  padding: 0;
 }
 
 .home-recommend-card {
-  min-height: 146rpx;
-  padding: 18rpx 16rpx;
-  border-radius: $radius-md;
+  height: 136rpx;
+  min-height: 136rpx;
+  padding: 16rpx 14rpx;
+  border-radius: 18rpx;
   box-sizing: border-box;
+  min-width: 0;
 }
 
 .home-recommend-card--hot {
@@ -328,13 +384,15 @@ page {
   align-items: center;
   justify-content: space-between;
   gap: 6rpx;
-  margin-bottom: 12rpx;
+  margin-bottom: 10rpx;
 }
 
 .home-recommend-label {
   color: $color-text-primary;
-  font-size: 22rpx;
+  font-size: 21rpx;
   font-weight: 900;
+  min-width: 0;
+  flex: 1;
 }
 
 .home-recommend-badge {
@@ -344,6 +402,7 @@ page {
   color: $color-warning;
   font-size: 18rpx;
   font-weight: 900;
+  flex-shrink: 0;
 }
 
 .home-recommend-title,
@@ -353,7 +412,7 @@ page {
 
 .home-recommend-title {
   color: $color-text-primary;
-  font-size: 27rpx;
+  font-size: 26rpx;
   font-weight: 900;
   line-height: 1.2;
 }
@@ -368,8 +427,8 @@ page {
 .home-card-list {
   display: flex;
   flex-direction: column;
-  gap: $space-card-gap;
-  padding: 0 $space-page-x 24rpx;
+  gap: $home-section-gap;
+  padding: 0 $home-page-x $home-section-gap;
 }
 
 .home-user-card,
@@ -377,19 +436,20 @@ page {
 .home-topic-section {
   background: $color-card-bg;
   border: 1rpx solid rgba(226, 232, 240, 0.9);
-  border-radius: $radius-xl;
+  border-radius: $home-card-radius;
   box-shadow: $shadow-card;
 }
 
 .home-user-card {
-  padding: 28rpx 28rpx 24rpx;
+  min-height: 260rpx;
+  padding: 28rpx 28rpx 26rpx;
   box-sizing: border-box;
 }
 
 .home-user-card-main {
   display: flex;
   align-items: flex-start;
-  gap: 20rpx;
+  gap: 22rpx;
 }
 
 .home-avatar-wrap {
@@ -446,7 +506,7 @@ page {
 
 .home-user-name {
   color: $color-text-primary;
-  font-size: $font-card-title;
+  font-size: 32rpx;
   font-weight: 900;
   line-height: 1.2;
 }
@@ -489,17 +549,17 @@ page {
 .home-user-meta {
   margin-top: 8rpx;
   color: $color-text-secondary;
-  font-size: $font-caption;
+  font-size: 24rpx;
 }
 
 .home-user-intro {
   margin-top: 6rpx;
   color: $color-text-secondary;
-  font-size: $font-body;
+  font-size: 25rpx;
 }
 
 .home-match-side {
-  width: 126rpx;
+  width: 138rpx;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -516,7 +576,7 @@ page {
 
 .home-match-number {
   color: $color-primary;
-  font-size: $font-emphasis-number;
+  font-size: 44rpx;
   font-weight: 900;
 }
 
@@ -545,8 +605,8 @@ page {
 .home-user-tags {
   display: flex;
   align-items: flex-start;
-  gap: 14rpx;
-  margin-top: 18rpx;
+  gap: 16rpx;
+  margin-top: 20rpx;
 }
 
 .home-tag-label {
@@ -574,6 +634,7 @@ page {
   display: flex;
   flex-wrap: wrap;
   gap: 12rpx;
+  row-gap: 14rpx;
   flex: 1;
 }
 
@@ -611,7 +672,7 @@ page {
   align-items: center;
   justify-content: space-between;
   gap: 18rpx;
-  margin-top: 22rpx;
+  margin-top: 24rpx;
 }
 
 .home-user-foot-info {
@@ -619,7 +680,7 @@ page {
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 24rpx;
+  gap: 22rpx;
   flex-wrap: wrap;
 }
 
@@ -629,7 +690,7 @@ page {
 }
 
 .home-contact-btn {
-  min-width: 132rpx;
+  min-width: 142rpx;
   height: 64rpx;
   border-radius: $radius-pill;
   background: $color-primary;
@@ -648,7 +709,7 @@ page {
 
 .home-activity-card {
   display: flex;
-  margin: 0 $space-page-x 22rpx;
+  margin: 0 $home-page-x $home-section-gap;
   padding: 22rpx;
   box-sizing: border-box;
   gap: 22rpx;
@@ -853,7 +914,7 @@ page {
 
 .home-empty {
   padding: 64rpx 24rpx;
-  border-radius: $radius-xl;
+  border-radius: $home-card-radius;
   background: $color-card-bg;
   text-align: center;
   box-shadow: $shadow-card;
@@ -879,6 +940,6 @@ page {
 .home-floating-post {
   position: fixed;
   right: 28rpx;
-  bottom: calc(120rpx + env(safe-area-inset-bottom));
+  bottom: calc(140rpx + env(safe-area-inset-bottom));
   z-index: $z-floating-button;
 }
