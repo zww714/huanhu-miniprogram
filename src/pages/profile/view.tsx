@@ -174,10 +174,11 @@ export default function ProfileView() {
   const posts = remotePosts.length ? remotePosts : getPublicPosts(user.id)
   const postPreview = posts[0]
   const metaLine = [user.school, user.college, user.grade, user.campus].filter(Boolean).join(' · ')
-  const rating = String((remoteUser?.rating || 4.8).toFixed ? remoteUser.rating.toFixed(1) : remoteUser?.rating || '4.8')
+  const ratingValue = Number(remoteUser?.rating ?? 4.8)
+  const rating = Number.isFinite(ratingValue) ? ratingValue.toFixed(1) : '4.8'
 
   const goBack = () => {
-    const pages = Taro.getCurrentPages()
+    const pages = getCurrentPages()
     if (pages.length > 1) Taro.navigateBack()
     else Taro.switchTab({ url: '/pages/index/index' })
   }
