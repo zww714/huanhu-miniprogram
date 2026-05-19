@@ -20,7 +20,7 @@ page {
 .home-scroll {
   box-sizing: border-box;
   min-height: 100vh;
-  padding-bottom: calc(180rpx + env(safe-area-inset-bottom));
+  padding-bottom: calc(220rpx + env(safe-area-inset-bottom));
 }
 
 .home-topbar {
@@ -710,19 +710,29 @@ page {
 .home-activity-card {
   display: flex;
   margin: 0 $home-page-x $home-section-gap;
-  padding: 22rpx;
+  padding: 20rpx;
   box-sizing: border-box;
-  gap: 22rpx;
+  gap: 20rpx;
+  min-height: 196rpx;
 }
 
 .home-activity-card--compact {
   margin-top: 0;
 }
 
+.home-activity-list {
+  padding: 0 $home-page-x $home-section-gap;
+}
+
+.home-activity-list .home-activity-card {
+  width: 100%;
+  margin: 0 0 $home-section-gap;
+}
+
 .home-activity-cover {
-  width: 176rpx;
-  height: 144rpx;
-  border-radius: $radius-lg;
+  width: 188rpx;
+  height: 152rpx;
+  border-radius: 20rpx;
   overflow: hidden;
   flex-shrink: 0;
   position: relative;
@@ -730,23 +740,42 @@ page {
 
 .home-activity-img,
 .home-activity-placeholder {
-  width: 176rpx;
-  height: 144rpx;
+  width: 188rpx;
+  height: 152rpx;
 }
 
 .home-activity-placeholder {
-  background: linear-gradient(135deg, #082F7A 0%, #0F6BFF 100%);
+  background:
+    radial-gradient(circle at 26% 24%, rgba(255, 255, 255, 0.36), transparent 34rpx),
+    radial-gradient(circle at 78% 18%, rgba(125, 211, 252, 0.42), transparent 44rpx),
+    linear-gradient(135deg, #0B3A8F 0%, #176BFF 58%, #63B3FF 100%);
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+}
+
+.home-activity-placeholder::after {
+  content: '';
+  position: absolute;
+  right: 20rpx;
+  bottom: 18rpx;
+  width: 76rpx;
+  height: 48rpx;
+  border-radius: 14rpx;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1rpx solid rgba(255, 255, 255, 0.34);
+  transform: rotate(-10deg);
 }
 
 .home-activity-placeholder text {
   color: #FFFFFF;
-  font-size: 30rpx;
+  font-size: 28rpx;
   line-height: 1.16;
   font-weight: 900;
   text-align: center;
+  position: relative;
+  z-index: 1;
 }
 
 .home-activity-cover-badge {
@@ -764,6 +793,8 @@ page {
 .home-activity-body {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .home-activity-title-row {
@@ -776,17 +807,17 @@ page {
   flex: 1;
   min-width: 0;
   color: $color-text-primary;
-  font-size: $font-card-title;
+  font-size: 28rpx;
   font-weight: 900;
   line-height: 1.28;
 }
 
 .home-activity-status {
-  padding: 6rpx 14rpx;
+  padding: 5rpx 12rpx;
   border-radius: $radius-pill;
   background: #DCFCE7;
   color: $color-success;
-  font-size: 22rpx;
+  font-size: 20rpx;
   font-weight: 900;
   flex-shrink: 0;
 }
@@ -810,7 +841,7 @@ page {
   border-radius: $radius-sm;
   background: $color-tag-bg;
   color: $color-text-secondary;
-  font-size: 22rpx;
+  font-size: 20rpx;
 }
 
 .home-activity-footer {
@@ -818,7 +849,8 @@ page {
   align-items: center;
   justify-content: space-between;
   gap: 14rpx;
-  margin-top: 16rpx;
+  margin-top: auto;
+  padding-top: 14rpx;
 }
 
 .home-activity-count {
@@ -829,7 +861,7 @@ page {
 
 .home-register-btn {
   min-width: 104rpx;
-  height: 58rpx;
+  height: 56rpx;
   border-radius: $radius-pill;
   background: $color-primary;
   display: flex;
@@ -939,7 +971,7 @@ page {
 
 .home-floating-post {
   position: fixed;
-  right: 28rpx;
-  bottom: calc(140rpx + env(safe-area-inset-bottom));
+  right: 36rpx;
+  bottom: calc(192rpx + env(safe-area-inset-bottom));
   z-index: $z-floating-button;
 }

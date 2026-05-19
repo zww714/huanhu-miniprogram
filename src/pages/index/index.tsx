@@ -11,7 +11,7 @@ import './index.scss'
 const TABS = ['技能交换', '兴趣搭子', '社区活动']
 const SKILL_FILTERS = ['全部', '热门', 'AI工具', 'Python', '数据分析', '设计', '考研']
 const PARTNER_FILTERS = ['全部', '运动', '学习', '摄影', '桌游', '音乐', '旅行']
-const ACTIVITY_FILTERS = ['全部', '热门', '讲座', '工作坊', '比赛', '社团', '志愿']
+const ACTIVITY_FILTERS = ['全部', '热门', '讲座', '比赛', '工作坊', '志愿', '社团']
 
 const TODAY_RECOMMENDATIONS = [
   { id: 'hot-skill', label: '本周热门技能', title: 'Python入门', desc: '1.2k 人想学', badge: 'TOP', tone: 'hot' },
@@ -293,6 +293,35 @@ export default function Index() {
   const keyword = lower(searchQuery)
   const filters = activeTab === 0 ? SKILL_FILTERS : activeTab === 1 ? PARTNER_FILTERS : ACTIVITY_FILTERS
   const activeFilterLabel = filters[activeFilter] || '全部'
+  const heroCopy = [
+    {
+      title: '和全校同学交换技能',
+      desc: '分享你的特长，找到想学的知识',
+      features: [
+        ['盾', '真实同学', '安全可信'],
+        ['双', '双向匹配', '高效学习'],
+        ['心', '互助互学', '共同成长'],
+      ],
+    },
+    {
+      title: '找到同频搭子',
+      desc: '一起运动、学习、拍照、参加活动',
+      features: [
+        ['趣', '兴趣同频', '轻松组队'],
+        ['约', '校园搭子', '随时同行'],
+        ['伴', '结伴参与', '更有动力'],
+      ],
+    },
+    {
+      title: '发现校园活动',
+      desc: '报名讲座、比赛、社团活动和经验分享',
+      features: [
+        ['活', '校内活动', '快速报名'],
+        ['盾', '真实同学', '安全参与'],
+        ['伴', '兴趣匹配', '结伴同行'],
+      ],
+    },
+  ][activeTab]
 
   const filteredSkillUsers = useMemo(() => {
     return skillUsers.filter((user) => {
@@ -416,15 +445,11 @@ export default function Index() {
       <View className='home-hero-art home-hero-art--one' />
       <View className='home-hero-art home-hero-art--two' />
       <View className='home-hero-content'>
-        <Text className='home-hero-title'>和全校同学交换技能</Text>
-        <Text className='home-hero-desc'>分享你的特长，找到想学的知识</Text>
+        <Text className='home-hero-title'>{heroCopy.title}</Text>
+        <Text className='home-hero-desc'>{heroCopy.desc}</Text>
       </View>
       <View className='home-hero-features'>
-        {[
-          ['盾', '真实同学', '安全可信'],
-          ['双', '双向匹配', '高效学习'],
-          ['心', '互助互学', '共同成长'],
-        ].map((item) => (
+        {heroCopy.features.map((item) => (
           <View className='home-hero-feature' key={item[1]}>
             <Text className='home-hero-feature-icon'>{item[0]}</Text>
             <View>
@@ -641,7 +666,7 @@ export default function Index() {
     <>
       {renderHeroBanner()}
       {renderFilters()}
-      <View className='home-card-list'>
+      <View className='home-card-list home-activity-list'>
         {!filteredActivities.length ? renderEmpty() : filteredActivities.slice(0, 6).map((activity) => renderActivityCard(activity))}
       </View>
       {renderHotTopics()}
