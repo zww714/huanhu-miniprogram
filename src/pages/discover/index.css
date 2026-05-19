@@ -23,15 +23,6 @@ page {
   box-sizing: border-box;
 }
 
-.discover-title {
-  display: block;
-  color: #17233D;
-  font-size: 40rpx;
-  line-height: 48rpx;
-  font-weight: 900;
-  margin-bottom: 20rpx;
-}
-
 .search-box {
   height: 72rpx;
   border-radius: 999rpx;

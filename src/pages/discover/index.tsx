@@ -505,7 +505,6 @@ export default function Discover() {
     <View className='discover-page'>
       <ScrollView scrollY className='discover-scroll' showScrollbar={false}>
         <View className='discover-header'>
-          <Text className='discover-title'>发现</Text>
           <View className='search-box'>
             <Text className='search-icon'>⌕</Text>
             <Input

@@ -7,34 +7,18 @@ page {
 .messages-page {
   min-height: 100vh;
   box-sizing: border-box;
-  padding: 22px 24px calc(102px + env(safe-area-inset-bottom));
+  padding: 32rpx 32rpx calc(180rpx + env(safe-area-inset-bottom));
   background:
     radial-gradient(circle at 15% 0%, rgba(37, 99, 235, 0.1), transparent 220px),
     linear-gradient(180deg, #F6FAFF 0%, #FFFFFF 48%, #F8FAFF 100%);
   color: #0F172A;
 }
 
-.messages-top {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 46px;
-  margin-bottom: 36px;
-}
-
-.page-title {
-  color: #071A3D;
-  font-size: 36rpx;
-  line-height: 48rpx;
-  font-weight: 700;
-  text-align: center;
-}
-
 .quick-entry-row {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  margin: 0 38px 36px;
+  margin: 0 24rpx 48rpx;
 }
 
 .quick-entry {
@@ -46,8 +30,8 @@ page {
 
 .quick-icon {
   position: relative;
-  width: 104rpx;
-  height: 104rpx;
+  width: 96rpx;
+  height: 96rpx;
   border-radius: 28rpx;
   display: flex;
   align-items: center;
@@ -125,7 +109,7 @@ page {
 }
 
 .message-list-card {
-  margin: 36rpx 8rpx 0;
+  margin: 0;
   background: #FFFFFF;
   border-radius: 32rpx;
   padding: 28rpx 32rpx 8rpx;
@@ -135,7 +119,7 @@ page {
 
 .message-row {
   position: relative;
-  min-height: 120rpx;
+  min-height: 132rpx;
   display: flex;
   align-items: center;
   gap: 28rpx;
@@ -152,8 +136,8 @@ page {
 
 .system-avatar,
 .chat-avatar {
-  width: 84rpx;
-  height: 84rpx;
+  width: 88rpx;
+  height: 88rpx;
   border-radius: 50%;
   flex-shrink: 0;
   display: flex;
@@ -189,8 +173,8 @@ page {
 }
 
 .chat-avatar-img {
-  width: 84rpx;
-  height: 84rpx;
+  width: 88rpx;
+  height: 88rpx;
   border-radius: 50%;
 }
 

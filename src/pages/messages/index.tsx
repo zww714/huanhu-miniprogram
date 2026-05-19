@@ -119,10 +119,6 @@ export default function Messages() {
 
   return (
     <View className='messages-page'>
-      <View className='messages-top'>
-        <Text className='page-title'>消息</Text>
-      </View>
-
       <View className='quick-entry-row'>
         {QUICK_ENTRIES.map((entry) => {
           const unread = unreadCounts[entry.key] || 0
