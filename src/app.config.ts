@@ -12,6 +12,7 @@ export default defineAppConfig({
     'pages/message-system/index',
     'pages/chat/index',
     'pages/profile/index',
+    'pages/profile/view',
     'pages/avatar-select/index',
     'pages/edit-profile/index',
     'pages/settings/index',

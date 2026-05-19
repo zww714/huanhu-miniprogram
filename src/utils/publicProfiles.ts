@@ -453,7 +453,7 @@ export function openUnifiedUserProfile(userId?: string | number, name?: string) 
   const query = normalizedId
     ? `userId=${encodeURIComponent(normalizedId)}`
     : `name=${encodeURIComponent(name || '同学')}`
-  Taro.navigateTo({ url: `/pages/user-detail/index?${query}` })
+  Taro.navigateTo({ url: `/pages/profile/view?${query}` })
 }
 
 export function getPublicSkills(userId: string) {
