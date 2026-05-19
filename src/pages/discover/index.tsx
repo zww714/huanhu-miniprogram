@@ -1,17 +1,27 @@
 import { useEffect, useMemo, useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { Image, Input, ScrollView, Text, View } from '@tarojs/components'
+import FloatingPostButton from '../../components/common/FloatingPostButton'
 import { getPosts } from '../../utils/api'
-import { MOCK_POSTS } from '../../utils/mock'
+import { ACTIVITIES, MOCK_POSTS, type Activity } from '../../utils/mock'
 import { openUnifiedUserProfile } from '../../utils/publicProfiles'
 import './index.css'
 
-const CATEGORIES = ['全部', '科研', '升学', '兴趣', '工作']
+const CATEGORIES = ['推荐', '科研', '升学', '兴趣', '活动', '兼职']
+
+const HOT_TOPICS = [
+  { rank: 1, title: '# 浙大人毕业去哪了', count: '1231讨论', theme: 'red' },
+  { rank: 2, title: '# 暑期科研经历分享', count: '856讨论', theme: 'blue' },
+  { rank: 3, title: '# 考研择校交流', count: '642讨论', theme: 'green' },
+]
+
 const CATEGORY_ICONS: Record<string, string> = {
   科研: '研',
   升学: '升',
   兴趣: '趣',
   工作: '职',
+  兼职: '职',
+  活动: '活',
 }
 
 type Post = {
@@ -43,6 +53,8 @@ type Post = {
   }
   likeCount?: number
   commentCount?: number
+  favoriteCount?: number
+  collectCount?: number
   likes?: number
   comments?: number
   createdAt?: string
@@ -51,6 +63,7 @@ type Post = {
 type AuthorProfile = {
   id: string
   name: string
+  avatar?: string
   college: string
   major: string
   grade: string
@@ -58,6 +71,30 @@ type AuthorProfile = {
   intro: string
   skills: string[]
   interests: string[]
+}
+
+type FeedItem = {
+  id: string
+  type: 'post' | 'activity' | 'help' | 'partner'
+  title: string
+  desc: string
+  coverImage?: string
+  tags: string[]
+  category: string
+  statusLabel: string
+  statusType: 'primary' | 'success' | 'warning' | 'danger' | 'purple'
+  authorName: string
+  authorAvatar?: string
+  authorMeta: string
+  authorId?: string
+  likeCount: number
+  commentCount: number
+  favoriteCount: number
+  participantCount?: number
+  location?: string
+  timeText?: string
+  contactable?: boolean
+  source: Post | Activity
 }
 
 const AUTHOR_PROFILES: Record<string, AuthorProfile> = {
@@ -148,6 +185,11 @@ function getPostCategory(post: Post) {
   return post.mainCategory || post.category || post.categoryTag?.split('·')[0] || '兴趣'
 }
 
+function normalizeCategory(category: string) {
+  if (category === '工作') return '兼职'
+  return category
+}
+
 function getAuthorId(post: Post) {
   return String(post.authorId || post.userId || post.author?.userId || post.author?.id || '')
 }
@@ -159,6 +201,7 @@ function getAuthor(post: Post): AuthorProfile {
   return {
     id: id || post.author?.name || 'unknown-user',
     name: post.authorName || post.author?.name || '同学',
+    avatar: post.author?.avatar,
     college: post.author?.college || '浙江大学',
     major: post.author?.major || '在读',
     grade: post.author?.grade || '在读',
@@ -173,6 +216,10 @@ function isImageCover(cover?: string) {
   return !!cover && !cover.startsWith('linear-gradient')
 }
 
+function firstChar(name: string) {
+  return (name || '同').trim().charAt(0) || '同'
+}
+
 function getAvatarBg(name: string) {
   const colors = ['#2563EB', '#7C3AED', '#DB2777', '#EA580C', '#059669', '#0891B2']
   let hash = 0
@@ -184,32 +231,88 @@ function includesText(value: unknown, keyword: string) {
   return String(value || '').toLowerCase().includes(keyword)
 }
 
-function getMatchReasons(post: Post, keyword: string) {
-  if (!keyword) return []
-  const author = getAuthor(post)
-  const lower = keyword.toLowerCase()
-  const reasons: string[] = []
-
-  if (includesText(post.title, lower)) reasons.push(`标题包含 ${keyword}`)
-  if (includesText(post.content || post.summary || post.excerpt, lower)) reasons.push(`正文包含 ${keyword}`)
-  const tag = (post.tags || []).find((item) => includesText(item, lower))
-  if (tag) reasons.push(`标签 ${tag}`)
-  if (includesText(getPostCategory(post), lower) || includesText(post.categoryTag, lower)) reasons.push(`分类 ${getPostCategory(post)}`)
-  if (includesText(author.name, lower)) reasons.push(`作者 ${author.name}`)
-  if (includesText(author.college, lower)) reasons.push(`作者学院 ${author.college}`)
-  if (includesText(author.major, lower)) reasons.push(`作者专业 ${author.major}`)
-  if (includesText(author.grade, lower)) reasons.push(`作者年级 ${author.grade}`)
-  const skill = author.skills.find((item) => includesText(item, lower))
-  if (skill) reasons.push(`作者技能 ${skill}`)
-  const interest = author.interests.find((item) => includesText(item, lower))
-  if (interest) reasons.push(`作者兴趣 ${interest}`)
-
-  return Array.from(new Set(reasons)).slice(0, 2)
+function textIncludesAny(values: unknown[], keyword: string) {
+  return values.some((value) => includesText(value, keyword))
 }
 
-function matchesSearch(post: Post, keyword: string) {
+function getPostStatus(post: Post): Pick<FeedItem, 'type' | 'statusLabel' | 'statusType' | 'contactable'> {
+  const title = `${post.title || ''}${post.summary || ''}${post.excerpt || ''}${post.content || ''}`
+  const tags = (post.tags || []).join(',')
+  if (title.includes('求') || title.includes('搭子') || tags.includes('求助') || tags.includes('搭子')) {
+    return { type: title.includes('搭子') ? 'partner' : 'help', statusLabel: '可联系', statusType: 'success', contactable: true }
+  }
+  if (normalizeCategory(getPostCategory(post)) === '兼职') {
+    return { type: 'post', statusLabel: '兼职', statusType: 'warning' }
+  }
+  return { type: 'post', statusLabel: normalizeCategory(getPostCategory(post)), statusType: 'primary' }
+}
+
+function normalizePost(post: Post): FeedItem {
+  const author = getAuthor(post)
+  const category = normalizeCategory(getPostCategory(post))
+  const status = getPostStatus(post)
+  return {
+    id: getPostId(post),
+    title: post.title,
+    desc: post.summary || post.excerpt || post.content || '暂无内容',
+    coverImage: post.cover || post.images?.[0],
+    tags: post.tags || [],
+    category,
+    authorId: author.id,
+    authorName: author.name,
+    authorAvatar: author.avatar,
+    authorMeta: `${author.college} · ${author.grade}`,
+    likeCount: Number(post.likeCount ?? post.likes ?? 0),
+    commentCount: Number(post.commentCount ?? post.comments ?? 0),
+    favoriteCount: Number(post.favoriteCount ?? post.collectCount ?? 0),
+    source: post,
+    ...status,
+  }
+}
+
+function normalizeActivity(activity: Activity): FeedItem {
+  return {
+    id: activity.id,
+    type: 'activity',
+    title: activity.title,
+    desc: activity.description || `${activity.organizer || '校园活动'} 正在招募感兴趣的同学参与。`,
+    coverImage: activity.cover,
+    tags: activity.tags || [],
+    category: '活动',
+    statusLabel: activity.status || '活动',
+    statusType: activity.status === '已结束' ? 'danger' : 'warning',
+    authorName: activity.organizer || '校园活动',
+    authorMeta: activity.location || activity.campus || '浙江大学',
+    likeCount: 0,
+    commentCount: 0,
+    favoriteCount: 0,
+    participantCount: activity.participantCount ?? activity.participants ?? 0,
+    location: activity.location,
+    timeText: activity.time,
+    source: activity,
+  }
+}
+
+function itemMatchesKeyword(item: FeedItem, keyword: string) {
   if (!keyword) return true
-  return getMatchReasons(post, keyword).length > 0
+  return textIncludesAny([
+    item.title,
+    item.desc,
+    item.category,
+    item.statusLabel,
+    item.authorName,
+    item.authorMeta,
+    item.location,
+    item.timeText,
+    ...(item.tags || []),
+  ], keyword.toLowerCase())
+}
+
+function itemMatchesCategory(item: FeedItem, category: string) {
+  if (category === '推荐') return true
+  if (category === '活动') return item.type === 'activity' || item.category === '活动'
+  if (category === '兼职') return item.category === '兼职' || item.tags.some((tag) => ['实习', '兼职', '求职', '内推', '面试'].includes(tag))
+  return item.category === category || item.tags.some((tag) => tag.includes(category))
 }
 
 function mergePendingPost(posts: Post[]) {
@@ -225,10 +328,17 @@ export default function Discover() {
   const [searchQuery, setSearchQuery] = useState('')
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
+  const [likedItems, setLikedItems] = useState<Record<string, boolean>>({})
+  const [favoritedItems, setFavoritedItems] = useState<Record<string, boolean>>({})
 
   useLoad(() => {
     const pending = Taro.getStorageSync('pendingPost')
+    const storedKeyword = Taro.getStorageSync('discoverKeyword')
     if (pending?.title) setPosts((current) => mergePendingPost(current))
+    if (storedKeyword) {
+      setSearchQuery(String(storedKeyword).replace(/^#\s*/, '').trim())
+      Taro.removeStorageSync('discoverKeyword')
+    }
   })
 
   useEffect(() => {
@@ -236,7 +346,9 @@ export default function Discover() {
     async function loadPosts() {
       setLoading(true)
       try {
-        const data = await getPosts({ page: 0, category: CATEGORIES[activeCat], keyword: searchQuery.trim() })
+        const selected = CATEGORIES[activeCat]
+        const requestCategory = selected === '推荐' ? '全部' : selected === '兼职' ? '工作' : selected
+        const data = await getPosts({ page: 0, category: requestCategory, keyword: searchQuery.trim() })
         if (alive) setPosts(mergePendingPost(data?.length ? data : MOCK_POSTS))
       } catch (e) {
         console.warn('[Discover] load posts failed', e)
@@ -252,127 +364,205 @@ export default function Discover() {
   }, [activeCat, searchQuery])
 
   const keyword = searchQuery.trim()
-  const filtered = useMemo(() => {
-    const category = CATEGORIES[activeCat]
-    return posts.filter((post) => {
-      const matchesCategory = category === '全部' || getPostCategory(post) === category
-      return matchesCategory && matchesSearch(post, keyword)
+  const feedItems = useMemo(() => {
+    const postItems = posts.map(normalizePost)
+    const activityItems = ACTIVITIES.slice(0, 4).map(normalizeActivity)
+    return [...postItems, ...activityItems].filter((item) => {
+      const category = CATEGORIES[activeCat]
+      return itemMatchesCategory(item, category) && itemMatchesKeyword(item, keyword)
     })
   }, [activeCat, keyword, posts])
 
-  const openPost = (post: Post) => {
-    Taro.navigateTo({ url: `/pages/post-detail/index?postId=${encodeURIComponent(getPostId(post))}&from=discover` })
+  const openPost = (item: FeedItem) => {
+    Taro.navigateTo({ url: `/pages/post-detail/index?postId=${encodeURIComponent(item.id)}&from=discover` })
   }
 
-  const openUser = (post: Post) => {
-    const author = getAuthor(post)
-    openUnifiedUserProfile(author.id, author.name)
+  const openActivityRegister = (activity: Activity) => {
+    const query = [
+      `id=${encodeURIComponent(activity.id || '')}`,
+      `title=${encodeURIComponent(activity.title || '')}`,
+      `organizer=${encodeURIComponent(activity.organizer || '')}`,
+      `time=${encodeURIComponent(activity.time || '')}`,
+      `location=${encodeURIComponent(activity.location || '')}`,
+      `participants=${encodeURIComponent(String(activity.participants || activity.participantCount || 0))}`,
+      `maxParticipants=${encodeURIComponent(String(activity.maxParticipants || ''))}`,
+    ].join('&')
+    Taro.navigateTo({ url: `/pages/activity-register/index?${query}` })
+  }
+
+  const openFeedItem = (item: FeedItem) => {
+    if (item.type === 'activity') {
+      openActivityRegister(item.source as Activity)
+      return
+    }
+    openPost(item)
+  }
+
+  const openUser = (item: FeedItem) => {
+    if (!item.authorId) return
+    openUnifiedUserProfile(item.authorId, item.authorName)
+  }
+
+  const handleTopicClick = (topic: string) => {
+    setSearchQuery(topic.replace(/^#\s*/, ''))
+    setActiveCat(0)
+  }
+
+  const toggleLike = (id: string) => {
+    setLikedItems((current) => ({ ...current, [id]: !current[id] }))
+  }
+
+  const toggleFavorite = (id: string) => {
+    setFavoritedItems((current) => ({ ...current, [id]: !current[id] }))
+  }
+
+  const renderCover = (item: FeedItem) => {
+    if (isImageCover(item.coverImage)) {
+      return <Image className='feed-cover-img' src={item.coverImage || ''} mode='aspectFill' />
+    }
+    const style = item.coverImage?.startsWith('linear-gradient') ? { background: item.coverImage } : undefined
+    return (
+      <View className='feed-cover-placeholder' style={style}>
+        <Text className='feed-cover-icon'>{CATEGORY_ICONS[item.category] || (item.type === 'activity' ? '活' : '帖')}</Text>
+        <Text className='feed-cover-label'>{item.type === 'activity' ? '校园活动' : item.category}</Text>
+      </View>
+    )
+  }
+
+  const renderFeedCard = (item: FeedItem) => {
+    const liked = !!likedItems[item.id]
+    const favorited = !!favoritedItems[item.id]
+    return (
+      <View className='feed-card' key={`${item.type}_${item.id}`} onClick={() => openFeedItem(item)}>
+        <View className='feed-main'>
+          <View className='feed-cover'>{renderCover(item)}</View>
+          <View className='feed-content'>
+            <View className='feed-title-row'>
+              <Text className='feed-title' numberOfLines={2}>{item.title}</Text>
+              <Text className={`feed-status feed-status--${item.statusType}`}>{item.statusLabel}</Text>
+            </View>
+            <Text className='feed-desc' numberOfLines={2}>{item.desc}</Text>
+            <View className='feed-tags'>
+              {item.tags.slice(0, 3).map((tag) => <Text className='feed-tag' key={`${item.id}_${tag}`}>{tag}</Text>)}
+            </View>
+            {item.type === 'activity' ? (
+              <View className='activity-line'>
+                <Text numberOfLines={1}>{item.timeText}</Text>
+                <Text numberOfLines={1}>{item.location}</Text>
+              </View>
+            ) : null}
+          </View>
+        </View>
+
+        <View className='feed-footer'>
+          {item.type === 'activity' ? (
+            <>
+              <Text className='activity-count'>{item.participantCount || 0} 人报名</Text>
+              <View
+                className='register-btn'
+                onClick={(event) => {
+                  event.stopPropagation()
+                  openActivityRegister(item.source as Activity)
+                }}
+              >
+                <Text>去报名</Text>
+              </View>
+            </>
+          ) : (
+            <>
+              <View className='feed-author' onClick={(event) => { event.stopPropagation(); openUser(item) }}>
+                <View className='feed-avatar' style={{ backgroundColor: getAvatarBg(item.authorName) }}>
+                  {item.authorAvatar ? <Image className='feed-avatar-img' src={item.authorAvatar} mode='aspectFill' /> : <Text>{firstChar(item.authorName)}</Text>}
+                </View>
+                <View className='feed-author-text'>
+                  <Text className='feed-author-name'>{item.authorName}</Text>
+                  <Text className='feed-author-meta' numberOfLines={1}>{item.authorMeta}</Text>
+                </View>
+              </View>
+              <View className='feed-actions'>
+                <Text
+                  className={liked ? 'feed-action feed-action--active' : 'feed-action'}
+                  onClick={(event) => { event.stopPropagation(); toggleLike(item.id) }}
+                >
+                  ♥ {item.likeCount + (liked ? 1 : 0)}
+                </Text>
+                <Text className='feed-action'>💬 {item.commentCount}</Text>
+                <Text
+                  className={favorited ? 'feed-action feed-action--active' : 'feed-action'}
+                  onClick={(event) => { event.stopPropagation(); toggleFavorite(item.id) }}
+                >
+                  ☆ {item.favoriteCount + (favorited ? 1 : 0)}
+                </Text>
+              </View>
+            </>
+          )}
+        </View>
+      </View>
+    )
   }
 
   return (
     <View className='discover-page'>
-      <View className='discover-header'>
-        <View className='discover-title-row'>
+      <ScrollView scrollY className='discover-scroll' showScrollbar={false}>
+        <View className='discover-header'>
           <Text className='discover-title'>发现</Text>
-          <Text className='discover-subtitle'>搜索帖子、同学和校园经验</Text>
+          <View className='search-box'>
+            <Text className='search-icon'>⌕</Text>
+            <Input
+              className='search-input'
+              value={searchQuery}
+              placeholder='搜索帖子、技能、活动或同学'
+              confirmType='search'
+              onInput={(event) => setSearchQuery(String(event.detail.value || ''))}
+              placeholderStyle='color: #9AA8BF; font-size: 26rpx;'
+            />
+            {!!searchQuery && (
+              <Text className='clear-search' onClick={() => setSearchQuery('')}>清空</Text>
+            )}
+          </View>
+
+          <ScrollView scrollX enableFlex showScrollbar={false} className='category-scroll'>
+            <View className='category-row'>
+              {CATEGORIES.map((cat, index) => (
+                <View key={cat} className={activeCat === index ? 'category-chip active' : 'category-chip'} onClick={() => setActiveCat(index)}>
+                  <Text>{cat}</Text>
+                </View>
+              ))}
+            </View>
+          </ScrollView>
         </View>
 
-        <View className='search-box'>
-          <Text className='search-icon'>⌕</Text>
-          <Input
-            className='search-input'
-            value={searchQuery}
-            placeholder='搜索 Python、科研、摄影、作者昵称...'
-            confirmType='search'
-            onInput={(event) => setSearchQuery(String(event.detail.value || ''))}
-            placeholderStyle='color: #94A3B8; font-size: 14px;'
-          />
-          {!!searchQuery && (
-            <Text className='clear-search' onClick={() => setSearchQuery('')}>清空</Text>
-          )}
-        </View>
-
-        <ScrollView scrollX enableFlex showScrollbar={false}>
-          <View className='category-row'>
-            {CATEGORIES.map((cat, index) => (
-              <View key={cat} className={activeCat === index ? 'category-chip active' : 'category-chip'} onClick={() => setActiveCat(index)}>
-                <Text>{cat}</Text>
+        <View className='hot-topic-section'>
+          <View className='section-header'>
+            <Text className='section-title'>🔥 本周校园热门话题</Text>
+            <Text className='section-more' onClick={() => setActiveCat(0)}>查看更多 &gt;</Text>
+          </View>
+          <View className='topic-grid'>
+            {HOT_TOPICS.map((topic) => (
+              <View className={`topic-card topic-card--${topic.theme}`} key={topic.title} onClick={() => handleTopicClick(topic.title)}>
+                <Text className='topic-rank'>#{topic.rank}</Text>
+                <Text className='topic-title' numberOfLines={2}>{topic.title}</Text>
+                <Text className='topic-count'>{topic.count}</Text>
               </View>
             ))}
           </View>
-        </ScrollView>
-      </View>
+        </View>
 
-      <View className='post-list'>
-        {!filtered.length && (
-          <View className='empty-state'>
-            <Text className='empty-title'>{loading ? '正在加载内容...' : '没有找到相关内容'}</Text>
-            {!loading && <Text className='empty-desc'>换个关键词试试，或发布你的需求</Text>}
-          </View>
-        )}
-
-        {filtered.map((post) => {
-          const author = getAuthor(post)
-          const category = getPostCategory(post)
-          const reasons = getMatchReasons(post, keyword)
-
-          return (
-            <View className='post-card' key={getPostId(post)} onClick={() => openPost(post)}>
-              <View className='author-row' onClick={(event) => { event.stopPropagation(); openUser(post) }}>
-                <View className='avatar' style={{ backgroundColor: getAvatarBg(author.name) }}>
-                  <Text>{author.name.charAt(0)}</Text>
-                </View>
-                <View className='author-main'>
-                  <View className='author-name-row'>
-                    <Text className='author-name'>{author.name}</Text>
-                    <Text className='author-meta' numberOfLines={1}>{author.college} · {author.grade} · {author.campus}</Text>
-                  </View>
-                  <Text className='author-intro' numberOfLines={1}>{author.intro}</Text>
-                </View>
-              </View>
-
-              <View className='tag-row'>
-                <Text className='category-tag'>{post.categoryTag || `${category} · 动态`}</Text>
-                {(post.tags || []).slice(0, 3).map((tag) => <Text className='post-tag' key={tag}>{tag}</Text>)}
-              </View>
-
-              {!!reasons.length && (
-                <View className='reason-row'>
-                  {reasons.map((reason) => <Text className='reason-tag' key={reason}>命中：{reason}</Text>)}
-                </View>
-              )}
-
-              <View className='post-body'>
-                <Text className='post-title'>{post.title}</Text>
-                <Text className='post-excerpt' numberOfLines={2}>{post.summary || post.excerpt || post.content || '暂无内容'}</Text>
-              </View>
-
-              {post.cover ? (
-                isImageCover(post.cover) ? (
-                  <Image className='post-cover' src={post.cover} mode='aspectFill' />
-                ) : (
-                  <View className='cover-placeholder'>
-                    <Text className='cover-icon'>{CATEGORY_ICONS[category] || '帖'}</Text>
-                    <Text className='cover-label'>{category}</Text>
-                  </View>
-                )
-              ) : null}
-
-              <View className='post-footer'>
-                <View className='post-stats'>
-                  <Text>♡ {post.likeCount ?? post.likes ?? 0}</Text>
-                  <Text>评论 {post.commentCount ?? post.comments ?? 0}</Text>
-                </View>
-                <Text className='detail-link'>查看详情</Text>
-              </View>
+        <View className='feed-list'>
+          {!feedItems.length && (
+            <View className='empty-state'>
+              <Text className='empty-title'>{loading ? '正在加载内容...' : '没有找到相关内容'}</Text>
+              {!loading && <Text className='empty-desc'>换个关键词试试，或发布你的需求</Text>}
             </View>
-          )
-        })}
-      </View>
+          )}
+          {feedItems.map(renderFeedCard)}
+        </View>
+      </ScrollView>
 
-      <View className='publish-fab' onClick={() => Taro.navigateTo({ url: '/pages/publish/index?mode=post' })}>
-        <Text>+</Text>
-      </View>
+      <FloatingPostButton
+        className='discover-floating-post'
+        onClick={() => Taro.navigateTo({ url: '/pages/publish/index?mode=post' })}
+      />
     </View>
   )
 }
