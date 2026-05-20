@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
-import { Image, Input, ScrollView, Text, View } from '@tarojs/components'
+import { Image, ScrollView, Text, View } from '@tarojs/components'
 import FloatingPostButton from '../../components/common/FloatingPostButton'
+import SearchBar from '../../components/common/SearchBar'
 import { getPosts } from '../../utils/api'
 import { ACTIVITIES, MOCK_POSTS, type Activity } from '../../utils/mock'
 import { openUnifiedUserProfile } from '../../utils/publicProfiles'
@@ -404,8 +405,12 @@ export default function Discover() {
   }
 
   const handleTopicClick = (topic: string) => {
-    setSearchQuery(topic.replace(/^#\s*/, ''))
-    setActiveCat(0)
+    const keyword = topic.replace(/^#\s*/, '')
+    Taro.navigateTo({ url: `/pages/search-results/index?keyword=${encodeURIComponent(keyword)}&from=discover` })
+  }
+
+  const openSearch = () => {
+    Taro.navigateTo({ url: `/pages/search-results/index?keyword=${encodeURIComponent(searchQuery)}&from=discover` })
   }
 
   const toggleLike = (id: string) => {
@@ -505,20 +510,13 @@ export default function Discover() {
     <View className='discover-page'>
       <ScrollView scrollY className='discover-scroll' showScrollbar={false}>
         <View className='discover-header'>
-          <View className='search-box'>
-            <Text className='search-icon'>⌕</Text>
-            <Input
-              className='search-input'
-              value={searchQuery}
-              placeholder='搜索帖子、技能、活动或同学'
-              confirmType='search'
-              onInput={(event) => setSearchQuery(String(event.detail.value || ''))}
-              placeholderStyle='color: #9AA8BF; font-size: 26rpx;'
-            />
-            {!!searchQuery && (
-              <Text className='clear-search' onClick={() => setSearchQuery('')}>清空</Text>
-            )}
-          </View>
+          <SearchBar
+            className='search-box discover-search-bar'
+            value={searchQuery}
+            placeholder='搜索帖子、技能、活动或同学'
+            readonly
+            onClick={openSearch}
+          />
 
           <ScrollView scrollX enableFlex showScrollbar={false} className='category-scroll'>
             <View className='category-row'>

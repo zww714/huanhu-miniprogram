@@ -25,6 +25,7 @@ page {
 
 .search-box {
   height: 72rpx;
+  min-height: 72rpx;
   border-radius: 999rpx;
   background: #FFFFFF;
   border: 1rpx solid #E8EEF8;
@@ -81,6 +82,22 @@ page {
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
+}
+
+.discover-search-bar {
+  box-shadow: none;
+}
+
+.discover-search-bar .search-bar__input {
+  height: 72rpx;
+  line-height: 72rpx;
+  color: #344563;
+  font-size: 26rpx;
+}
+
+.discover-search-bar .search-bar__icon {
+  color: #9AA8BF;
+  font-size: 30rpx;
 }
 
 .category-chip text {

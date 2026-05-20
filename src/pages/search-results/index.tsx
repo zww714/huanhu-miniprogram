@@ -2,88 +2,126 @@ import { useMemo, useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { Image, Text, View } from '@tarojs/components'
 import SearchBar from '../../components/common/SearchBar'
-import { getActivities, getPartners, getUsers } from '../../utils/api'
+import { getPosts } from '../../utils/api'
+import { MOCK_POSTS } from '../../utils/mock'
 import { openUnifiedUserProfile } from '../../utils/publicProfiles'
 import './index.css'
 
-type ResultItem = {
-  id: string
-  type: 'user' | 'partner' | 'activity'
+const HOT_RECOMMENDS = ['Python 入门', '科研经验', '摄影搭子', '论文降重', 'AI工具', '校园活动']
+
+type SearchPost = {
+  id?: string
+  _id?: string
   title: string
-  desc: string
-  avatar?: string
+  excerpt?: string
+  summary?: string
+  content?: string
+  cover?: string
+  images?: string[]
   tags?: string[]
+  mainCategory?: string
+  category?: string
+  authorId?: string
+  userId?: string
+  authorName?: string
+  author?: {
+    id?: string
+    userId?: string
+    name?: string
+    avatar?: string
+    college?: string
+    grade?: string
+  }
+  likeCount?: number
+  commentCount?: number
+  favoriteCount?: number
+  likes?: number
+  comments?: number
+  createdAt?: string
 }
 
-function textOf(value: unknown) {
-  return String(value || '').trim()
+function getPostId(post: SearchPost) {
+  return String(post.id || post._id || post.title || '')
 }
 
-function matchKeyword(item: ResultItem, keyword: string) {
+function getAuthorId(post: SearchPost) {
+  return String(post.authorId || post.userId || post.author?.userId || post.author?.id || '')
+}
+
+function getAuthorName(post: SearchPost) {
+  return post.authorName || post.author?.name || '同学'
+}
+
+function getDesc(post: SearchPost) {
+  return post.summary || post.excerpt || post.content || '暂无内容'
+}
+
+function getCover(post: SearchPost) {
+  return post.images?.[0] || post.cover || ''
+}
+
+function isImage(value?: string) {
+  return !!value && !value.startsWith('linear-gradient')
+}
+
+function matches(post: SearchPost, keyword: string) {
   if (!keyword) return true
-  const pool = [item.title, item.desc, ...(item.tags || [])].join(' ').toLowerCase()
+  const pool = [
+    post.title,
+    getDesc(post),
+    post.mainCategory,
+    post.category,
+    getAuthorName(post),
+    ...(post.tags || []),
+  ].join(' ').toLowerCase()
   return pool.includes(keyword.toLowerCase())
+}
+
+function formatTime(value?: string) {
+  if (!value) return '刚刚'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  return `${date.getMonth() + 1}-${date.getDate()}`
 }
 
 export default function SearchResults() {
   const [keyword, setKeyword] = useState('')
-  const [results, setResults] = useState<ResultItem[]>([])
+  const [posts, setPosts] = useState<SearchPost[]>([])
   const [loading, setLoading] = useState(true)
 
   useLoad(async (options) => {
     const nextKeyword = decodeURIComponent(String(options?.keyword || '')).trim()
     setKeyword(nextKeyword)
+    setLoading(true)
     try {
-      const [users, partners, activities] = await Promise.all([
-        getUsers({ page: 0, keyword: nextKeyword }),
-        getPartners(),
-        getActivities({ page: 0 }),
-      ])
-      const userItems: ResultItem[] = (users || []).slice(0, 8).map((user: any) => ({
-        id: String(user.id || user._id || user.name || ''),
-        type: 'user',
-        title: user.name || '同学',
-        desc: [user.school || '浙江大学', user.college, user.grade, user.intro || user.bio].filter(Boolean).join(' · '),
-        avatar: user.avatar,
-        tags: [...(user.interests || []), ...(user.wantToLearn || []), ...(user.tags || [])],
-      }))
-      const partnerItems: ResultItem[] = (partners || []).slice(0, 6).map((user: any) => ({
-        id: String(user.id || user._id || user.name || ''),
-        type: 'partner',
-        title: user.name || '同学',
-        desc: user.lookingFor || user.intro || user.bio || '兴趣搭子',
-        avatar: user.avatar,
-        tags: [...(user.interests || []), ...(user.tags || [])],
-      }))
-      const activityItems: ResultItem[] = (activities || []).slice(0, 6).map((activity: any) => ({
-        id: String(activity.id || activity._id || activity.title || ''),
-        type: 'activity',
-        title: activity.title || '校园活动',
-        desc: [activity.time, activity.location, activity.description].filter(Boolean).join(' · '),
-        avatar: activity.cover,
-        tags: activity.tags || [activity.category].filter(Boolean),
-      }))
-      setResults([...userItems, ...partnerItems, ...activityItems].filter((item) => matchKeyword(item, nextKeyword)))
+      const data = await getPosts({ page: 0, keyword: nextKeyword })
+      setPosts(data?.length ? data : MOCK_POSTS)
     } catch (error) {
-      console.warn('[SearchResults] load failed', error)
-      setResults([
-        { id: 'python', type: 'user', title: 'Python 入门互助', desc: '浙江大学 · 计算机学院 · 数据分析与课程作业', tags: ['Python', '数据分析'] },
-        { id: 'photo', type: 'partner', title: '摄影搭子', desc: '周末校园扫街，欢迎新手一起练习', tags: ['摄影', '搭子'] },
-        { id: 'activity', type: 'activity', title: 'AI 科研工作坊', desc: '紫金港校区 · 工具体验与小组讨论', tags: ['AI工具', '活动'] },
-      ].filter((item) => matchKeyword(item, nextKeyword)))
+      console.warn('[SearchResults] load posts failed', error)
+      setPosts(MOCK_POSTS)
     } finally {
       setLoading(false)
     }
   })
 
-  const visibleResults = useMemo(() => results.filter((item) => matchKeyword(item, keyword.trim())), [keyword, results])
+  const visiblePosts = useMemo(() => posts.filter((post) => matches(post, keyword.trim())), [keyword, posts])
 
-  const openResult = (item: ResultItem) => {
-    if (item.type === 'activity') {
-      Taro.navigateTo({ url: `/pages/activity-register/index?id=${encodeURIComponent(item.id)}&title=${encodeURIComponent(item.title)}` })
-      return
-    }
-    openUnifiedUserProfile(item.id, item.title)
+  const submitSearch = (value?: string) => {
+    const text = String(value ?? keyword).trim()
+    setKeyword(text)
+    const recent = Taro.getStorageSync('homeRecentSearches')
+    const nextRecent = [text, ...(Array.isArray(recent) ? recent.filter((item) => item !== text) : [])].filter(Boolean).slice(0, 6)
+    Taro.setStorageSync('homeRecentSearches', nextRecent)
+  }
+
+  const openPost = (post: SearchPost) => {
+    Taro.navigateTo({ url: `/pages/post-detail/index?postId=${encodeURIComponent(getPostId(post))}&from=search&keyword=${encodeURIComponent(keyword)}` })
+  }
+
+  const openAuthor = (post: SearchPost) => {
+    const userId = getAuthorId(post)
+    if (!userId) return
+    openUnifiedUserProfile(userId, getAuthorName(post))
   }
 
   return (
@@ -92,37 +130,57 @@ export default function SearchResults() {
         <SearchBar
           className='search-result-bar'
           value={keyword}
-          placeholder='继续搜索'
+          placeholder='搜索帖子、技能、活动或同学'
           onInput={setKeyword}
-          onConfirm={setKeyword}
+          onConfirm={submitSearch}
         />
-        <Text className='search-summary'>与“{keyword || '全部'}”相关的结果</Text>
+        <Text className='search-summary'>与“{keyword || '全部'}”相关的帖子</Text>
+      </View>
+
+      <View className='hot-search-card'>
+        <Text className='hot-search-title'>热门推荐</Text>
+        <View className='hot-search-list'>
+          {HOT_RECOMMENDS.map((word) => (
+            <View className='hot-search-chip' key={word} onClick={() => submitSearch(word)}>
+              <Text>{word}</Text>
+            </View>
+          ))}
+        </View>
       </View>
 
       <View className='search-list'>
         {loading ? (
           <View className='search-empty'><Text>正在搜索...</Text></View>
         ) : null}
-        {!loading && !visibleResults.length ? (
-          <View className='search-empty'><Text>没有找到相关内容，换个关键词试试</Text></View>
+        {!loading && !visiblePosts.length ? (
+          <View className='search-empty'><Text>没有找到相关帖子，换个关键词试试</Text></View>
         ) : null}
-        {visibleResults.map((item) => (
-          <View className='search-card' key={`${item.type}_${item.id}`} onClick={() => openResult(item)}>
-            <View className='search-avatar'>
-              {item.avatar ? <Image className='search-avatar-img' src={item.avatar} mode='aspectFill' /> : <Text>{item.title.charAt(0)}</Text>}
-            </View>
-            <View className='search-main'>
-              <View className='search-title-row'>
-                <Text className='search-title'>{item.title}</Text>
-                <Text className='search-type'>{item.type === 'activity' ? '活动' : item.type === 'partner' ? '搭子' : '同学'}</Text>
+        {visiblePosts.map((post) => {
+          const cover = getCover(post)
+          return (
+            <View className='search-card' key={getPostId(post)} onClick={() => openPost(post)}>
+              <View className='search-cover'>
+                {isImage(cover) ? <Image className='search-cover-img' src={cover} mode='aspectFill' /> : <Text>{post.mainCategory || post.category || '帖子'}</Text>}
               </View>
-              <Text className='search-desc' numberOfLines={2}>{item.desc}</Text>
-              <View className='search-tags'>
-                {(item.tags || []).slice(0, 3).map((tag) => <Text key={tag}>{tag}</Text>)}
+              <View className='search-main'>
+                <View className='search-title-row'>
+                  <Text className='search-title' numberOfLines={2}>{post.title}</Text>
+                  <Text className='search-type'>{post.mainCategory || post.category || '帖子'}</Text>
+                </View>
+                <Text className='search-desc' numberOfLines={2}>{getDesc(post)}</Text>
+                <View className='search-author' onClick={(event) => { event.stopPropagation(); openAuthor(post) }}>
+                  <Text className='search-author-name'>{getAuthorName(post)}</Text>
+                  <Text className='search-author-meta'>{post.author?.college || '浙江大学'} · {formatTime(post.createdAt)}</Text>
+                </View>
+                <View className='search-actions'>
+                  <Text>♡ {Number(post.likeCount ?? post.likes ?? 0)}</Text>
+                  <Text>💬 {Number(post.commentCount ?? post.comments ?? 0)}</Text>
+                  <Text>☆ {Number(post.favoriteCount ?? 0)}</Text>
+                </View>
               </View>
             </View>
-          </View>
-        ))}
+          )
+        })}
       </View>
     </View>
   )

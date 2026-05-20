@@ -421,8 +421,7 @@ export default function Index() {
   }
 
   const openSearchPanel = () => {
-    setSearchDraft(searchQuery)
-    setSearchPanelOpen(true)
+    Taro.navigateTo({ url: `/pages/search-results/index?keyword=${encodeURIComponent(searchQuery)}&tab=${activeTab}` })
   }
 
   const submitSearch = (value?: string) => {
@@ -868,7 +867,6 @@ export default function Index() {
       </View>
 
       <FloatingPostButton className='home-floating-post' onClick={handlePublish} />
-      {renderSearchPanel()}
       {renderDetailPopup()}
     </View>
   )
