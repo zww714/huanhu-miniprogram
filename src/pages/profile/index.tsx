@@ -16,10 +16,10 @@ import {
 } from '../../utils/mock'
 
 const QUICK_ENTRIES = [
-  { key: 'favorites', icon: '☆', label: '我的收藏', desc: '收藏的帖子和技能', url: '/pages/my-favorites/index', tone: 'blue' },
-  { key: 'history', icon: '◷', label: '浏览记录', desc: '最近看过的内容', url: '/pages/browse-history/index', tone: 'green' },
-  { key: 'activities', icon: '□', label: '我的活动', desc: '报名和参与记录', url: '/pages/my-activities/index', tone: 'blue' },
-  { key: 'settings', icon: '◇', label: '设置', desc: '账号与隐私', url: '/pages/settings/index', tone: 'purple' },
+  { key: 'favorites', icon: '☆', label: '我的收藏', desc: '收藏的帖子和技能', path: '/pages/my-favorites/index', tone: 'blue' },
+  { key: 'history', icon: '◷', label: '浏览记录', desc: '最近看过的内容', path: '/pages/browse-history/index', tone: 'green' },
+  { key: 'activities', icon: '□', label: '我的活动', desc: '报名和参与记录', path: '/pages/my-activities/index', tone: 'blue' },
+  { key: 'settings', icon: '◇', label: '设置', desc: '账号与隐私', path: '/pages/settings/index', tone: 'purple' },
 ]
 
 const CHEN_PROFILE = {
@@ -59,13 +59,28 @@ export default function Profile() {
   const [myPosts, setMyPosts] = useState<any[]>(MY_POSTS)
 
   const toast = (msg: string) => Taro.showToast({ title: msg, icon: 'none' })
-  const go = (url: string) => Taro.navigateTo({ url })
+  const go = (url: string) => Taro.navigateTo({
+    url,
+    fail: () => toast('功能开发中'),
+  })
   const safeGo = (url?: string) => {
     if (!url) {
       toast('功能开发中')
       return
     }
     go(url)
+  }
+  const withProfileParams = (path: string, extra: Record<string, string | number> = {}) => {
+    const params = {
+      from: 'profile',
+      userId: String(userId),
+      name: String(p.name || CHEN_PROFILE.name),
+      ...extra,
+    }
+    const query = Object.entries(params)
+      .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
+      .join('&')
+    return `${path}?${query.toString()}`
   }
 
   const saveAvatar = (nextAvatar: string) => {
@@ -213,10 +228,10 @@ export default function Profile() {
 
         <View className='stats-card'>
           {[
-            { label: '技能', value: statValues.skills, icon: '</>', url: `/pages/my-skills/index?userId=${encodeURIComponent(userId)}&self=1` },
-            { label: '发布', value: statValues.posts, icon: '+', url: '/pages/my-posts/index' },
-            { label: '粉丝', value: statValues.followers, icon: '○', url: '/pages/my-followers/index' },
-            { label: '关注', value: statValues.following, icon: '◎', url: '/pages/my-following/index' },
+            { label: '技能', value: statValues.skills, icon: '</>', url: withProfileParams('/pages/my-skills/index', { self: 1 }) },
+            { label: '发布', value: statValues.posts, icon: '+', url: withProfileParams('/pages/my-posts/index', { self: 1 }) },
+            { label: '粉丝', value: statValues.followers, icon: '○', url: withProfileParams('/pages/my-followers/index') },
+            { label: '关注', value: statValues.following, icon: '◎', url: withProfileParams('/pages/my-following/index') },
           ].map((item, index) => (
             <View key={item.label} className={`stat-item ${index < 3 ? 'with-line' : ''}`} onClick={() => safeGo(item.url)}>
               <Text className='stat-icon'>{item.icon}</Text>
@@ -228,7 +243,7 @@ export default function Profile() {
 
         <View className='menu-card'>
           {QUICK_ENTRIES.map((entry, index) => (
-            <View key={entry.key} className={`menu-row ${index === QUICK_ENTRIES.length - 1 ? 'last' : ''}`} onClick={() => safeGo(entry.url)}>
+            <View key={entry.key} className={`menu-row ${index === QUICK_ENTRIES.length - 1 ? 'last' : ''}`} onClick={() => safeGo(withProfileParams(entry.path))}>
               <Text className={`menu-icon menu-icon--${entry.tone}`}>{entry.icon}</Text>
               <View className='menu-text'>
                 <Text className='menu-label'>{entry.label}</Text>
