@@ -11,9 +11,9 @@ import './index.css'
 const CATEGORIES = ['推荐', '科研', '升学', '兴趣', '活动', '兼职']
 
 const HOT_TOPICS = [
-  { rank: 1, title: '# 浙大人毕业去哪了', count: '1231讨论', theme: 'red' },
-  { rank: 2, title: '# 暑期科研经历分享', count: '856讨论', theme: 'blue' },
-  { rank: 3, title: '# 考研择校交流', count: '642讨论', theme: 'green' },
+  { rank: 1, title: '# 浙大人毕业去哪了', count: '1231讨论', theme: 'red', desc: '收集不同学院同学的升学、就业和科研去向经验，适合正在规划路径的同学参考。' },
+  { rank: 2, title: '# 暑期科研经历分享', count: '856讨论', theme: 'blue', desc: '围绕暑研申请、导师联系、组会汇报和项目复盘展开讨论。' },
+  { rank: 3, title: '# 考研择校交流', count: '642讨论', theme: 'green', desc: '分享择校信息、复习节奏、资料整理和复试准备经验。' },
 ]
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -329,6 +329,7 @@ export default function Discover() {
   const [searchQuery, setSearchQuery] = useState('')
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
+  const [topicPopup, setTopicPopup] = useState<(typeof HOT_TOPICS)[number] | null>(null)
   const [likedItems, setLikedItems] = useState<Record<string, boolean>>({})
   const [favoritedItems, setFavoritedItems] = useState<Record<string, boolean>>({})
 
@@ -405,8 +406,8 @@ export default function Discover() {
   }
 
   const handleTopicClick = (topic: string) => {
-    const keyword = topic.replace(/^#\s*/, '')
-    Taro.navigateTo({ url: `/pages/search-results/index?keyword=${encodeURIComponent(keyword)}&from=discover` })
+    const found = HOT_TOPICS.find((item) => item.title === topic)
+    if (found) setTopicPopup(found)
   }
 
   const openSearch = () => {
@@ -506,6 +507,11 @@ export default function Discover() {
     )
   }
 
+  const openTopicSearch = (topic: string) => {
+    const keyword = topic.replace(/^#\s*/, '')
+    Taro.navigateTo({ url: `/pages/search-results/index?keyword=${encodeURIComponent(keyword)}&from=discover-topic` })
+  }
+
   return (
     <View className='discover-page'>
       <ScrollView scrollY className='discover-scroll' showScrollbar={false}>
@@ -560,6 +566,24 @@ export default function Discover() {
         className='discover-floating-post'
         onClick={() => Taro.navigateTo({ url: '/pages/publish/index?mode=post' })}
       />
+      {topicPopup ? (
+        <View className='topic-modal-mask' onClick={() => setTopicPopup(null)}>
+          <View className='topic-modal' onClick={(event) => event.stopPropagation()}>
+            <View className='topic-modal-head'>
+              <Text className='topic-modal-title'>{topicPopup.title}</Text>
+              <Text className='topic-modal-close' onClick={() => setTopicPopup(null)}>×</Text>
+            </View>
+            <Text className='topic-modal-desc'>{topicPopup.desc}</Text>
+            <View className='topic-modal-meta'>
+              <Text>#{topicPopup.rank}</Text>
+              <Text>{topicPopup.count}</Text>
+            </View>
+            <View className='topic-modal-btn' onClick={() => openTopicSearch(topicPopup.title)}>
+              <Text>查看相关帖子</Text>
+            </View>
+          </View>
+        </View>
+      ) : null}
     </View>
   )
 }
