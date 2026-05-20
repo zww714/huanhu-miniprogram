@@ -1,16 +1,14 @@
 ﻿import { useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
-import { Image, Input, ScrollView, Text, View } from '@tarojs/components'
+import { Image, ScrollView, Text, View } from '@tarojs/components'
 import {
   CURRENT_USER,
   MOCK_POSTS,
   MY_POSTS,
-  POST_COMMENTS,
-  type Comment,
-  type CommentReply,
 } from '../../utils/mock'
-import { deletePost, getPostDetail, getPosts, updatePost, getComments, addComment, replyComment, deleteComment as apiDeleteComment, toggleLike, toggleFavorite, getInteractionStatus } from '../../utils/api'
+import { deletePost, getPostDetail, getPosts, updatePost, toggleLike, toggleFavorite, getInteractionStatus } from '../../utils/api'
 import { openUnifiedUserProfile } from '../../utils/publicProfiles'
+import { recordBrowse } from '../../utils/history'
 import './index.css'
 
 type Post = {
@@ -45,18 +43,6 @@ type Post = {
   createdAt?: string
 }
 
-type ReplyTarget = {
-  commentId: string
-  userId: string
-  userName: string
-}
-
-const currentUser = {
-  userId: CURRENT_USER.id,
-  userName: CURRENT_USER.name,
-  userAvatar: CURRENT_USER.avatar,
-}
-
 const fallbackPost: Post = {
   id: 'fallback',
   title: '帖子详情',
@@ -86,18 +72,6 @@ function getAuthor(post: Post) {
 function getAuthorId(post: Post) {
   const author = getAuthor(post)
   return post.authorId || post.userId || author.userId || author.id || ''
-}
-
-function getUserName(comment: Comment) {
-  return comment.userName || comment.author?.name || '同学'
-}
-
-function getUserAvatar(comment: Comment) {
-  return comment.userAvatar || comment.author?.avatar || ''
-}
-
-function getCommentLikes(comment: Comment) {
-  return Number(comment.likeCount ?? comment.likes ?? 0)
 }
 
 function isImageCover(cover?: string) {
@@ -135,9 +109,6 @@ export default function PostDetail() {
   const [likeCount, setLikeCount] = useState(0)
   const [favoriteCount, setFavoriteCount] = useState(0)
   const [visibility, setVisibility] = useState<'public' | 'private'>('public')
-  const [comments, setComments] = useState<Comment[]>(POST_COMMENTS)
-  const [commentText, setCommentText] = useState('')
-  const [replyTarget, setReplyTarget] = useState<ReplyTarget | null>(null)
 
   useLoad(async (options) => {
     const id = decodeURIComponent(String(options?.postId || options?.id || ''))
@@ -152,6 +123,7 @@ export default function PostDetail() {
       setFavoriteCount(Number(nextPost.favoriteCount ?? nextPost.collectCount ?? 0))
       setVisibility(nextPost.visibility || 'public')
       setIsMissing(false)
+      recordBrowse({ id: getRecordId(nextPost) || id, type: 'post', title: nextPost.title || '帖子', subtitle: nextPost.excerpt || nextPost.content?.slice(0, 30) })
     }
 
     if (pending && (pending.id === id || pending._id === id)) {
@@ -188,19 +160,6 @@ export default function PostDetail() {
       }
     }
 
-    // Load comments from cloud
-    if (id) {
-      getComments({ postId: id })
-        .then((cloudComments) => {
-          if (Array.isArray(cloudComments)) {
-            setComments(cloudComments)
-          }
-        })
-        .catch((e) => {
-          console.warn('[PostDetail] getComments failed, using mock', e)
-        })
-    }
-
     // Load interaction status (liked / bookmarked)
     if (id) {
       getInteractionStatus({ targetId: id })
@@ -224,7 +183,6 @@ export default function PostDetail() {
   const isOwner = !isMissing && (!!(post as any).canManage || authorId === CURRENT_USER.id)
   const body = (post.content || post.excerpt || '').split('\n').filter(Boolean)
   const images = post.images?.length ? post.images : isImageCover(post.cover) ? [post.cover!] : []
-  const commentTotal = comments.reduce((total, comment) => total + 1 + (comment.replies?.length || 0), 0)
 
   const handleBack = () => Taro.navigateBack()
   const goUser = (userId?: string, name?: string) => {
@@ -289,16 +247,6 @@ export default function PostDetail() {
     })
   }
 
-  const startReply = (comment: Comment) => {
-    const userId = comment.userId || ''
-    const userName = getUserName(comment)
-    if (!userId) {
-      Taro.showToast({ title: '用户信息不存在', icon: 'none' })
-      return
-    }
-    setReplyTarget({ commentId: comment.id, userId, userName })
-  }
-
   const handleLike = async () => {
     if (!postId) return
     // Optimistic update
@@ -347,119 +295,9 @@ export default function PostDetail() {
     }
   }
 
-  const handleCommentLike = (commentId: string) => {
-    setComments((current) => current.map((comment) => {
-      if (comment.id !== commentId) return comment
-      const nextLiked = !comment.liked
-      const nextCount = nextLiked ? getCommentLikes(comment) + 1 : Math.max(0, getCommentLikes(comment) - 1)
-      return { ...comment, liked: nextLiked, likeCount: nextCount, likes: nextCount }
-    }))
-  }
-
   const handleContactAuthor = () => {
     Taro.navigateTo({
       url: `/pages/contact-request/index?userId=${encodeURIComponent(authorId)}&name=${encodeURIComponent(author.name)}&category=${encodeURIComponent('帖子交流')}&postId=${encodeURIComponent(postId)}&source=post-detail`,
-    })
-  }
-
-  const handleSendComment = async () => {
-    const text = commentText.trim()
-    if (!text) {
-      Taro.showToast({ title: '请输入内容', icon: 'none' })
-      return
-    }
-
-    try {
-      if (replyTarget) {
-        await replyComment({
-          postId,
-          parentId: replyTarget.commentId,
-          replyToUserId: replyTarget.userId,
-          content: text,
-        })
-      } else {
-        await addComment({ postId, content: text })
-      }
-
-      setCommentText('')
-      setReplyTarget(null)
-      Taro.showToast({ title: '发送成功', icon: 'success' })
-
-      // Refresh comments
-      getComments({ postId }).then((cloudComments) => {
-        if (Array.isArray(cloudComments)) setComments(cloudComments)
-      }).catch(() => {})
-    } catch (e) {
-      console.warn('[PostDetail] send comment cloud failed, fallback local', e)
-      Taro.showToast({ title: '网络异常，已保存本地', icon: 'none' })
-
-      if (replyTarget) {
-        const reply: CommentReply = {
-          id: `reply_${Date.now()}`,
-          commentId: replyTarget.commentId,
-          userId: currentUser.userId,
-          userName: currentUser.userName,
-          userAvatar: currentUser.userAvatar,
-          replyToUserId: replyTarget.userId,
-          replyToUserName: replyTarget.userName,
-          content: text,
-          createdAt: '刚刚',
-        }
-        setComments((current) => current.map((comment) => (
-          comment.id === replyTarget.commentId
-            ? { ...comment, replies: [...(comment.replies || []), reply] }
-            : comment
-        )))
-      } else {
-        const comment: Comment = {
-          id: `local_${Date.now()}`,
-          postId,
-          userId: currentUser.userId,
-          userName: currentUser.userName,
-          userAvatar: currentUser.userAvatar,
-          author: { name: currentUser.userName, avatar: currentUser.userAvatar },
-          content: text,
-          time: '刚刚',
-          createdAt: '刚刚',
-          likes: 0,
-          likeCount: 0,
-          liked: false,
-          canDelete: true,
-          replies: [],
-        }
-        setComments((current) => [comment, ...current])
-      }
-
-      setCommentText('')
-      setReplyTarget(null)
-    }
-  }
-
-  const handleDeleteComment = (comment: Comment) => {
-    const commentId = comment.id || comment._id || ''
-    if (!commentId) {
-      Taro.showToast({ title: '评论不存在', icon: 'none' })
-      return
-    }
-
-    Taro.showModal({
-      title: '确认删除',
-      content: '确定要删除这条评论吗？',
-      confirmText: '删除',
-      confirmColor: '#EF4444',
-      success: (res) => {
-        if (!res.confirm) return
-        apiDeleteComment({ commentId })
-          .then((result) => {
-            Taro.showToast({ title: '已删除', icon: 'success' })
-            // Remove from local state
-            setComments((current) => current.filter((c) => c.id !== commentId && c._id !== commentId))
-          })
-          .catch((e) => {
-            console.warn('[PostDetail] delete comment failed', e)
-            Taro.showToast({ title: '删除失败', icon: 'none' })
-          })
-      },
     })
   }
 
@@ -526,10 +364,6 @@ export default function PostDetail() {
                 <Text className={liked ? 'action-icon active-red' : 'action-icon'}>♡</Text>
                 <Text className={liked ? 'action-text active-red' : 'action-text'}>{likeCount}</Text>
               </View>
-              <View className='action'>
-                <Text className='action-icon'>💬</Text>
-                <Text className='action-text'>{commentTotal}</Text>
-              </View>
               <View className='action' onClick={handleBookmark}>
                 <Text className={bookmarked ? 'action-icon active-blue' : 'action-icon'}>☆</Text>
                 <Text className={bookmarked ? 'action-text active-blue' : 'action-text'}>{favoriteCount}</Text>
@@ -558,74 +392,8 @@ export default function PostDetail() {
               </View>
             )}
           </View>
-
-          <View className='comment-card'>
-            <Text className='comment-title'>评论 ({commentTotal})</Text>
-
-            {!comments.length && (
-              <View className='comments-empty'>
-                <Text className='comments-empty-text'>暂时还没有评论，来发表第一条评论吧</Text>
-              </View>
-            )}
-            {comments.map((comment) => {
-              const userName = getUserName(comment)
-              return (
-                <View key={comment.id} className='comment-item'>
-                  <Avatar name={userName} avatar={getUserAvatar(comment)} onClick={() => goUser(comment.userId, userName)} />
-                  <View className='comment-main'>
-                    <View className='comment-head'>
-                      <Text className='comment-name' onClick={() => goUser(comment.userId, userName)}>{userName}</Text>
-                      <Text className='comment-time'>{comment.createdAt || comment.time}</Text>
-                    </View>
-                    <Text className='comment-content' onClick={() => startReply(comment)}>{comment.content}</Text>
-                    <View className='comment-actions'>
-                      <Text className={comment.liked ? 'comment-like active-red' : 'comment-like'} onClick={() => handleCommentLike(comment.id)}>赞 {getCommentLikes(comment)}</Text>
-                      <Text className='reply-btn' onClick={() => startReply(comment)}>回复</Text>
-                      {comment.canDelete && (
-                        <Text className='delete-btn' onClick={() => handleDeleteComment(comment)}>删除</Text>
-                      )}
-                    </View>
-
-                    {!!comment.replies?.length && (
-                      <View className='reply-list'>
-                        {comment.replies.map((reply) => (
-                          <View className='reply-item' key={reply.id}>
-                            <Text className='reply-user' onClick={() => goUser(reply.userId, reply.userName)}>{reply.userName}</Text>
-                            <Text className='reply-copy'> 回复 </Text>
-                            <Text className='reply-user' onClick={() => goUser(reply.replyToUserId, reply.replyToUserName)}>{reply.replyToUserName}</Text>
-                            <Text className='reply-copy'>：{reply.content}</Text>
-                            <Text className='reply-time'>{reply.createdAt}</Text>
-                          </View>
-                        ))}
-                      </View>
-                    )}
-                  </View>
-                </View>
-              )
-            })}
-          </View>
         </View>
       </ScrollView>
-
-      <View className='input-bar'>
-        {replyTarget && (
-          <View className='replying-row'>
-            <Text>正在回复 {replyTarget.userName}</Text>
-            <Text className='cancel-reply' onClick={() => setReplyTarget(null)}>取消</Text>
-          </View>
-        )}
-        <View className='input-row'>
-          <Input
-            placeholder={replyTarget ? `回复 ${replyTarget.userName}...` : '写评论...'}
-            value={commentText}
-            onInput={(e) => setCommentText(e.detail.value)}
-            className='comment-input'
-          />
-          <View className={commentText.trim() ? 'send-btn active' : 'send-btn'} onClick={handleSendComment}>
-            <Text>发送</Text>
-          </View>
-        </View>
-      </View>
     </View>
   )
 }
