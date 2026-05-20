@@ -181,7 +181,8 @@ page {
 .post-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: flex-start;
+  gap: 12px;
   flex-wrap: nowrap;
   margin-top: 18px;
   padding-top: 14px;
@@ -189,12 +190,14 @@ page {
 }
 
 .action {
+  min-width: 70px;
   min-height: 34px;
-  padding: 0 10px;
+  padding: 0 12px;
   border-radius: 999px;
   background: #F8FAFC;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 5px;
   flex-shrink: 0;
 }
@@ -207,10 +210,6 @@ page {
 
 .action-text {
   font-weight: 700;
-}
-
-.action-contact {
-  margin-left: auto;
 }
 
 .active-red {

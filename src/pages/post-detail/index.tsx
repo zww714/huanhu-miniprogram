@@ -313,12 +313,6 @@ export default function PostDetail() {
     }
   }
 
-  const handleContactAuthor = () => {
-    Taro.navigateTo({
-      url: `/pages/contact-request/index?userId=${encodeURIComponent(authorId)}&name=${encodeURIComponent(author.name)}&category=${encodeURIComponent('帖子交流')}&postId=${encodeURIComponent(postId)}&source=post-detail`,
-    })
-  }
-
   const getCommentName = (comment: Comment) => comment.userName || comment.author?.name || '同学'
   const getCommentAvatar = (comment: Comment) => comment.userAvatar || comment.author?.avatar || ''
   const getCommentLikes = (comment: Comment) => Number(comment.likeCount ?? comment.likes ?? 0)
@@ -475,15 +469,9 @@ export default function PostDetail() {
                 <Text className={bookmarked ? 'action-text active-blue' : 'action-text'}>{favoriteCount}</Text>
               </View>
               <View className='action'>
-                <Text className='action-icon'>💬</Text>
+                <Text className='action-icon'>↗</Text>
                 <Text className='action-text'>{commentTotal}</Text>
               </View>
-              {!isOwner && (
-                <View className='action action-contact' onClick={handleContactAuthor}>
-                  <Text className='action-icon active-blue'>✉</Text>
-                  <Text className='action-text active-blue'>联系TA</Text>
-                </View>
-              )}
             </View>
 
             {isOwner && (
