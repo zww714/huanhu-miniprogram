@@ -2,7 +2,7 @@ import { View, Text, ScrollView, Image } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { useState } from 'react'
 import './index.css'
-import { getCurrentUser, getMyPosts, getMySkills as fetchMySkills, updateProfile } from '../../utils/api'
+import { getMyPosts, getMySkills as fetchMySkills, updateProfile } from '../../utils/api'
 
 import {
   AVATAR_STORAGE_KEY,
@@ -50,14 +50,6 @@ const CHEN_PROFILE = {
     followers: 86,
     following: 42,
   },
-}
-
-function isDefaultWechatProfile(user: any) {
-  if (!user) return true
-  const name = user.name || user.nickname || ''
-  const noProfileInfo = !user.college && !user.major && !user.grade && !user.campus && !user.intro && !user.bio
-  const noStats = !user.skillCount && !user.postCount && !user.followerCount && !user.followingCount && !user.stats
-  return (name === '微信用户' || name === '用户') && noProfileInfo && noStats
 }
 
 export default function Profile() {
@@ -153,47 +145,8 @@ export default function Profile() {
   const avatarText = (p.name || CHEN_PROFILE.name || '我').charAt(0)
 
   useDidShow(() => {
-    const cachedAvatar = Taro.getStorageSync(AVATAR_STORAGE_KEY)
-    const profileDraft = Taro.getStorageSync('profileDraft')
-    if (profileDraft && typeof profileDraft === 'object') {
-      setProfileData({
-        ...CHEN_PROFILE,
-        ...profileDraft,
-        name: profileDraft.nickname || profileDraft.name || CHEN_PROFILE.name,
-        bio: profileDraft.intro || profileDraft.bio || CHEN_PROFILE.bio,
-      })
-    } else {
-      setProfileData(CHEN_PROFILE)
-    }
-    setAvatarUrl(cachedAvatar || CHEN_PROFILE.avatar || '')
-
-    getCurrentUser()
-      .then((user) => {
-        if (!user || isDefaultWechatProfile(user)) {
-          setProfileData(CHEN_PROFILE)
-          setAvatarUrl(cachedAvatar || CHEN_PROFILE.avatar || '')
-          return
-        }
-        const merged = {
-          ...CHEN_PROFILE,
-          ...user,
-          user_id: user.user_id || user.id || user._id || CHEN_PROFILE.user_id,
-          name: user.name || user.nickname || CHEN_PROFILE.name,
-          bio: user.intro || user.bio || CHEN_PROFILE.bio,
-          wantToLearn: user.wantToLearn?.length ? user.wantToLearn : CHEN_PROFILE.wantToLearn,
-          learnWants: user.learnWants?.length ? user.learnWants : CHEN_PROFILE.learnWants,
-          interests: user.interests?.length ? user.interests : CHEN_PROFILE.interests,
-          stats: user.stats || {
-            skills: user.skillCount ?? CHEN_PROFILE.stats.skills,
-            posts: user.postCount ?? CHEN_PROFILE.stats.posts,
-            followers: user.followerCount ?? CHEN_PROFILE.stats.followers,
-            following: user.followingCount ?? CHEN_PROFILE.stats.following,
-          },
-        }
-        setProfileData(merged)
-        setAvatarUrl(cachedAvatar || user.avatar || CHEN_PROFILE.avatar || '')
-      })
-      .catch((e) => console.warn('[Profile] getCurrentUser failed, fallback to mock', e))
+    setProfileData(CHEN_PROFILE)
+    setAvatarUrl(CHEN_PROFILE.avatar || '')
 
     fetchMySkills()
       .then((skills) => {

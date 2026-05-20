@@ -202,6 +202,16 @@ page {
   flex-shrink: 0;
 }
 
+.action-share {
+  margin: 0;
+  border: 0;
+  line-height: normal;
+}
+
+.action-share::after {
+  border: 0;
+}
+
 .action-icon {
   color: #64748B;
   font-size: 18px;

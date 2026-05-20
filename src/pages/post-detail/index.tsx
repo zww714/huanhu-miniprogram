@@ -1,6 +1,6 @@
 ﻿import { useState } from 'react'
-import Taro, { useLoad } from '@tarojs/taro'
-import { Image, Input, ScrollView, Text, View } from '@tarojs/components'
+import Taro, { useLoad, useShareAppMessage } from '@tarojs/taro'
+import { Button, Image, Input, ScrollView, Text, View } from '@tarojs/components'
 import {
   CURRENT_USER,
   MOCK_POSTS,
@@ -201,6 +201,12 @@ export default function PostDetail() {
   const body = (post.content || post.excerpt || '').split('\n').filter(Boolean)
   const images = post.images?.length ? post.images : isImageCover(post.cover) ? [post.cover!] : []
   const commentTotal = comments.reduce((total, comment) => total + 1 + (comment.replies?.length || 0), 0)
+
+  useShareAppMessage(() => ({
+    title: post.title || '换乎校园帖子',
+    path: `/pages/post-detail/index?postId=${encodeURIComponent(postId || '')}`,
+    imageUrl: images[0],
+  }))
 
   const handleBack = () => Taro.navigateBack()
   const goUser = (userId?: string, name?: string) => {
@@ -468,10 +474,10 @@ export default function PostDetail() {
                 <Text className={bookmarked ? 'action-icon active-blue' : 'action-icon'}>☆</Text>
                 <Text className={bookmarked ? 'action-text active-blue' : 'action-text'}>{favoriteCount}</Text>
               </View>
-              <View className='action'>
+              <Button className='action action-share' openType='share'>
                 <Text className='action-icon'>↗</Text>
-                <Text className='action-text'>{commentTotal}</Text>
-              </View>
+                <Text className='action-text'>分享</Text>
+              </Button>
             </View>
 
             {isOwner && (
