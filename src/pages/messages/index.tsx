@@ -3,7 +3,7 @@ import Taro, { useDidShow } from '@tarojs/taro'
 import { Image, Text, View } from '@tarojs/components'
 import { CONVERSATIONS, type NotificationType } from '../../utils/mock'
 import { getChatConversations, getNotificationUnreadCounts } from '../../utils/api'
-import { getUnreadCounts as localGetUnreadCounts, updateMessageTabUnread } from '../../utils/notifications'
+import { getUnreadCounts as localGetUnreadCounts, markAllNotificationsRead, updateMessageTabUnread } from '../../utils/notifications'
 import './index.css'
 
 const QUICK_ENTRIES: Array<{
@@ -115,6 +115,20 @@ export default function Messages() {
     })
   }
 
+  const handleMarkAllRead = () => {
+    if (totalUnread <= 0) {
+      Taro.showToast({ title: '暂无未读消息', icon: 'none' })
+      return
+    }
+    markAllNotificationsRead()
+    setUnreadCounts({ likes: 0, follows: 0, comments: 0, system: 0 })
+    setConversations((current) =>
+      current.map((item) => ({ ...item, unread: 0, unreadCount: 0 }))
+    )
+    updateMessageTabUnread(0)
+    Taro.showToast({ title: '已全部标为已读', icon: 'success' })
+  }
+
   const renderBadge = (count: number, className = 'message-badge') => {
     const label = formatBadge(count)
     if (!label) return null
@@ -127,6 +141,21 @@ export default function Messages() {
 
   return (
     <View className='messages-page'>
+      <View className='message-overview'>
+        <View className='message-overview-text'>
+          <Text className='message-overview-title'>消息中心</Text>
+          <Text className='message-overview-desc'>
+            {totalUnread > 0 ? `还有 ${formatBadge(totalUnread)} 条未读消息` : '所有消息都已读'}
+          </Text>
+        </View>
+        <View
+          className={`mark-read-btn ${totalUnread <= 0 ? 'mark-read-btn--disabled' : ''}`}
+          onClick={handleMarkAllRead}
+        >
+          <Text>全部已读</Text>
+        </View>
+      </View>
+
       <View className='quick-entry-row'>
         {QUICK_ENTRIES.map((entry) => {
           const unread = unreadCounts[entry.key] || 0

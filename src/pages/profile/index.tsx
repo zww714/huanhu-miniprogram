@@ -19,13 +19,50 @@ const QUICK_ENTRIES = [
   { key: 'favorites', icon: '☆', label: '我的收藏', desc: '收藏的帖子和技能', url: '/pages/my-favorites/index', tone: 'blue' },
   { key: 'history', icon: '◷', label: '浏览记录', desc: '最近看过的内容', url: '/pages/browse-history/index', tone: 'green' },
   { key: 'activities', icon: '□', label: '我的活动', desc: '报名和参与记录', url: '/pages/my-activities/index', tone: 'blue' },
-  { key: 'partners', icon: '♡', label: '我的搭子', desc: '兴趣搭子记录', url: '/pages/my-partners/index', tone: 'orange' },
   { key: 'settings', icon: '◇', label: '设置', desc: '账号与隐私', url: '/pages/settings/index', tone: 'purple' },
 ]
 
+const CHEN_PROFILE = {
+  ...MY_PROFILE,
+  user_id: MY_PROFILE.user_id || '10086',
+  name: '陈同学',
+  avatar: '',
+  verified: true,
+  school: '浙江大学',
+  college: '计算机学院',
+  major: '',
+  grade: '大三',
+  campus: '紫金港校区',
+  bio: '擅长 Python 和数据分析，想找摄影搭子',
+  intro: '擅长 Python 和数据分析，想找摄影搭子',
+  wantToLearn: ['摄影', '产品设计', '羽毛球'],
+  learnWants: ['摄影', '产品设计', '羽毛球'],
+  interests: ['科研', 'AI', '徒步', '摄影'],
+  skillCount: 5,
+  postCount: 12,
+  followerCount: 86,
+  followingCount: 42,
+  rating: 4.8,
+  stats: {
+    ...(MY_PROFILE.stats || {}),
+    skills: 5,
+    posts: 12,
+    followers: 86,
+    following: 42,
+  },
+}
+
+function isDefaultWechatProfile(user: any) {
+  if (!user) return true
+  const name = user.name || user.nickname || ''
+  const noProfileInfo = !user.college && !user.major && !user.grade && !user.campus && !user.intro && !user.bio
+  const noStats = !user.skillCount && !user.postCount && !user.followerCount && !user.followingCount && !user.stats
+  return (name === '微信用户' || name === '用户') && noProfileInfo && noStats
+}
+
 export default function Profile() {
-  const [avatarUrl, setAvatarUrl] = useState(MY_PROFILE.avatar || '')
-  const [profileData, setProfileData] = useState<any>(MY_PROFILE)
+  const [avatarUrl, setAvatarUrl] = useState(CHEN_PROFILE.avatar || '')
+  const [profileData, setProfileData] = useState<any>(CHEN_PROFILE)
   const [mySkills, setMySkills] = useState<any[]>(MY_SKILLS)
   const [myPosts, setMyPosts] = useState<any[]>(MY_POSTS)
 
@@ -102,52 +139,59 @@ export default function Profile() {
     ? (MY_REVIEWS.reduce((sum, review) => sum + review.rating, 0) / MY_REVIEWS.length).toFixed(1)
     : '4.8'
   const profileRating = String(p.rating || reviewAverage || '4.8')
-  const userId = p.user_id || p.id || p._id || MY_PROFILE.user_id
+  const userId = p.user_id || p.id || p._id || CHEN_PROFILE.user_id
   const stats = p.stats || {}
   const statValues = {
-    skills: p.skillCount ?? stats.skills ?? mySkills.length,
-    posts: p.postCount ?? stats.posts ?? myPosts.length,
-    followers: p.followerCount ?? stats.followers ?? 0,
-    following: p.followingCount ?? stats.following ?? 0,
+    skills: p.skillCount ?? stats.skills ?? mySkills.length ?? CHEN_PROFILE.stats.skills,
+    posts: p.postCount ?? stats.posts ?? myPosts.length ?? CHEN_PROFILE.stats.posts,
+    followers: p.followerCount ?? stats.followers ?? CHEN_PROFILE.stats.followers,
+    following: p.followingCount ?? stats.following ?? CHEN_PROFILE.stats.following,
   }
   const metaItems = [p.school || '浙江大学', p.college, p.major, p.grade, p.campus].filter(Boolean)
-  const wantTags = (p.wantToLearn || p.learnWants || MY_LEARN_WANTS.map((item) => item.name)).slice(0, 3)
-  const interestTags = (p.interests || MY_INTERESTS).slice(0, 3)
-  const avatarText = (p.name || MY_PROFILE.name || '我').charAt(0)
+  const wantTags = (p.wantToLearn || p.learnWants || CHEN_PROFILE.wantToLearn || MY_LEARN_WANTS.map((item) => item.name)).slice(0, 3)
+  const interestTags = (p.interests || CHEN_PROFILE.interests || MY_INTERESTS).slice(0, 3)
+  const avatarText = (p.name || CHEN_PROFILE.name || '我').charAt(0)
 
   useDidShow(() => {
     const cachedAvatar = Taro.getStorageSync(AVATAR_STORAGE_KEY)
     const profileDraft = Taro.getStorageSync('profileDraft')
     if (profileDraft && typeof profileDraft === 'object') {
       setProfileData({
-        ...MY_PROFILE,
+        ...CHEN_PROFILE,
         ...profileDraft,
-        name: profileDraft.nickname || profileDraft.name || MY_PROFILE.name,
-        bio: profileDraft.intro || profileDraft.bio || MY_PROFILE.bio,
+        name: profileDraft.nickname || profileDraft.name || CHEN_PROFILE.name,
+        bio: profileDraft.intro || profileDraft.bio || CHEN_PROFILE.bio,
       })
     } else {
-      setProfileData(MY_PROFILE)
+      setProfileData(CHEN_PROFILE)
     }
-    setAvatarUrl(cachedAvatar || MY_PROFILE.avatar || '')
+    setAvatarUrl(cachedAvatar || CHEN_PROFILE.avatar || '')
 
     getCurrentUser()
       .then((user) => {
-        if (!user) return
+        if (!user || isDefaultWechatProfile(user)) {
+          setProfileData(CHEN_PROFILE)
+          setAvatarUrl(cachedAvatar || CHEN_PROFILE.avatar || '')
+          return
+        }
         const merged = {
-          ...MY_PROFILE,
+          ...CHEN_PROFILE,
           ...user,
-          user_id: user.user_id || user.id || user._id || MY_PROFILE.user_id,
-          name: user.name || user.nickname || MY_PROFILE.name,
-          bio: user.intro || user.bio || MY_PROFILE.bio,
+          user_id: user.user_id || user.id || user._id || CHEN_PROFILE.user_id,
+          name: user.name || user.nickname || CHEN_PROFILE.name,
+          bio: user.intro || user.bio || CHEN_PROFILE.bio,
+          wantToLearn: user.wantToLearn?.length ? user.wantToLearn : CHEN_PROFILE.wantToLearn,
+          learnWants: user.learnWants?.length ? user.learnWants : CHEN_PROFILE.learnWants,
+          interests: user.interests?.length ? user.interests : CHEN_PROFILE.interests,
           stats: user.stats || {
-            skills: user.skillCount ?? MY_PROFILE.stats.skills,
-            posts: user.postCount ?? MY_PROFILE.stats.posts,
-            followers: user.followerCount ?? MY_PROFILE.stats.followers,
-            following: user.followingCount ?? MY_PROFILE.stats.following,
+            skills: user.skillCount ?? CHEN_PROFILE.stats.skills,
+            posts: user.postCount ?? CHEN_PROFILE.stats.posts,
+            followers: user.followerCount ?? CHEN_PROFILE.stats.followers,
+            following: user.followingCount ?? CHEN_PROFILE.stats.following,
           },
         }
         setProfileData(merged)
-        setAvatarUrl(cachedAvatar || user.avatar || MY_PROFILE.avatar || '')
+        setAvatarUrl(cachedAvatar || user.avatar || CHEN_PROFILE.avatar || '')
       })
       .catch((e) => console.warn('[Profile] getCurrentUser failed, fallback to mock', e))
 
@@ -182,7 +226,7 @@ export default function Profile() {
 
             <View className='profile-info'>
               <View className='name-row'>
-                <Text className='profile-name'>{p.name || MY_PROFILE.name}</Text>
+                <Text className='profile-name'>{p.name || CHEN_PROFILE.name}</Text>
                 {p.verified !== false && <View className='verify-dot'><Text>✓</Text></View>}
               </View>
               <Text className='profile-meta' numberOfLines={2}>{metaItems.join(' · ')}</Text>

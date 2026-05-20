@@ -329,7 +329,7 @@ export default function Discover() {
   const [searchQuery, setSearchQuery] = useState('')
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
-  const [topicPopup, setTopicPopup] = useState<(typeof HOT_TOPICS)[number] | null>(null)
+  const [topicPopupOpen, setTopicPopupOpen] = useState(false)
   const [likedItems, setLikedItems] = useState<Record<string, boolean>>({})
   const [favoritedItems, setFavoritedItems] = useState<Record<string, boolean>>({})
 
@@ -405,9 +405,8 @@ export default function Discover() {
     openUnifiedUserProfile(item.authorId, item.authorName)
   }
 
-  const handleTopicClick = (topic: string) => {
-    const found = HOT_TOPICS.find((item) => item.title === topic)
-    if (found) setTopicPopup(found)
+  const handleTopicClick = () => {
+    setTopicPopupOpen(true)
   }
 
   const openSearch = () => {
@@ -538,11 +537,11 @@ export default function Discover() {
         <View className='hot-topic-section'>
           <View className='section-header'>
             <Text className='section-title'>🔥 本周校园热门话题</Text>
-            <Text className='section-more' onClick={() => setActiveCat(0)}>查看更多 &gt;</Text>
+            <Text className='section-more' onClick={() => setTopicPopupOpen(true)}>查看更多 &gt;</Text>
           </View>
           <View className='topic-grid'>
             {HOT_TOPICS.map((topic) => (
-              <View className={`topic-card topic-card--${topic.theme}`} key={topic.title} onClick={() => handleTopicClick(topic.title)}>
+              <View className={`topic-card topic-card--${topic.theme}`} key={topic.title} onClick={handleTopicClick}>
                 <Text className='topic-rank'>#{topic.rank}</Text>
                 <Text className='topic-title' numberOfLines={2}>{topic.title}</Text>
                 <Text className='topic-count'>{topic.count}</Text>
@@ -566,20 +565,27 @@ export default function Discover() {
         className='discover-floating-post'
         onClick={() => Taro.navigateTo({ url: '/pages/publish/index?mode=post' })}
       />
-      {topicPopup ? (
-        <View className='topic-modal-mask' onClick={() => setTopicPopup(null)}>
+      {topicPopupOpen ? (
+        <View className='topic-modal-mask' onClick={() => setTopicPopupOpen(false)}>
           <View className='topic-modal' onClick={(event) => event.stopPropagation()}>
             <View className='topic-modal-head'>
-              <Text className='topic-modal-title'>{topicPopup.title}</Text>
-              <Text className='topic-modal-close' onClick={() => setTopicPopup(null)}>×</Text>
+              <Text className='topic-modal-title'>本周校园热门话题</Text>
+              <Text className='topic-modal-close' onClick={() => setTopicPopupOpen(false)}>×</Text>
             </View>
-            <Text className='topic-modal-desc'>{topicPopup.desc}</Text>
-            <View className='topic-modal-meta'>
-              <Text>#{topicPopup.rank}</Text>
-              <Text>{topicPopup.count}</Text>
-            </View>
-            <View className='topic-modal-btn' onClick={() => openTopicSearch(topicPopup.title)}>
-              <Text>查看相关帖子</Text>
+            <Text className='topic-modal-desc'>根据当前校园讨论热度，为你整理本周值得关注的话题。</Text>
+            <View className='topic-modal-list'>
+              {HOT_TOPICS.map((topic) => (
+                <View className='topic-modal-item' key={topic.title} onClick={() => openTopicSearch(topic.title)}>
+                  <View className={`topic-modal-rank topic-modal-rank--${topic.theme}`}>
+                    <Text>#{topic.rank}</Text>
+                  </View>
+                  <View className='topic-modal-item-main'>
+                    <Text className='topic-modal-item-title'>{topic.title}</Text>
+                    <Text className='topic-modal-item-desc'>{topic.desc}</Text>
+                    <Text className='topic-modal-item-count'>{topic.count}</Text>
+                  </View>
+                </View>
+              ))}
             </View>
           </View>
         </View>
