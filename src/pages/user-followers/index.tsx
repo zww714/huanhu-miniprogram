@@ -1,35 +1,40 @@
-import { View, Text, ScrollView } from '@tarojs/components'
+import { View, Text, ScrollView, Image } from '@tarojs/components'
 import Taro, { useDidShow, useLoad } from '@tarojs/taro'
-import { useMemo, useState, useCallback } from 'react'
-import { getFollowers, followUser as apiFollowUser } from '../../utils/api'
-import {
-  getPublicUser,
-  normalizePublicUserId,
-  openUnifiedUserProfile,
-} from '../../utils/publicProfiles'
+import { useCallback, useMemo, useState } from 'react'
+import { getFollowers } from '../../utils/api'
+import { getPublicUser, normalizePublicUserId, openUnifiedUserProfile } from '../../utils/publicProfiles'
 import './index.css'
 
-function firstChar(name?: string) {
-  return name?.charAt(0) || '同'
+const MOCK_FOLLOWERS = [
+  { id: 'fan-1', name: '小鹿同学', school: '浙江大学', college: '管理学院', grade: '大二', intro: '热爱生活，喜欢记录美好瞬间 ✨' },
+  { id: 'fan-2', name: '星河入梦', school: '浙江大学', college: '计算机学院', grade: '大三', intro: '代码改变世界，Coffee first ☕' },
+  { id: 'fan-3', name: '柠檬气泡水', school: '浙江大学', college: '外国语学院', grade: '大一', intro: 'ENFJ | 喜欢语言与旅行 🌍' },
+  { id: 'fan-4', name: '山川与海', school: '浙江大学', college: '机械工程学院', grade: '大二', intro: '运动 / 摄影 / 探索未知' },
+  { id: 'fan-5', name: '晚风轻拂', school: '浙江大学', college: '传媒与国际文化学院', grade: '大三', intro: '传播美好，记录成长 📷' },
+  { id: 'fan-6', name: '追光者', school: '浙江大学', college: '材料科学与工程学院', grade: '大四', intro: '保持热爱，奔赴山海 🚀' },
+]
+
+function avatarColor(index: number) {
+  return ['#DBEAFE', '#E0F2FE', '#FCE7F3', '#FDE68A', '#EDE9FE', '#DCFCE7'][index % 6]
 }
 
 export default function UserFollowers() {
   const [routeUserId, setRouteUserId] = useState('')
   const [followers, setFollowers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [tick, setTick] = useState(0)
 
   useLoad((options) => {
     setRouteUserId(normalizePublicUserId(String(options?.userId || options?.id || '')))
   })
 
+  const user = useMemo(() => getPublicUser(routeUserId), [routeUserId])
+  const list = followers.length ? followers : MOCK_FOLLOWERS
+
   const loadFollowers = useCallback(() => {
     if (!routeUserId) return
     setLoading(true)
     getFollowers({ userId: routeUserId })
-      .then((res) => {
-        setFollowers(res.data || [])
-      })
+      .then((res) => setFollowers(res.data || []))
       .catch((e) => {
         console.warn('[UserFollowers] getFollowers failed', e)
         setFollowers([])
@@ -39,105 +44,49 @@ export default function UserFollowers() {
 
   useDidShow(() => {
     loadFollowers()
-    setTick((v) => v + 1)
   })
 
-  const user = useMemo(() => getPublicUser(routeUserId), [routeUserId])
+  const goBack = () => {
+    const pages = getCurrentPages()
+    if (pages.length > 1) Taro.navigateBack()
+    else Taro.navigateTo({ url: `/pages/profile/view?userId=${encodeURIComponent(user.id)}` })
+  }
 
   const openUser = (target: any) => {
     openUnifiedUserProfile(target.userId || target.id, target.name)
   }
 
-  const followUser = async (target: any) => {
-    const targetId = target.userId || target.id
-    try {
-      await apiFollowUser({ targetUserId: targetId })
-      setFollowers((prev) => prev.map((u) =>
-        (u.userId === targetId) ? { ...u, isFollowing: true, isMutual: true } : u
-      ))
-      Taro.showToast({ title: '已关注', icon: 'success' })
-    } catch (e) {
-      console.warn('[UserFollowers] follow failed', e)
-      Taro.showToast({ title: '关注失败', icon: 'none' })
-    }
-  }
-
-  const goChat = (target: any) => {
-    const targetId = target.userId || target.id
-    Taro.navigateTo({
-      url: `/pages/chat/index?userId=${encodeURIComponent(targetId)}&id=${encodeURIComponent(targetId)}&name=${encodeURIComponent(target.name || '同学')}&category=${encodeURIComponent('个人主页')}`
-    })
-  }
-
-  const showMore = (target: any) => {
-    Taro.showActionSheet({
-      itemList: ['查看主页', '举报用户', '拉黑用户'],
-      success: ({ tapIndex }) => {
-        if (tapIndex === 0) openUser(target)
-        if (tapIndex === 1) Taro.showToast({ title: '举报已提交', icon: 'success' })
-        if (tapIndex === 2) {
-          Taro.showModal({
-            title: '拉黑用户',
-            content: '拉黑后对方将无法与你互动，确定拉黑吗？',
-            confirmText: '拉黑',
-            confirmColor: '#EF4444',
-            success: ({ confirm }) => {
-              if (!confirm) return
-              Taro.showToast({ title: '已拉黑（仅本地），完整功能需云函数', icon: 'success' })
-            },
-          })
-        }
-      },
-    })
-  }
-
   return (
     <ScrollView scrollY className='relation-page' showScrollbar={false} enhanced bounces={false}>
-      <View className='relation-header'>
-        <Text className='back' onClick={() => Taro.navigateBack()}>←</Text>
-        <View>
+      <View className='page-shell'>
+        <View className='top-nav'>
+          <Text className='back-icon' onClick={goBack}>‹</Text>
           <Text className='page-title'>TA的粉丝</Text>
-          <Text className='page-subtitle'>{user.name} 的粉丝，共 {followers.length} 人</Text>
+          <View className='nav-spacer' />
+        </View>
+
+        <View className='count-line'>
+          <Text>共 </Text>
+          <Text className='count-number'>{user.followerCount || list.length}</Text>
+          <Text> 位粉丝</Text>
+        </View>
+
+        <View className='user-list'>
+          {loading && !list.length && <Text className='empty-text'>加载中...</Text>}
+          {list.map((item, index) => (
+            <View className='user-card' key={item.userId || item.id} onClick={() => openUser(item)}>
+              <View className='avatar' style={{ backgroundColor: avatarColor(index) }}>
+                {item.avatar ? <Image className='avatar-img' src={item.avatar} mode='aspectFill' /> : <Text>{(item.name || '同').charAt(0)}</Text>}
+              </View>
+              <View className='user-main'>
+                <Text className='user-name'>{item.name || '同学'}</Text>
+                <Text className='user-meta'>{[item.school || '浙江大学', item.college, item.grade].filter(Boolean).join(' · ')}</Text>
+                <Text className='user-intro' numberOfLines={1}>{item.intro || 'TA 还没有填写简介'}</Text>
+              </View>
+            </View>
+          ))}
         </View>
       </View>
-
-      <View className='user-list'>
-        {loading && (
-          <View className='loading-state'>
-            <Text>加载中...</Text>
-          </View>
-        )}
-        {!loading && !followers.length && (
-          <View className='empty-state'>
-            <Text>TA还没有粉丝</Text>
-          </View>
-        )}
-        {followers.map((item) => (
-          <View className='user-card' key={item.userId || item.id}>
-            <View className='avatar' onClick={() => openUser(item)}>
-              <Text>{firstChar(item.name)}</Text>
-            </View>
-            <View className='user-main' onClick={() => openUser(item)}>
-              <View className='name-row'>
-                <Text className='user-name'>{item.name}</Text>
-                {item.isSpecial && <Text className='special-tag'>特别关注</Text>}
-              </View>
-              <Text className='user-meta'>{[item.college, item.grade, item.campus].filter(Boolean).join(' · ')}</Text>
-              <Text className='user-intro' numberOfLines={1}>{item.intro || 'TA还没有完善更多资料'}</Text>
-            </View>
-            <View className='side-actions'>
-              <View
-                className={item.isFollowing ? 'follow-btn following' : 'follow-btn'}
-                onClick={() => item.isFollowing ? goChat(item) : followUser(item)}
-              >
-                <Text>{item.isFollowing ? '发消息' : '关注'}</Text>
-              </View>
-              <Text className='more' onClick={() => showMore(item)}>...</Text>
-            </View>
-          </View>
-        ))}
-      </View>
-      <View className='safe-bottom' />
     </ScrollView>
   )
 }

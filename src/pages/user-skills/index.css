@@ -1,135 +1,167 @@
 /* postcss-pxtransform disable */
 
 page {
-  background: #F8FAFC;
+  background: #F7FAFF;
 }
 
-.viewer-page {
-  min-height: 100vh;
-  background: #F8FAFC;
+.skill-page {
+  height: 100vh;
+  background:
+    radial-gradient(circle at 14% 0%, rgba(37, 99, 235, 0.1), transparent 230px),
+    linear-gradient(180deg, #F7FAFF 0%, #FFFFFF 44%, #F7FAFF 100%);
   color: #0F172A;
 }
 
-.viewer-header {
-  padding: 18px 18px 12px;
+.page-shell {
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding: 88rpx 46rpx calc(40rpx + env(safe-area-inset-bottom));
+}
+
+.top-nav {
+  height: 82rpx;
   display: flex;
   align-items: center;
-  gap: 14px;
-  background: linear-gradient(180deg, #EAF2FF 0%, #F8FAFC 100%);
+  justify-content: space-between;
+  margin-bottom: 48rpx;
 }
 
-.back {
-  width: 34px;
-  height: 34px;
-  line-height: 32px;
-  text-align: center;
-  color: #0F172A;
-  font-size: 34px;
+.back-icon,
+.nav-spacer {
+  width: 72rpx;
 }
 
-.viewer-title {
-  display: block;
-  color: #0F172A;
-  font-size: 22px;
-  line-height: 28px;
+.back-icon {
+  color: #334155;
+  font-size: 72rpx;
+  line-height: 72rpx;
+  font-weight: 300;
+}
+
+.page-title {
+  color: #111827;
+  font-size: 42rpx;
+  line-height: 54rpx;
   font-weight: 900;
 }
 
-.viewer-subtitle {
-  display: block;
-  margin-top: 4px;
-  color: #64748B;
-  font-size: 13px;
+.count-line {
+  display: flex;
+  align-items: center;
+  margin-bottom: 44rpx;
+  color: #475569;
+  font-size: 29rpx;
+  line-height: 40rpx;
 }
 
-.list-card {
-  margin: 0 16px;
-  padding: 4px 14px;
-  border-radius: 18px;
+.dot {
+  width: 18rpx;
+  height: 18rpx;
+  border-radius: 50%;
+  background: #2563EB;
+  box-shadow: 0 0 0 12rpx rgba(37, 99, 235, 0.1);
+  margin-right: 24rpx;
+}
+
+.count-number {
+  margin: 0 8rpx;
+  color: #2563EB;
+  font-size: 38rpx;
+  font-weight: 900;
+}
+
+.skill-list {
+  display: flex;
+  flex-direction: column;
+  gap: 36rpx;
+}
+
+.skill-card {
+  min-height: 210rpx;
+  padding: 36rpx;
+  box-sizing: border-box;
+  border-radius: 32rpx;
   background: #FFFFFF;
-  border: 1px solid #E2E8F0;
-  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+  border: 1rpx solid rgba(226, 232, 240, 0.86);
+  box-shadow: 0 12rpx 34rpx rgba(27, 86, 180, 0.06);
+  display: flex;
+  align-items: center;
+  gap: 34rpx;
 }
 
-.skill-item {
-  padding: 16px 0;
-  border-bottom: 1px solid #EEF2F7;
+.skill-icon {
+  width: 104rpx;
+  height: 104rpx;
+  border-radius: 28rpx;
+  background: linear-gradient(180deg, #EEF5FF 0%, #E6F0FF 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-.skill-item:last-child {
-  border-bottom: 0;
+.skill-icon text {
+  color: #2563EB;
+  font-size: 48rpx;
+  line-height: 1;
+  font-weight: 900;
+}
+
+.skill-main {
+  flex: 1;
+  min-width: 0;
 }
 
 .skill-head {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 24rpx;
 }
 
-.skill-title {
-  flex: 1;
-  color: #0F172A;
-  font-size: 17px;
-  line-height: 24px;
+.skill-name {
+  color: #111827;
+  font-size: 38rpx;
+  line-height: 48rpx;
   font-weight: 900;
 }
 
 .level-pill {
-  padding: 3px 9px;
-  border-radius: 999px;
-  background: #EFF6FF;
-  color: #2563EB;
-  font-size: 12px;
-  font-weight: 800;
+  padding: 8rpx 18rpx;
+  border-radius: 14rpx;
+  background: #2563EB;
+  color: #FFFFFF;
+  font-size: 27rpx;
+  line-height: 32rpx;
+  font-weight: 900;
 }
 
 .skill-intro {
   display: block;
-  margin-top: 8px;
-  color: #64748B;
-  font-size: 13px;
-  line-height: 20px;
-}
-
-.skill-meta {
-  display: flex;
-  gap: 12px;
-  margin-top: 8px;
-}
-
-.skill-meta text {
-  color: #94A3B8;
-  font-size: 12px;
+  margin-top: 22rpx;
+  color: #475569;
+  font-size: 26rpx;
+  line-height: 36rpx;
 }
 
 .tag-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 10px;
+  gap: 16rpx;
+  margin-top: 24rpx;
 }
 
 .tag {
-  padding: 4px 10px;
-  border-radius: 999px;
+  padding: 8rpx 20rpx;
+  border-radius: 16rpx;
   background: #F1F5F9;
   color: #475569;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 25rpx;
+  line-height: 32rpx;
 }
 
-.empty-state {
-  min-height: 160px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.empty-state text {
-  color: #94A3B8;
-  font-size: 14px;
-}
-
-.safe-bottom {
-  height: calc(28px + env(safe-area-inset-bottom));
+.arrow {
+  color: #A8B2C3;
+  font-size: 56rpx;
+  line-height: 1;
+  font-weight: 300;
 }
