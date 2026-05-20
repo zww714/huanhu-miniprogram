@@ -10,11 +10,12 @@ const QUICK_ENTRIES: Array<{
   title: string
   key: NotificationType
   icon: string
-  tone: 'like' | 'follow' | 'comment'
+  tone: 'like' | 'follow' | 'comment' | 'system'
 }> = [
   { title: '赞和收藏', key: 'likes', icon: '♥', tone: 'like' },
   { title: '新增关注', key: 'follows', icon: '●', tone: 'follow' },
   { title: '评论和@', key: 'comments', icon: '••', tone: 'comment' },
+  { title: '系统通知', key: 'system', icon: '铃', tone: 'system' },
 ]
 
 type Conversation = {
@@ -94,7 +95,14 @@ export default function Messages() {
   const totalUnread = notificationUnreadTotal + chatUnreadTotal
 
   const navigateNotice = (type: NotificationType) => {
-    Taro.navigateTo({ url: `/pages/notification-list/index?type=${type}` })
+    const directPages: Record<string, string> = {
+      likes: '/pages/message-likes/index',
+      follows: '/pages/message-follows/index',
+      comments: '/pages/message-comments/index',
+      system: '/pages/message-system/index',
+    }
+    const url = directPages[type] || `/pages/notification-list/index?type=${type}`
+    Taro.navigateTo({ url })
   }
 
   const goChat = (conv: Conversation) => {
@@ -135,20 +143,6 @@ export default function Messages() {
       </View>
 
       <View className='message-list-card'>
-        <View className='message-row' onClick={() => navigateNotice('system')}>
-          <View className='system-avatar'>
-            <Text>铃</Text>
-          </View>
-          <View className='message-main'>
-            <Text className='message-title'>系统通知</Text>
-            <Text className='message-content' numberOfLines={1}>平台公告、活动提醒和账号消息</Text>
-          </View>
-          <View className='message-side'>
-            <Text className='message-time'>09:30</Text>
-            {renderBadge(systemUnread, 'row-badge')}
-          </View>
-        </View>
-
         {conversations.map((conv) => {
           const unread = getConversationUnread(conv)
           return (

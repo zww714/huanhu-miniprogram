@@ -72,10 +72,25 @@ page {
   letter-spacing: -3px;
 }
 
+.quick-icon--system {
+  background: linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%);
+}
+
+.quick-icon--system text {
+  color: #7C3AED;
+  font-size: 0;
+}
+
+.quick-icon--system text::before {
+  content: '🔔';
+  font-size: 38rpx;
+  line-height: 1;
+}
+
 .quick-title {
   color: #0F172A;
-  font-size: 30rpx;
-  line-height: 40rpx;
+  font-size: 24rpx;
+  line-height: 36rpx;
   font-weight: 700;
   white-space: nowrap;
 }

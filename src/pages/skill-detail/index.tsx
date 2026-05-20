@@ -4,6 +4,7 @@ import { ScrollView, Text, View } from '@tarojs/components'
 import { CURRENT_USER, SKILLS_DETAIL, type SkillDetail, type SkillProof } from '../../utils/mock'
 import { PUBLIC_SKILLS } from '../../utils/publicProfiles'
 import { getSkillDetail, getSkillProofs, getSkillProofCount } from '../../utils/api'
+import { recordBrowse } from '../../utils/history'
 import './index.css'
 
 const proofTypeText: Record<SkillProof['type'], string> = {
@@ -54,6 +55,7 @@ export default function SkillDetailPage() {
       .then((data) => {
         if (!alive || !data) return
         setRemoteSkill(data)
+        recordBrowse({ id: skillId, type: 'skill', title: data.name || '技能', subtitle: data.summary || data.intro || data.desc })
       })
       .catch((e) => console.warn('[SkillDetail] getSkillDetail failed, fallback to mock', e))
     // 加载云端证明材料

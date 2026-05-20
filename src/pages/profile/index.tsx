@@ -17,8 +17,9 @@ import {
 
 const QUICK_ENTRIES = [
   { key: 'favorites', icon: '☆', label: '我的收藏', desc: '收藏的帖子和技能', url: '/pages/my-favorites/index', tone: 'blue' },
-  { key: 'history', icon: '◷', label: '浏览记录', desc: '最近看过的内容', url: '', tone: 'green' },
+  { key: 'history', icon: '◷', label: '浏览记录', desc: '最近看过的内容', url: '/pages/browse-history/index', tone: 'green' },
   { key: 'activities', icon: '□', label: '我的活动', desc: '报名和参与记录', url: '/pages/my-activities/index', tone: 'blue' },
+  { key: 'partners', icon: '♡', label: '我的搭子', desc: '兴趣搭子记录', url: '/pages/my-partners/index', tone: 'orange' },
   { key: 'settings', icon: '◇', label: '设置', desc: '账号与隐私', url: '/pages/settings/index', tone: 'purple' },
 ]
 

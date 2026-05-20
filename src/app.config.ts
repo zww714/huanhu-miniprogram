@@ -37,6 +37,7 @@ export default defineAppConfig({
     'pages/user-posts/index',
     'pages/user-followers/index',
     'pages/user-following/index',
+    'pages/browse-history/index',
   ],
   window: {
     navigationBarTitleText: '换乎ZJU版',

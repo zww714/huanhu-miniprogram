@@ -1,8 +1,9 @@
 import { View, Text, ScrollView } from '@tarojs/components'
 import Taro, { useDidShow, useLoad } from '@tarojs/taro'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { CURRENT_USER } from '../../utils/mock'
-import { getUserDetail, getUserPosts, getUserSkills } from '../../utils/api'
+import { getUserDetail, getUserPosts, getUserSkills, followUser as apiFollowUser, unfollowUser as apiUnfollowUser, blockUser as apiBlockUser, setSpecialFollow as apiSetSpecialFollow, getFollowStatus as apiGetFollowStatus } from '../../utils/api'
+import { recordBrowse } from '../../utils/history'
 import {
   getFollowingForUser,
   getFollowersForUser,
@@ -19,6 +20,22 @@ import {
   type PublicRelation,
 } from '../../utils/publicProfiles'
 import './index.css'
+
+type FollowRelation = {
+  isFollowing: boolean
+  isFollower: boolean
+  isMutual: boolean
+  isSpecial: boolean
+  isBlocked: boolean
+}
+
+const DEFAULT_RELATION: FollowRelation = {
+  isFollowing: false,
+  isFollower: false,
+  isMutual: false,
+  isSpecial: false,
+  isBlocked: false,
+}
 
 const reportReasons = ['垃圾广告', '不友善内容', '虚假信息', '骚扰行为', '其他']
 
@@ -61,6 +78,7 @@ export default function UserDetail() {
       .then((user) => {
         if (!alive || !user) return
         setRemoteUser(user)
+        recordBrowse({ id: userId, type: 'user', title: user.name || routeUser.name || '用户', subtitle: user.college || user.school })
       })
       .catch((e) => console.warn('[UserDetail] getUserDetail failed, fallback to public mock', e))
     return () => { alive = false }

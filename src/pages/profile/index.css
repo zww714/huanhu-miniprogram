@@ -353,6 +353,11 @@ page {
   color: #7C5CFF;
 }
 
+.menu-icon--orange {
+  background: #FFF7ED;
+  color: #F97316;
+}
+
 .menu-text {
   flex: 1;
   min-width: 0;
