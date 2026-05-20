@@ -1,0 +1,137 @@
+page {
+  background: #F7FAFF;
+}
+
+.search-page {
+  min-height: 100vh;
+  padding: 18px 14px 40px;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, #FFFFFF 0%, #F7FAFF 42%, #F4F7FB 100%);
+}
+
+.search-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding-bottom: 12px;
+  background: linear-gradient(180deg, #FFFFFF 0%, rgba(247, 250, 255, 0.94) 100%);
+}
+
+.search-result-bar {
+  height: 38px;
+  min-height: 38px;
+  border-radius: 999px;
+  box-shadow: none;
+}
+
+.search-summary {
+  display: block;
+  margin-top: 12px;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.search-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.search-card {
+  display: flex;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 18px;
+  background: #FFFFFF;
+  border: 1px solid rgba(226, 232, 240, 0.88);
+  box-shadow: 0 10px 28px rgba(27, 86, 180, 0.06);
+}
+
+.search-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #1E6BFF 0%, #60A5FA 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.search-avatar text {
+  color: #FFFFFF;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.search-avatar-img {
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+}
+
+.search-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.search-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.search-title {
+  color: #111827;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.search-type {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #EAF2FF;
+  color: #1E6BFF;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.search-desc {
+  display: block;
+  margin-top: 6px;
+  color: #475569;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.search-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.search-tags text {
+  padding: 3px 8px;
+  border-radius: 8px;
+  background: #F1F5F9;
+  color: #64748B;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.search-empty {
+  padding: 40px 18px;
+  border-radius: 18px;
+  background: #FFFFFF;
+  text-align: center;
+  box-shadow: 0 10px 28px rgba(27, 86, 180, 0.06);
+}
+
+.search-empty text {
+  color: #64748B;
+  font-size: 14px;
+  font-weight: 700;
+}

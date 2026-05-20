@@ -13,15 +13,61 @@ const SKILL_FILTERS = ['全部', '热门', 'AI工具', 'Python', '数据分析',
 const PARTNER_FILTERS = ['全部', '运动', '学习', '摄影', '桌游', '音乐', '旅行']
 const ACTIVITY_FILTERS = ['全部', '热门', '讲座', '比赛', '工作坊', '志愿', '社团']
 
+const SEARCH_SUGGESTIONS = ['Python', '机器学习', '摄影搭子', '论文降重', 'AI工具', '校园活动']
+
 const TODAY_RECOMMENDATIONS = [
-  { id: 'hot-skill', label: '本周热门技能', title: 'Python入门', desc: '1.2k 人想学', badge: 'TOP', tone: 'hot' },
-  { id: 'new-help', label: '最新求助', title: '论文降重技巧求助', desc: '18分钟前 · 计算机学院', badge: 'NEW', tone: 'new' },
-  { id: 'match', label: '高匹配同学', title: '326 位同学', desc: '与你技能高度匹配', badge: '', tone: 'match' },
+  {
+    id: 'hot-skill',
+    label: '本周热门技能',
+    title: 'Python入门',
+    desc: '1.2k 人想学',
+    badge: 'TOP',
+    tone: 'hot',
+    category: 'Python',
+    detail: '从基础语法到数据分析入门，适合想快速完成课程作业和科研数据处理的同学。',
+    user: { id: 'u1', name: '科研小达人', avatar: '', college: '计算机学院', grade: '研一' },
+  },
+  {
+    id: 'new-help',
+    label: '最新求助',
+    title: '论文降重技巧求助',
+    desc: '18分钟前 · 计算机学院',
+    badge: 'NEW',
+    tone: 'new',
+    category: '考研',
+    detail: '同学正在寻找论文表达优化、引用整理和重复率检查经验，适合有写作经验的同学响应。',
+    user: { id: 'u_math', name: '上岸锦鲤', avatar: '', college: '数学学院', grade: '研一' },
+  },
+  {
+    id: 'match',
+    label: '高匹配同学',
+    title: '326 位同学',
+    desc: '与你技能高度匹配',
+    badge: '',
+    tone: 'match',
+    category: '热门',
+    detail: '系统根据你会的技能、想学内容和兴趣标签推荐高匹配同学，可直接发起聊天。',
+    user: { id: 'u_photo', name: '光影捕手', avatar: '', college: '艺术学院', grade: '大二' },
+  },
 ]
 
 const HOT_TOPICS = [
-  { id: 'library-seat', badge: '热', title: '浙大图书馆自习位拼友（可固定）', stats: '126 讨论 · 89 收藏' },
-  { id: 'exam-school', badge: '新', title: '# 考研择校交流互助帖', stats: '642 讨论 · 312 收藏' },
+  {
+    id: 'library-seat',
+    badge: '热',
+    title: '浙大图书馆自习位拼友（可固定）',
+    stats: '126 讨论 · 89 收藏',
+    detail: '寻找固定自习搭子，主要集中在紫金港图书馆和西区教学楼，适合备考、论文和课程复习同学。',
+    user: { id: 'u_frontend', name: '前端小结', avatar: '', college: '计算机学院', grade: '大三' },
+  },
+  {
+    id: 'exam-school',
+    badge: '新',
+    title: '# 考研择校交流互助帖',
+    stats: '642 讨论 · 312 收藏',
+    detail: '围绕择校、复习节奏、资料整理和面试经验交流，适合升学方向同学互相补信息差。',
+    user: { id: 'u_math', name: '上岸锦鲤', avatar: '', college: '数学学院', grade: '研一' },
+  },
 ]
 
 type SkillItem = {
@@ -252,6 +298,11 @@ export default function Index() {
   const [activeTab, setActiveTab] = useState(0)
   const [activeFilter, setActiveFilter] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
+  const [searchDraft, setSearchDraft] = useState('')
+  const [searchPanelOpen, setSearchPanelOpen] = useState(false)
+  const [recentSearches, setRecentSearches] = useState<string[]>([])
+  const [filterDropdownOpen, setFilterDropdownOpen] = useState(false)
+  const [detailPopup, setDetailPopup] = useState<any>(null)
   const [expandedTags, setExpandedTags] = useState<Record<string, boolean>>({})
   const [favoritedUsers, setFavoritedUsers] = useState<Record<string, boolean>>({})
   const [skillUsers, setSkillUsers] = useState<SkillUser[]>([])
@@ -262,6 +313,8 @@ export default function Index() {
   useLoad((options) => {
     const tab = Number(options?.tab)
     if ([0, 1, 2].includes(tab)) setActiveTab(tab)
+    const stored = Taro.getStorageSync('homeRecentSearches')
+    if (Array.isArray(stored)) setRecentSearches(stored.slice(0, 6))
   })
 
   useEffect(() => {
@@ -293,6 +346,9 @@ export default function Index() {
   const keyword = lower(searchQuery)
   const filters = activeTab === 0 ? SKILL_FILTERS : activeTab === 1 ? PARTNER_FILTERS : ACTIVITY_FILTERS
   const activeFilterLabel = filters[activeFilter] || '全部'
+  const visibleRecommendations = TODAY_RECOMMENDATIONS.filter((item) => (
+    activeFilterLabel === '全部' || activeFilterLabel === '热门' || item.category === activeFilterLabel
+  ))
   const heroCopy = [
     {
       title: '和全校同学交换技能',
@@ -349,12 +405,43 @@ export default function Index() {
     })
   }, [activeFilterLabel, activities, keyword])
 
-  const handleStartChat = (user: SkillUser) => {
+  const openChat = (user: { id?: string | number; _id?: string; name?: string }, category = '首页推荐') => {
     const id = getRecordId(user)
-    const category = activeTab === 1 ? '兴趣搭子' : '技能交换'
+    if (!id) {
+      Taro.showToast({ title: '用户信息不存在', icon: 'none' })
+      return
+    }
     Taro.navigateTo({
-      url: `/pages/contact-request/index?userId=${encodeURIComponent(id)}&name=${encodeURIComponent(getUserName(user))}&category=${encodeURIComponent(category)}&source=home`,
+      url: `/pages/chat/index?userId=${encodeURIComponent(id)}&id=${encodeURIComponent(id)}&name=${encodeURIComponent(user.name || '同学')}&category=${encodeURIComponent(category)}`,
     })
+  }
+
+  const handleStartChat = (user: SkillUser) => {
+    openChat(user, activeTab === 1 ? '兴趣搭子' : '技能交换')
+  }
+
+  const openSearchPanel = () => {
+    setSearchDraft(searchQuery)
+    setSearchPanelOpen(true)
+  }
+
+  const submitSearch = (value?: string) => {
+    const text = (value ?? searchDraft).trim()
+    if (!text) {
+      Taro.showToast({ title: '请输入搜索词', icon: 'none' })
+      return
+    }
+    const nextRecent = [text, ...recentSearches.filter((item) => item !== text)].slice(0, 6)
+    setRecentSearches(nextRecent)
+    Taro.setStorageSync('homeRecentSearches', nextRecent)
+    setSearchQuery(text)
+    setSearchPanelOpen(false)
+    Taro.navigateTo({ url: `/pages/search-results/index?keyword=${encodeURIComponent(text)}&tab=${activeTab}` })
+  }
+
+  const selectFilter = (index: number) => {
+    setActiveFilter(index)
+    setFilterDropdownOpen(false)
   }
 
   const handlePublish = () => {
@@ -384,22 +471,13 @@ export default function Index() {
   }
 
   const handleRecommendationClick = (id: string) => {
-    if (id === 'new-help') {
-      Taro.switchTab({ url: '/pages/discover/index' })
-      return
-    }
-    if (id === 'match') {
-      Taro.pageScrollTo?.({ scrollTop: 560, duration: 250 })
-      return
-    }
-    setSearchQuery('Python')
-    setActiveTab(0)
-    setActiveFilter(SKILL_FILTERS.indexOf('Python'))
+    const item = TODAY_RECOMMENDATIONS.find((rec) => rec.id === id)
+    if (item) setDetailPopup({ type: 'recommendation', ...item })
   }
 
-  const handleTopicClick = (topic: string) => {
-    Taro.setStorageSync('discoverKeyword', topic)
-    Taro.switchTab({ url: '/pages/discover/index' })
+  const handleTopicClick = (id: string) => {
+    const topic = HOT_TOPICS.find((item) => item.id === id)
+    if (topic) setDetailPopup({ type: 'topic', ...topic })
   }
 
   const toggleTagGroup = (key: string) => {
@@ -463,23 +541,38 @@ export default function Index() {
   )
 
   const renderFilters = () => (
-    <View className='home-filter-row'>
-      <ScrollView scrollX showScrollbar={false} className='home-filter-scroll'>
-        <View className='home-filter-list'>
+    <View className='home-filter-wrap'>
+      <View className='home-filter-row'>
+        <ScrollView scrollX showScrollbar={false} className='home-filter-scroll'>
+          <View className='home-filter-list'>
+            {filters.map((item, index) => (
+              <TagChip
+                key={item}
+                text={item}
+                active={activeFilter === index}
+                type={activeFilter === index ? 'primary' : item === '热门' ? 'warning' : 'default'}
+                onClick={() => selectFilter(index)}
+              />
+            ))}
+          </View>
+        </ScrollView>
+        <View className={filterDropdownOpen ? 'home-filter-more home-filter-more--open' : 'home-filter-more'} onClick={() => setFilterDropdownOpen((open) => !open)}>
+          <Text>⌄</Text>
+        </View>
+      </View>
+      {filterDropdownOpen ? (
+        <View className='home-filter-dropdown'>
           {filters.map((item, index) => (
-            <TagChip
-              key={item}
-              text={item}
-              active={activeFilter === index}
-              type={activeFilter === index ? 'primary' : item === '热门' ? 'warning' : 'default'}
-              onClick={() => setActiveFilter(index)}
-            />
+            <View
+              key={`dropdown_${item}`}
+              className={activeFilter === index ? 'home-filter-option home-filter-option--active' : 'home-filter-option'}
+              onClick={() => selectFilter(index)}
+            >
+              <Text>{item}</Text>
+            </View>
           ))}
         </View>
-      </ScrollView>
-      <View className='home-filter-more'>
-        <Text>⌄</Text>
-      </View>
+      ) : null}
     </View>
   )
 
@@ -487,10 +580,10 @@ export default function Index() {
     <View className='home-section home-recommend-section'>
       <View className='home-section-header'>
         <Text className='home-section-title'>今日推荐</Text>
-        <Text className='home-section-more' onClick={() => Taro.switchTab({ url: '/pages/discover/index' })}>查看全部 〉</Text>
+        <Text className='home-section-more' onClick={() => setDetailPopup({ type: 'recommendation-list', title: '今日推荐', detail: '根据当前分类为你筛选的推荐内容。' })}>查看全部 〉</Text>
       </View>
       <View className='home-recommend-grid'>
-        {TODAY_RECOMMENDATIONS.map((item) => (
+        {(visibleRecommendations.length ? visibleRecommendations : TODAY_RECOMMENDATIONS).map((item) => (
           <View className={`home-recommend-card home-recommend-card--${item.tone}`} key={item.id} onClick={() => handleRecommendationClick(item.id)}>
             <View className='home-recommend-head'>
               <Text className='home-recommend-label' numberOfLines={1}>{item.label}</Text>
@@ -615,11 +708,11 @@ export default function Index() {
     <View className='home-section home-topic-section'>
       <View className='home-section-header'>
         <Text className='home-section-title'>本周校园热议</Text>
-        <Text className='home-section-more' onClick={() => Taro.switchTab({ url: '/pages/discover/index' })}>更多 〉</Text>
+        <Text className='home-section-more' onClick={() => setDetailPopup({ type: 'topic-list', title: '本周校园热议', detail: '这里展示本周在校园内讨论热度较高的话题。' })}>更多 〉</Text>
       </View>
       <View className='home-topic-grid'>
         {HOT_TOPICS.map((topic) => (
-          <View className='home-topic-card' key={topic.id} onClick={() => handleTopicClick(topic.title)}>
+          <View className='home-topic-card' key={topic.id} onClick={() => handleTopicClick(topic.id)}>
             <Text className={topic.badge === '热' ? 'home-topic-badge home-topic-badge--hot' : 'home-topic-badge home-topic-badge--new'}>{topic.badge}</Text>
             <View className='home-topic-content'>
               <Text className='home-topic-title' numberOfLines={1}>{topic.title}</Text>
@@ -673,6 +766,76 @@ export default function Index() {
     </>
   )
 
+  const renderSearchPanel = () => {
+    const words = recentSearches.length ? recentSearches : SEARCH_SUGGESTIONS
+    return searchPanelOpen ? (
+      <View className='home-modal-mask' onClick={() => setSearchPanelOpen(false)}>
+        <View className='home-search-panel' onClick={(event) => event.stopPropagation()}>
+          <View className='home-search-panel-head'>
+            <Text className='home-search-panel-title'>搜索</Text>
+            <Text className='home-search-panel-close' onClick={() => setSearchPanelOpen(false)}>关闭</Text>
+          </View>
+          <SearchBar
+            className='home-search-panel-input'
+            value={searchDraft}
+            placeholder='输入技能、搭子、活动或帖子'
+            onInput={setSearchDraft}
+            onConfirm={submitSearch}
+          />
+          <View className='home-search-suggest-head'>
+            <Text>{recentSearches.length ? '最近搜索' : '推荐搜索'}</Text>
+          </View>
+          <View className='home-search-suggest-list'>
+            {words.map((word) => (
+              <View className='home-search-suggest-item' key={word} onClick={() => submitSearch(word)}>
+                <Text>{word}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      </View>
+    ) : null
+  }
+
+  const renderDetailPopup = () => {
+    if (!detailPopup) return null
+    const user = detailPopup.user
+    const list = detailPopup.type === 'recommendation-list' ? TODAY_RECOMMENDATIONS : detailPopup.type === 'topic-list' ? HOT_TOPICS : []
+    return (
+      <View className='home-modal-mask' onClick={() => setDetailPopup(null)}>
+        <View className='home-detail-panel' onClick={(event) => event.stopPropagation()}>
+          <View className='home-detail-head'>
+            <Text className='home-detail-title'>{detailPopup.title}</Text>
+            <Text className='home-detail-close' onClick={() => setDetailPopup(null)}>×</Text>
+          </View>
+          <Text className='home-detail-desc'>{detailPopup.detail}</Text>
+          {user ? (
+            <View className='home-detail-user' onClick={() => openChat(user, detailPopup.type === 'topic' ? '校园热议' : '今日推荐')}>
+              <View className='home-detail-avatar'>
+                {user.avatar ? <Image className='home-detail-avatar-img' src={user.avatar} mode='aspectFill' /> : <Text>{firstChar(user.name)}</Text>}
+              </View>
+              <View className='home-detail-user-main'>
+                <Text className='home-detail-user-name'>{user.name}</Text>
+                <Text className='home-detail-user-meta'>{user.college} · {user.grade}</Text>
+              </View>
+              <Text className='home-detail-chat'>聊天</Text>
+            </View>
+          ) : null}
+          {list.length ? (
+            <View className='home-detail-list'>
+              {list.map((item) => (
+                <View className='home-detail-list-item' key={item.id} onClick={() => setDetailPopup({ type: detailPopup.type === 'topic-list' ? 'topic' : 'recommendation', ...item })}>
+                  <Text className='home-detail-list-title'>{item.title}</Text>
+                  <Text className='home-detail-list-meta'>{'stats' in item ? item.stats : item.desc}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+        </View>
+      </View>
+    )
+  }
+
   return (
     <View className='home-page'>
       <View className='home-scroll'>
@@ -685,8 +848,8 @@ export default function Index() {
             className='home-search'
             value={searchQuery}
             placeholder='搜索技能、搭子、活动或帖子'
-            onInput={setSearchQuery}
-            onConfirm={setSearchQuery}
+            readonly
+            onClick={openSearchPanel}
           />
         </View>
 
@@ -705,6 +868,8 @@ export default function Index() {
       </View>
 
       <FloatingPostButton className='home-floating-post' onClick={handlePublish} />
+      {renderSearchPanel()}
+      {renderDetailPopup()}
     </View>
   )
 }
