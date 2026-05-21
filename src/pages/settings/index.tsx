@@ -2,21 +2,103 @@ import Taro from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
 import './index.css'
 
-const ITEMS = ['账号与安全', '消息通知', '隐私设置', '清除缓存', '关于换乎']
+const SETTINGS = [
+  {
+    key: 'account',
+    title: '账号与安全',
+    desc: '账号资料、认证与登录安全',
+    icon: '盾',
+    tone: 'blue',
+  },
+  {
+    key: 'notice',
+    title: '消息通知',
+    desc: '赞藏、关注、评论与系统提醒',
+    icon: '铃',
+    tone: 'green',
+  },
+  {
+    key: 'privacy',
+    title: '隐私设置',
+    desc: '主页可见性与互动权限',
+    icon: '锁',
+    tone: 'purple',
+  },
+  {
+    key: 'cache',
+    title: '清除缓存',
+    desc: '清理本地临时数据，不影响云端资料',
+    icon: '清',
+    tone: 'orange',
+  },
+  {
+    key: 'about',
+    title: '关于换乎',
+    desc: '版本、平台说明与反馈入口',
+    icon: '换',
+    tone: 'blue',
+  },
+]
 
 export default function Settings() {
+  const openDetail = (type: string, title: string) => {
+    Taro.navigateTo({
+      url: `/pages/settings-detail/index?type=${encodeURIComponent(type)}&title=${encodeURIComponent(title)}`,
+      fail: () => Taro.showToast({ title: '功能开发中', icon: 'none' }),
+    })
+  }
+
+  const clearCache = () => {
+    Taro.showModal({
+      title: '清除缓存',
+      content: '将清理最近搜索、临时草稿和本地浏览记录，云端资料不会受影响。',
+      confirmText: '清除',
+      confirmColor: '#2563EB',
+      success: ({ confirm }) => {
+        if (!confirm) return
+        ;['homeRecentSearches', 'pendingPost', 'pendingSkillNeed', 'pendingPartnerProfile', 'pendingActivity'].forEach((key) => {
+          try {
+            Taro.removeStorageSync(key)
+          } catch (e) {
+            console.warn('[Settings] clear cache failed for', key, e)
+          }
+        })
+        Taro.showToast({ title: '缓存已清除', icon: 'success' })
+      },
+    })
+  }
+
+  const handleItemClick = (item: typeof SETTINGS[number]) => {
+    if (item.key === 'cache') {
+      clearCache()
+      return
+    }
+    openDetail(item.key, item.title)
+  }
+
   return (
-    <View style={{ minHeight: '100vh', backgroundColor: '#F8FAFC', padding: '12px' }}>
-      <View style={{ backgroundColor: '#FFF', borderRadius: '12px', overflow: 'hidden' }}>
-        {ITEMS.map((item, index) => (
-          <View key={item} onClick={() => Taro.showToast({ title: item, icon: 'none' })} style={{ padding: '16px', display: 'flex', alignItems: 'center', borderBottom: index < ITEMS.length - 1 ? '1px solid #F1F5F9' : 'none' }}>
-            <Text style={{ flex: 1, fontSize: '15px', color: '#1E293B', fontWeight: '500' }}>{item}</Text>
-            <Text style={{ fontSize: '18px', color: '#CBD5E1' }}>›</Text>
+    <View className='settings-page'>
+      <View className='settings-card'>
+        {SETTINGS.map((item, index) => (
+          <View
+            key={item.key}
+            className={`settings-row ${index === SETTINGS.length - 1 ? 'last' : ''}`}
+            onClick={() => handleItemClick(item)}
+          >
+            <View className={`settings-icon settings-icon--${item.tone}`}>
+              <Text>{item.icon}</Text>
+            </View>
+            <View className='settings-main'>
+              <Text className='settings-title'>{item.title}</Text>
+              <Text className='settings-desc'>{item.desc}</Text>
+            </View>
+            <Text className='settings-arrow'>›</Text>
           </View>
         ))}
       </View>
-      <View onClick={() => Taro.navigateTo({ url: '/pages/login/index' })} style={{ marginTop: '12px', backgroundColor: '#FFF', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
-        <Text style={{ fontSize: '15px', color: '#2563EB', fontWeight: '600' }}>登录 / 切换账号</Text>
+
+      <View className='login-card' onClick={() => Taro.navigateTo({ url: '/pages/login/index' })}>
+        <Text>登录 / 切换账号</Text>
       </View>
     </View>
   )

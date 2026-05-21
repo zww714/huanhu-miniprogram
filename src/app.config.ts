@@ -17,6 +17,7 @@ export default defineAppConfig({
     'pages/avatar-select/index',
     'pages/edit-profile/index',
     'pages/settings/index',
+    'pages/settings-detail/index',
     'pages/edit-skills/index',
     'pages/my-skills/index',
     'pages/my-posts/index',
