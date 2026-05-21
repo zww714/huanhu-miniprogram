@@ -18,6 +18,10 @@ function avatarColor(index: number) {
   return ['#DBEAFE', '#E0F2FE', '#FCE7F3', '#FDE68A', '#EDE9FE', '#DCFCE7'][index % 6]
 }
 
+function isRenderableImage(src?: string) {
+  return !!src && !src.startsWith('linear-gradient') && !src.includes('/assets/avatar.png')
+}
+
 export default function UserFollowers() {
   const [routeUserId, setRouteUserId] = useState('')
   const [followers, setFollowers] = useState<any[]>([])
@@ -76,7 +80,7 @@ export default function UserFollowers() {
           {list.map((item, index) => (
             <View className='user-card' key={item.userId || item.id} onClick={() => openUser(item)}>
               <View className='avatar' style={{ backgroundColor: avatarColor(index) }}>
-                {item.avatar ? <Image className='avatar-img' src={item.avatar} mode='aspectFill' /> : <Text>{(item.name || '同').charAt(0)}</Text>}
+                {isRenderableImage(item.avatar) ? <Image className='avatar-img' src={item.avatar} mode='aspectFill' /> : <Text>{(item.name || '?').charAt(0)}</Text>}
               </View>
               <View className='user-main'>
                 <Text className='user-name'>{item.name || '同学'}</Text>

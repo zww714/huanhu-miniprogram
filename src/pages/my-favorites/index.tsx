@@ -45,6 +45,10 @@ function formatTime(value?: any): string {
   return ''
 }
 
+function isRenderableImage(src?: string) {
+  return !!src && !src.startsWith('linear-gradient') && !src.includes('/assets/avatar.png')
+}
+
 export default function MyFavorites() {
   const [favorites, setFavorites] = useState<FavoriteItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -131,7 +135,7 @@ export default function MyFavorites() {
           <View key={item.id || item.postId} className='fav-card' onClick={() => goPostDetail(item.postId)}>
             <View className='fav-author-row'>
               <View className='fav-avatar' onClick={(e) => { e.stopPropagation(); openUnifiedUserProfile(post.authorId, post.author?.name) }}>
-                {post.author?.avatar ? (
+                {isRenderableImage(post.author?.avatar) ? (
                   <Image src={post.author.avatar} mode='aspectFill' className='fav-avatar-img' />
                 ) : (
                   <Text className='fav-avatar-text'>{(post.author?.name || '同').charAt(0)}</Text>

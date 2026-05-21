@@ -83,7 +83,11 @@ function getAuthorId(post: Post) {
 }
 
 function isImageCover(cover?: string) {
-  return !!cover && !cover.startsWith('linear-gradient')
+  return !!cover && !cover.startsWith('linear-gradient') && !cover.includes('/assets/avatar.png')
+}
+
+function isRenderableImage(src?: string) {
+  return !!src && !src.startsWith('linear-gradient') && !src.includes('/assets/avatar.png')
 }
 
 function formatTime(value?: string) {
@@ -100,7 +104,7 @@ function formatTime(value?: string) {
 function Avatar({ name, avatar, onClick }: { name: string; avatar?: string; onClick: () => void }) {
   return (
     <View className='avatar' onClick={onClick}>
-      {avatar ? (
+      {isRenderableImage(avatar) ? (
         <Image src={avatar} mode='aspectFill' className='avatar-img' />
       ) : (
         <Text>{name.charAt(0) || '同'}</Text>
@@ -110,7 +114,7 @@ function Avatar({ name, avatar, onClick }: { name: string; avatar?: string; onCl
 }
 
 export default function PostDetail() {
-  const [post, setPost] = useState<Post>(fallbackPost)
+  const [post, setPost] = useState<Post | null>(null)
   const [isMissing, setIsMissing] = useState(false)
   const [liked, setLiked] = useState(false)
   const [bookmarked, setBookmarked] = useState(false)
@@ -137,18 +141,19 @@ export default function PostDetail() {
       recordBrowse({ id: getRecordId(nextPost) || id, type: 'post', title: nextPost.title || '帖子', subtitle: nextPost.excerpt || nextPost.content?.slice(0, 30) })
     }
 
-    if (pending && (pending.id === id || pending._id === id)) {
-      applyPost(pending)
-      return
-    }
+    const localFound = pending && (pending.id === id || pending._id === id)
+      ? pending
+      : MOCK_POSTS.find((item) => item.id === id)
+        || localPosts.find((item: Post) => getRecordId(item) === id)
+        || MY_POSTS.find((item) => item.id === id)
+
+    if (localFound) applyPost(localFound)
 
     try {
       const remotePost = await getPostDetail({ postId: id })
       const posts = remotePost ? [remotePost] : await getPosts({ page: 0 })
       const found = posts.find((item: Post) => getRecordId(item) === id)
-        || MOCK_POSTS.find((item) => item.id === id)
-        || localPosts.find((item: Post) => getRecordId(item) === id)
-        || MY_POSTS.find((item) => item.id === id)
+        || localFound
 
       if (found) {
         applyPost(found)
@@ -158,12 +163,8 @@ export default function PostDetail() {
         setIsMissing(true)
       }
     } catch (e) {
-      console.warn('[PostDetail] load post failed', e)
-      const found = MOCK_POSTS.find((item) => item.id === id)
-        || localPosts.find((item: Post) => getRecordId(item) === id)
-        || MY_POSTS.find((item) => item.id === id)
-      if (found) {
-        applyPost(found)
+      if (localFound) {
+        applyPost(localFound)
       } else {
         setPost(fallbackPost)
         setLikeCount(0)
@@ -177,7 +178,7 @@ export default function PostDetail() {
         .then((cloudComments) => {
           if (Array.isArray(cloudComments)) setComments(cloudComments)
         })
-        .catch((e) => console.warn('[PostDetail] getComments failed, using mock', e))
+        .catch(() => undefined)
 
       getInteractionStatus({ targetId: id })
         .then((status) => {
@@ -188,22 +189,21 @@ export default function PostDetail() {
             setFavoriteCount(status.favoriteCount)
           }
         })
-        .catch((e) => {
-          console.warn('[PostDetail] getInteractionStatus failed, using local', e)
-        })
+        .catch(() => undefined)
     }
   })
 
-  const author = getAuthor(post)
-  const authorId = getAuthorId(post)
-  const postId = getRecordId(post)
-  const isOwner = !isMissing && (!!(post as any).canManage || authorId === CURRENT_USER.id)
-  const body = (post.content || post.excerpt || '').split('\n').filter(Boolean)
-  const images = post.images?.length ? post.images : isImageCover(post.cover) ? [post.cover!] : []
+  const displayPost = post || fallbackPost
+  const author = getAuthor(displayPost)
+  const authorId = getAuthorId(displayPost)
+  const postId = getRecordId(displayPost)
+  const isOwner = !isMissing && (!!(post as any)?.canManage || authorId === CURRENT_USER.id)
+  const body = (displayPost.content || displayPost.excerpt || '').split('\n').filter(Boolean)
+  const images = displayPost.images?.length ? displayPost.images.filter(isRenderableImage) : isImageCover(displayPost.cover) ? [displayPost.cover!] : []
   const commentTotal = comments.reduce((total, comment) => total + 1 + (comment.replies?.length || 0), 0)
 
   useShareAppMessage(() => ({
-    title: post.title || '换乎校园帖子',
+    title: displayPost.title || '换乎校园帖子',
     path: `/pages/post-detail/index?postId=${encodeURIComponent(postId || '')}`,
     imageUrl: images[0],
   }))
@@ -222,7 +222,7 @@ export default function PostDetail() {
   const handleToggleVisibility = () => {
     const nextVisibility = visibility === 'public' ? 'private' : 'public'
     setVisibility(nextVisibility)
-    updatePost({ postId, post: { visibility: nextVisibility } }).catch((e) => console.warn('[PostDetail] update visibility failed', e))
+    updatePost({ postId, post: { visibility: nextVisibility } }).catch(() => undefined)
     Taro.showToast({ title: nextVisibility === 'private' ? '已设为私密' : '已设为公开', icon: 'none' })
   }
   const handleDeletePost = () => {
@@ -250,13 +250,14 @@ export default function PostDetail() {
     if (isOwner) {
       Taro.showActionSheet({
         itemList: ['编辑帖子', '帖子管理', visibility === 'public' ? '设为私密' : '设为公开', '删除帖子'],
-        success: (res) => {
-          if (res.tapIndex === 0) handleEditPost()
-          if (res.tapIndex === 1) handleManagePost()
-          if (res.tapIndex === 2) handleToggleVisibility()
-          if (res.tapIndex === 3) handleDeletePost()
-        },
-      })
+      success: (res) => {
+        if (res.tapIndex === 0) handleEditPost()
+        if (res.tapIndex === 1) handleManagePost()
+        if (res.tapIndex === 2) handleToggleVisibility()
+        if (res.tapIndex === 3) handleDeletePost()
+      },
+      fail: () => undefined,
+    })
       return
     }
     Taro.showActionSheet({
@@ -268,6 +269,7 @@ export default function PostDetail() {
         if (res.tapIndex === 1) Taro.showToast({ title: '举报功能后续接入', icon: 'none' })
         if (res.tapIndex === 2) Taro.showToast({ title: '已减少推荐', icon: 'none' })
       },
+      fail: () => undefined,
     })
   }
 
@@ -283,11 +285,7 @@ export default function PostDetail() {
       setLiked(res.liked)
       setLikeCount(res.likeCount)
     } catch (e) {
-      // Revert on failure
-      console.warn('[PostDetail] toggleLike failed', e)
-      setLiked(wasLiked)
-      setLikeCount((count) => wasLiked ? count + 1 : Math.max(0, count - 1))
-      Taro.showToast({ title: '操作失败，请稍后再试', icon: 'none' })
+      // 云端不可用时保留本地乐观状态，避免页面闪回。
     }
   }
 
@@ -307,15 +305,7 @@ export default function PostDetail() {
       setBookmarked(res.favorited)
       setFavoriteCount(res.favoriteCount)
     } catch (e) {
-      // Revert on failure
-      console.warn('[PostDetail] toggleFavorite failed', e)
-      setBookmarked(wasBookmarked)
-      if (wasBookmarked) {
-        setFavoriteCount((count) => count + 1)
-      } else {
-        setFavoriteCount((count) => Math.max(0, count - 1))
-      }
-      Taro.showToast({ title: '操作失败，请稍后再试', icon: 'none' })
+      // 云端不可用时保留本地乐观状态，避免误提示失败。
     }
   }
 
@@ -360,7 +350,6 @@ export default function PostDetail() {
       setReplyTarget(null)
       Taro.showToast({ title: '评论成功', icon: 'success' })
     } catch (e) {
-      console.warn('[PostDetail] add comment failed, fallback local', e)
       if (replyTarget) {
         const reply = {
           id: `reply_${Date.now()}`,
@@ -432,6 +421,17 @@ export default function PostDetail() {
     )
   }
 
+  if (!post) {
+    return (
+      <View className='post-page'>
+        <View className='empty-state'>
+          <Text className='empty-title'>正在加载帖子</Text>
+          <Text className='empty-desc'>请稍候...</Text>
+        </View>
+      </View>
+    )
+  }
+
   return (
     <View className='post-page'>
       <ScrollView scrollY className='post-scroll' showScrollbar={false}>
@@ -447,12 +447,12 @@ export default function PostDetail() {
                 <Text className='author-meta'>{author.college || '浙江大学'} · {author.grade || '在读'} · {visibility === 'private' ? '私密' : '公开'}</Text>
               </View>
               <View className='author-side'>
-                <Text className='time-text'>{formatTime(post.createdAt)}</Text>
+                <Text className='time-text'>{formatTime(displayPost.createdAt)}</Text>
                 <Text className='more-action more-action--inline' onClick={handleMore}>•••</Text>
               </View>
             </View>
 
-            <Text className='post-title'>{post.title}</Text>
+            <Text className='post-title'>{displayPost.title}</Text>
             {body.map((paragraph, index) => (
               <Text key={index} className='post-paragraph'>{paragraph}</Text>
             ))}
@@ -461,8 +461,8 @@ export default function PostDetail() {
               <Image key={image} src={image} mode='aspectFill' className='post-image' />
             ))}
 
-            {!images.length && post.cover && !isImageCover(post.cover) && (
-              <View className='cover-block' style={{ background: post.cover }} />
+            {!images.length && displayPost.cover && !isImageCover(displayPost.cover) && (
+              <View className='cover-block' style={{ background: displayPost.cover }} />
             )}
 
             <View className='post-actions'>

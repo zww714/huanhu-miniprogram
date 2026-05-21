@@ -141,6 +141,26 @@ function delay(ms = 200) {
   return new Promise(r => setTimeout(r, ms))
 }
 
+function isExpectedCloudFallback(error: any) {
+  const message = String(error?.errMsg || error?.message || error || '')
+  return [
+    'Cannot find module',
+    'wx-server-sdk',
+    'collection not exists',
+    'Db or Table not exist',
+    'FUNCTIONS_EXECUTE_FAIL',
+    '云函数错误',
+    '获取交互状态失败',
+    '操作失败',
+    '该内容暂不可查看',
+  ].some((keyword) => message.includes(keyword))
+}
+
+function apiWarn(message: string, error: any) {
+  if (isExpectedCloudFallback(error)) return
+  console.warn(message, error)
+}
+
 // ============ Mock 数据导入 ============
 import {
   SKILL_USERS,
@@ -172,7 +192,7 @@ export async function getUsers(params?: { category?: string; page?: number }) {
       const res = await callCloudFunction('getUsers', params)
       return res.data as SkillUser[]
     } catch (e) {
-      console.warn('[API] getUsers cloud failed, fallback to mock', e)
+      apiWarn('[API] getUsers cloud failed, fallback to mock', e)
     }
 
     try {
@@ -184,7 +204,7 @@ export async function getUsers(params?: { category?: string; page?: number }) {
       }
       return users as SkillUser[]
     } catch (e) {
-      console.warn('[API] getUsers database failed, fallback to mock', e)
+      apiWarn('[API] getUsers database failed, fallback to mock', e)
     }
   }
   await delay()
@@ -216,7 +236,7 @@ export async function getPartners(params?: { category?: string }) {
 
       return partners
     } catch (e) {
-      console.warn('[API] getPartners cloud failed, fallback to mock', e)
+      apiWarn('[API] getPartners cloud failed, fallback to mock', e)
     }
   }
 
@@ -236,7 +256,7 @@ export async function login() {
       const res = await callCloudFunction('login')
       return res.currentUser || res.userData
     } catch (e) {
-      console.warn('[API] login cloud failed', e)
+      apiWarn('[API] login cloud failed', e)
     }
   }
   await delay()
@@ -249,7 +269,7 @@ export async function getCurrentUser() {
       const res = await callCloudFunction('getCurrentUser')
       return res.currentUser || res.userData
     } catch (e) {
-      console.warn('[API] getCurrentUser cloud failed', e)
+      apiWarn('[API] getCurrentUser cloud failed', e)
     }
   }
   await delay()
@@ -340,7 +360,7 @@ export async function getUserDetail(params: { userId?: string; userName?: string
       const res = await callCloudFunction('getUserDetail', params)
       return res.userData
     } catch (e) {
-      console.warn('[API] getUserDetail cloud failed', e)
+      apiWarn('[API] getUserDetail cloud failed', e)
     }
   }
   await delay()
@@ -412,7 +432,7 @@ export async function getPosts(params?: { category?: string; page?: number; user
       const res = await callCloudFunction('getPosts', params)
       return (res.data || []).map(normalizePost) as Post[]
     } catch (e) {
-      console.warn('[API] getPosts cloud failed, fallback to mock', e)
+      apiWarn('[API] getPosts cloud failed, fallback to mock', e)
     }
   }
   await delay()
@@ -449,7 +469,7 @@ export async function createPost(params: {
     try {
       image = await uploadCloudFile(image)
     } catch (e) {
-      console.warn('[API] upload post image failed, continue without image', e)
+      apiWarn('[API] upload post image failed, continue without image', e)
       image = ''
     }
   }
@@ -492,7 +512,7 @@ export async function createPost(params: {
       })
       return normalizePost(res.data)
     } catch (e) {
-      console.warn('[API] createPost cloud failed, fallback local', e)
+      apiWarn('[API] createPost cloud failed, fallback local', e)
     }
   }
 
@@ -509,7 +529,7 @@ export async function getMyPosts() {
       const res = await callCloudFunction('getMyPosts')
       return (res.data || []).map(normalizePost)
     } catch (e) {
-      console.warn('[API] getMyPosts cloud failed, fallback local', e)
+      apiWarn('[API] getMyPosts cloud failed, fallback local', e)
     }
   }
   const saved = wx.getStorageSync('localMinePosts')
@@ -523,7 +543,7 @@ export async function getUserPosts(params: { userId: string }) {
       const res = await callCloudFunction('getUserPosts', params)
       return (res.data || []).map(normalizePost)
     } catch (e) {
-      console.warn('[API] getUserPosts cloud failed, fallback mock', e)
+      apiWarn('[API] getUserPosts cloud failed, fallback mock', e)
     }
   }
   return []
@@ -535,7 +555,7 @@ export async function getPostDetail(params: { postId: string }) {
       const res = await callCloudFunction('getPostDetail', params)
       return normalizePost(res.data)
     } catch (e) {
-      console.warn('[API] getPostDetail cloud failed, fallback mock', e)
+      apiWarn('[API] getPostDetail cloud failed, fallback mock', e)
     }
   }
   return undefined
@@ -546,7 +566,7 @@ export async function updatePost(params: { postId: string; post: Record<string, 
     try {
       return await callCloudFunction('updatePost', params)
     } catch (e) {
-      console.warn('[API] updatePost cloud failed, fallback local', e)
+      apiWarn('[API] updatePost cloud failed, fallback local', e)
     }
   }
   const editedPosts = wx.getStorageSync('editedPosts') || {}
@@ -559,7 +579,7 @@ export async function deletePost(params: { postId: string }) {
     try {
       return await callCloudFunction('deletePost', params)
     } catch (e) {
-      console.warn('[API] deletePost cloud failed, fallback local', e)
+      apiWarn('[API] deletePost cloud failed, fallback local', e)
     }
   }
   const saved = wx.getStorageSync('localMinePosts')
@@ -705,7 +725,7 @@ export async function getActivities(params?: { category?: string; page?: number 
       const res = await callCloudFunction('getActivities', params)
       return res.data as Activity[]
     } catch (e) {
-      console.warn('[API] getActivities cloud failed', e)
+      apiWarn('[API] getActivities cloud failed', e)
     }
 
     try {
@@ -715,7 +735,7 @@ export async function getActivities(params?: { category?: string; page?: number 
       }
       return activities.map((activity: any) => ({ ...activity, id: activity.id || activity._id })) as Activity[]
     } catch (e) {
-      console.warn('[API] getActivities database failed, fallback to mock', e)
+      apiWarn('[API] getActivities database failed, fallback to mock', e)
     }
   }
   await delay()
@@ -733,7 +753,7 @@ export async function registerActivity(params: { activityId: string; name?: stri
       const res = await callCloudFunction('activity', { action: 'register', ...params })
       return res.data || { registered: true }
     } catch (e) {
-      console.warn('[API] registerActivity failed', e)
+      apiWarn('[API] registerActivity failed', e)
     }
   }
   return { registered: true }
@@ -745,7 +765,7 @@ export async function getMyActivityRegistrations() {
       const res = await callCloudFunction('activity', { action: 'getMyRegistrations' })
       return res.data || []
     } catch (e) {
-      console.warn('[API] getMyActivityRegistrations failed', e)
+      apiWarn('[API] getMyActivityRegistrations failed', e)
     }
   }
   return []
@@ -757,7 +777,7 @@ export async function cancelActivityRegistration(params: { registrationId?: stri
       const res = await callCloudFunction('activity', { action: 'cancelRegistration', ...params })
       return res.data || { canceled: true }
     } catch (e) {
-      console.warn('[API] cancelActivityRegistration failed', e)
+      apiWarn('[API] cancelActivityRegistration failed', e)
     }
   }
   return { canceled: true }
@@ -769,7 +789,7 @@ export async function getActivityDetail(params: { activityId: string }) {
       const res = await callCloudFunction('activity', { action: 'getDetail', ...params })
       return res.data || null
     } catch (e) {
-      console.warn('[API] getActivityDetail failed', e)
+      apiWarn('[API] getActivityDetail failed', e)
     }
   }
   return null
@@ -782,7 +802,7 @@ export async function getConversations() {
       const res = await callCloudFunction('getConversations')
       return res.data as Conversation[]
     } catch (e) {
-      console.warn('[API] getConversations cloud failed', e)
+      apiWarn('[API] getConversations cloud failed', e)
     }
   }
   await delay()
@@ -819,7 +839,7 @@ export async function getCurrentChatUser() {
         return user
       }
     } catch (e) {
-      console.warn('[API] getCurrentChatUser login failed, use local id', e)
+      apiWarn('[API] getCurrentChatUser login failed, use local id', e)
     }
   }
   return getLocalChatUser()
@@ -879,7 +899,7 @@ export async function getChatMessages(params: { targetId: string }) {
         .sort((a, b) => a.createdAtMs - b.createdAtMs)
       if (cloudMessages.length) return cloudMessages
     } catch (e) {
-      console.warn('[API] getChatMessages cloud failed, fallback local', e)
+      apiWarn('[API] getChatMessages cloud failed, fallback local', e)
     }
   }
 
@@ -915,7 +935,7 @@ export async function sendChatMessage(params: {
       const res = await addCloudDocument('messages', message)
       return normalizeChatMessage({ ...message, id: res._id, _id: res._id }, currentUser.id)
     } catch (e) {
-      console.warn('[API] sendChatMessage cloud failed, fallback local', e)
+      apiWarn('[API] sendChatMessage cloud failed, fallback local', e)
     }
   }
 
@@ -971,7 +991,7 @@ export async function getChatConversations() {
         ...localConversations.filter((item: any) => !cloudIds.has(item.id)),
       ]
     } catch (e) {
-      console.warn('[API] getChatConversations cloud failed, fallback local', e)
+      apiWarn('[API] getChatConversations cloud failed, fallback local', e)
     }
   }
 
@@ -990,7 +1010,7 @@ export async function getMySkills() {
       const res = await callCloudFunction('getMySkills')
       return res.data || []
     } catch (e) {
-      console.warn('[API] getMySkills cloud failed, fallback to mock', e)
+      apiWarn('[API] getMySkills cloud failed, fallback to mock', e)
     }
   }
   const saved = wx.getStorageSync('localMySkills')
@@ -1003,7 +1023,7 @@ export async function getUserSkills(params: { userId: string }) {
       const res = await callCloudFunction('getUserSkills', params)
       return res.data || []
     } catch (e) {
-      console.warn('[API] getUserSkills cloud failed, fallback to mock', e)
+      apiWarn('[API] getUserSkills cloud failed, fallback to mock', e)
     }
   }
   return []
@@ -1015,7 +1035,7 @@ export async function getSkillDetail(params: { skillId: string; userId?: string 
       const res = await callCloudFunction('getSkillDetail', params)
       return res.data
     } catch (e) {
-      console.warn('[API] getSkillDetail cloud failed, fallback to mock', e)
+      apiWarn('[API] getSkillDetail cloud failed, fallback to mock', e)
     }
   }
   return undefined
@@ -1027,7 +1047,7 @@ export async function createSkill(params: Record<string, any>) {
       const res = await callCloudFunction('createSkill', params)
       return res.data
     } catch (e) {
-      console.warn('[API] createSkill cloud failed, fallback local', e)
+      apiWarn('[API] createSkill cloud failed, fallback local', e)
     }
   }
   const saved = wx.getStorageSync('localMySkills')
@@ -1043,7 +1063,7 @@ export async function updateSkill(params: { skillId: string; skill: Record<strin
       const res = await callCloudFunction('updateSkill', params)
       return res.data
     } catch (e) {
-      console.warn('[API] updateSkill cloud failed, fallback local', e)
+      apiWarn('[API] updateSkill cloud failed, fallback local', e)
     }
   }
   const saved = wx.getStorageSync('localMySkills')
@@ -1060,7 +1080,7 @@ export async function deleteSkill(params: { skillId: string }) {
     try {
       return await callCloudFunction('deleteSkill', params)
     } catch (e) {
-      console.warn('[API] deleteSkill cloud failed, fallback local', e)
+      apiWarn('[API] deleteSkill cloud failed, fallback local', e)
     }
   }
   const saved = wx.getStorageSync('localMySkills')
@@ -1088,7 +1108,7 @@ export async function followUser(params: { targetUserId: string }) {
       const res = await callCloudFunction('followUser', params)
       return res.data || { isFollowing: true, isMutual: false }
     } catch (e) {
-      console.warn('[API] followUser cloud failed', e)
+      apiWarn('[API] followUser cloud failed', e)
     }
   }
   return { isFollowing: true, isMutual: false }
@@ -1100,7 +1120,7 @@ export async function unfollowUser(params: { targetUserId: string }) {
       const res = await callCloudFunction('unfollowUser', params)
       return res.data || { isFollowing: false, isMutual: false }
     } catch (e) {
-      console.warn('[API] unfollowUser cloud failed', e)
+      apiWarn('[API] unfollowUser cloud failed', e)
     }
   }
   return { isFollowing: false, isMutual: false }
@@ -1112,7 +1132,7 @@ export async function getFollowStatus(params: { targetUserId: string }) {
       const res = await callCloudFunction('getFollowStatus', params)
       return res.data
     } catch (e) {
-      console.warn('[API] getFollowStatus cloud failed', e)
+      apiWarn('[API] getFollowStatus cloud failed', e)
     }
   }
   return { isFollowing: false, isFollower: false, isMutual: false, isSpecial: false, isBlocked: false, blockedByTarget: false }
@@ -1124,7 +1144,7 @@ export async function getFollowers(params: { userId?: string; page?: number; pag
       const res = await callCloudFunction('getFollowers', params)
       return { data: res.data || [], total: res.total || 0 }
     } catch (e) {
-      console.warn('[API] getFollowers cloud failed', e)
+      apiWarn('[API] getFollowers cloud failed', e)
     }
   }
   return { data: [], total: 0 }
@@ -1136,7 +1156,7 @@ export async function getFollowing(params: { userId?: string; page?: number; pag
       const res = await callCloudFunction('getFollowing', params)
       return { data: res.data || [], total: res.total || 0 }
     } catch (e) {
-      console.warn('[API] getFollowing cloud failed', e)
+      apiWarn('[API] getFollowing cloud failed', e)
     }
   }
   return { data: [], total: 0 }
@@ -1148,7 +1168,7 @@ export async function setSpecialFollow(params: { targetUserId: string; isSpecial
       const res = await callCloudFunction('setSpecialFollow', params)
       return res.data || { isSpecial: params.isSpecial }
     } catch (e) {
-      console.warn('[API] setSpecialFollow cloud failed', e)
+      apiWarn('[API] setSpecialFollow cloud failed', e)
     }
   }
   return { isSpecial: params.isSpecial }
@@ -1160,7 +1180,7 @@ export async function blockUser(params: { targetUserId: string; isBlocked?: bool
       const res = await callCloudFunction('blockUser', params)
       return res.data || { isBlocked: true, isFollowing: false }
     } catch (e) {
-      console.warn('[API] blockUser cloud failed', e)
+      apiWarn('[API] blockUser cloud failed', e)
     }
   }
   return { isBlocked: true, isFollowing: false }
@@ -1173,7 +1193,7 @@ export async function getNotificationUnreadCounts() {
       const res = await callCloudFunction('notification', { action: 'getUnreadCounts' })
       return res.data || { likes: 0, follows: 0, comments: 0, system: 0 }
     } catch (e) {
-      console.warn('[API] getNotificationUnreadCounts failed', e)
+      apiWarn('[API] getNotificationUnreadCounts failed', e)
     }
   }
   return { likes: 0, follows: 0, comments: 0, system: 0 }
@@ -1185,7 +1205,7 @@ export async function getNotifications(params: { type?: string; filter?: string;
       const res = await callCloudFunction('notification', { action: 'getNotifications', ...params })
       return { data: res.data || [], total: res.total || 0 }
     } catch (e) {
-      console.warn('[API] getNotifications failed', e)
+      apiWarn('[API] getNotifications failed', e)
     }
   }
   return { data: [], total: 0 }
@@ -1197,7 +1217,7 @@ export async function markNotificationsRead(params: { ids?: string[]; type?: str
       const res = await callCloudFunction('notification', { action: 'markRead', ...params })
       return res.data || { marked: true }
     } catch (e) {
-      console.warn('[API] markNotificationsRead failed', e)
+      apiWarn('[API] markNotificationsRead failed', e)
     }
   }
   return { marked: true }
@@ -1209,7 +1229,7 @@ export async function deleteNotification(params: { id: string }) {
       const res = await callCloudFunction('notification', { action: 'delete', ...params })
       return res.data || { deleted: true }
     } catch (e) {
-      console.warn('[API] deleteNotification failed', e)
+      apiWarn('[API] deleteNotification failed', e)
     }
   }
   return { deleted: true }
@@ -1222,7 +1242,7 @@ export async function getSkillProofs(params: { skillId: string; userId?: string 
       const res = await callCloudFunction('skillProof', { action: 'getBySkill', ...params })
       return res.data || []
     } catch (e) {
-      console.warn('[API] getSkillProofs failed', e)
+      apiWarn('[API] getSkillProofs failed', e)
     }
   }
   return []
@@ -1234,7 +1254,7 @@ export async function getSkillProofDetail(params: { proofId: string }) {
       const res = await callCloudFunction('skillProof', { action: 'getDetail', ...params })
       return res.data || null
     } catch (e) {
-      console.warn('[API] getSkillProofDetail failed', e)
+      apiWarn('[API] getSkillProofDetail failed', e)
     }
   }
   return null
@@ -1246,7 +1266,7 @@ export async function getSkillProofCount(params: { skillId: string }) {
       const res = await callCloudFunction('skillProof', { action: 'getProofCount', ...params })
       return res.data?.count || 0
     } catch (e) {
-      console.warn('[API] getSkillProofCount failed', e)
+      apiWarn('[API] getSkillProofCount failed', e)
     }
   }
   return 0
@@ -1258,7 +1278,7 @@ export async function addSkillProof(params: { skillId: string; title: string; ty
       const res = await callCloudFunction('skillProof', { action: 'add', ...params })
       return res.data || null
     } catch (e) {
-      console.warn('[API] addSkillProof failed', e)
+      apiWarn('[API] addSkillProof failed', e)
     }
   }
   return null
@@ -1271,7 +1291,7 @@ export async function updateProfile(params: { field?: string; value?: any; profi
       const res = await callCloudFunction('updateProfile', params)
       return res.currentUser || res.userData || res
     } catch (e) {
-      console.warn('[API] updateProfile cloud failed', e)
+      apiWarn('[API] updateProfile cloud failed', e)
     }
   }
   const profile = (params as any).profile || ((params as any).field ? { [(params as any).field]: (params as any).value } : params)
@@ -1374,7 +1394,7 @@ export async function getComments(params: { postId: string }): Promise<Comment[]
       lastCommentsCache = cloudComments
       return cloudComments
     } catch (e) {
-      console.warn('[API] getComments cloud failed, fallback to mock', e)
+      apiWarn('[API] getComments cloud failed, fallback to mock', e)
     }
   }
   // Return mock data
@@ -1392,7 +1412,7 @@ export async function addComment(params: { postId: string; content: string }): P
       })
       return res.data || res
     } catch (e) {
-      console.warn('[API] addComment cloud failed', e)
+      apiWarn('[API] addComment cloud failed', e)
       throw e
     }
   }
@@ -1415,7 +1435,7 @@ export async function replyComment(params: {
       })
       return res.data || res
     } catch (e) {
-      console.warn('[API] replyComment cloud failed', e)
+      apiWarn('[API] replyComment cloud failed', e)
       throw e
     }
   }
@@ -1427,7 +1447,7 @@ export async function deleteComment(params: { commentId: string }): Promise<any>
     try {
       return await callCloudFunction('deleteComment', { commentId: params.commentId })
     } catch (e) {
-      console.warn('[API] deleteComment cloud failed', e)
+      apiWarn('[API] deleteComment cloud failed', e)
       throw e
     }
   }
@@ -1442,7 +1462,7 @@ export async function toggleLike(params: { targetType?: string; targetId: string
       const res = await callCloudFunction('toggleLike', { targetType: params.targetType || 'post', targetId: params.targetId })
       return res.data || { liked: false, likeCount: 0 }
     } catch (e) {
-      console.warn('[API] toggleLike cloud failed', e)
+      apiWarn('[API] toggleLike cloud failed', e)
       throw e
     }
   }
@@ -1455,7 +1475,7 @@ export async function toggleFavorite(params: { targetType?: string; targetId: st
       const res = await callCloudFunction('toggleFavorite', { targetType: params.targetType || 'post', targetId: params.targetId })
       return res.data || { favorited: false, favoriteCount: 0 }
     } catch (e) {
-      console.warn('[API] toggleFavorite cloud failed', e)
+      apiWarn('[API] toggleFavorite cloud failed', e)
       throw e
     }
   }
@@ -1468,7 +1488,7 @@ export async function getInteractionStatus(params: { targetType?: string; target
       const res = await callCloudFunction('getInteractionStatus', { targetType: params.targetType || 'post', targetId: params.targetId })
       return res.data || { liked: false, favorited: false, likeCount: 0, favoriteCount: 0 }
     } catch (e) {
-      console.warn('[API] getInteractionStatus cloud failed', e)
+      apiWarn('[API] getInteractionStatus cloud failed', e)
     }
   }
   return { liked: false, favorited: false, likeCount: 0, favoriteCount: 0 }
@@ -1480,7 +1500,7 @@ export async function getMyFavorites(params?: { targetType?: string }): Promise<
       const res = await callCloudFunction('getMyFavorites', { targetType: (params?.targetType) || 'post' })
       return res.data || []
     } catch (e) {
-      console.warn('[API] getMyFavorites cloud failed', e)
+      apiWarn('[API] getMyFavorites cloud failed', e)
     }
   }
   return []

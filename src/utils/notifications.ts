@@ -15,6 +15,13 @@ export const notificationTitles: Record<NotificationType, string> = {
 }
 
 const MESSAGE_TAB_INDEX = 2
+const TAB_ROUTES = ['pages/index/index', 'pages/discover/index', 'pages/messages/index', 'pages/profile/index']
+
+function isTabBarPage() {
+  const pages = getCurrentPages?.() || []
+  const current = pages[pages.length - 1] as any
+  return !!current?.route && TAB_ROUTES.includes(current.route)
+}
 
 export function getBlockedNotificationTypes(): NotificationType[] {
   const blocked = Taro.getStorageSync(BLOCKED_NOTIFICATION_TYPES_KEY)
@@ -65,6 +72,7 @@ export function getNotificationUnreadTotal() {
 
 export function updateMessageTabUnread(extraUnread = 0) {
   const total = getNotificationUnreadTotal() + Math.max(0, extraUnread)
+  if (!isTabBarPage()) return total
   try {
     if (total > 0) {
       Taro.setTabBarBadge({

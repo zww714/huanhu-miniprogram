@@ -44,6 +44,10 @@ function firstChar(name?: string) {
   return (name || 'TA').charAt(0)
 }
 
+function isRenderableImage(src?: string) {
+  return !!src && !src.startsWith('linear-gradient') && !src.includes('/assets/avatar.png')
+}
+
 function normalizeSkill(skill: any, userId: string): PublicSkill {
   return {
     id: skill.id || skill._id || encodeURIComponent(skill.name || 'skill'),
@@ -271,7 +275,7 @@ export default function ProfileView() {
         <View className='hero-card'>
           <View className='hero-main'>
             <View className='avatar-box'>
-              {user.avatar ? (
+              {isRenderableImage(user.avatar) ? (
                 <Image className='avatar-img' src={user.avatar} mode='aspectFill' />
               ) : (
                 <View className='avatar-fallback'><Text>{firstChar(user.name)}</Text></View>
