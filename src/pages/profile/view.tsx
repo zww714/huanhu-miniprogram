@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Image } from '@tarojs/components'
+import { View, Text, ScrollView, Image, Textarea } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { useEffect, useMemo, useState } from 'react'
 import {
@@ -23,7 +23,10 @@ import {
   type PublicUser,
 } from '../../utils/publicProfiles'
 import { getGenderSymbol, getGenderTone } from '../../utils/gender'
+import { getMyRatingForUser, getRatingSummary, saveRating } from '../../utils/ratings'
 import './view.scss'
+
+const RATING_TAGS = ['沟通顺畅', '很有帮助', '技能扎实', '准时靠谱', '体验不错']
 
 type FollowState = {
   isFollowing: boolean
@@ -96,6 +99,11 @@ export default function ProfileView() {
   const [remotePosts, setRemotePosts] = useState<PublicPost[]>([])
   const [followState, setFollowState] = useState<FollowState>(DEFAULT_FOLLOW)
   const [followLoading, setFollowLoading] = useState(false)
+  const [ratingVersion, setRatingVersion] = useState(0)
+  const [ratingPanelVisible, setRatingPanelVisible] = useState(false)
+  const [draftRating, setDraftRating] = useState(5)
+  const [draftTags, setDraftTags] = useState<string[]>(['沟通顺畅'])
+  const [draftContent, setDraftContent] = useState('')
 
   useLoad((options) => {
     setRouteUser({
@@ -180,8 +188,10 @@ export default function ProfileView() {
   const posts = remotePosts.length ? remotePosts : getPublicPosts(user.id)
   const postPreview = posts[0]
   const metaLine = [user.school, user.college, user.grade, user.campus].filter(Boolean).join(' · ')
-  const ratingValue = Number(remoteUser?.rating ?? 4.8)
-  const rating = Number.isFinite(ratingValue) ? ratingValue.toFixed(1) : '4.8'
+  const ratingFallback = Number(remoteUser?.rating ?? 4.8)
+  const ratingSummary = getRatingSummary(user.id, (Number.isFinite(ratingFallback) ? ratingFallback : 4.8) + ratingVersion * 0)
+  const myRating = getMyRatingForUser(user.id)
+  const rating = ratingSummary.average.toFixed(1)
 
   const goBack = () => {
     const pages = getCurrentPages()
@@ -228,6 +238,39 @@ export default function ProfileView() {
       success: () => Taro.showToast({ title: '举报已提交', icon: 'success' }),
       fail: () => undefined,
     })
+  }
+
+  const openRatingPanel = () => {
+    if (isSelf) {
+      Taro.navigateTo({ url: `/pages/my-ratings/index?userId=${encodeURIComponent(user.id)}&name=${encodeURIComponent(user.name)}` })
+      return
+    }
+    const existing = getMyRatingForUser(user.id)
+    setDraftRating(existing?.rating || 5)
+    setDraftTags(existing?.tags?.length ? existing.tags : ['沟通顺畅'])
+    setDraftContent(existing?.content || '')
+    setRatingPanelVisible(true)
+  }
+
+  const toggleDraftTag = (tag: string) => {
+    setDraftTags((current) => current.includes(tag)
+      ? current.filter((item) => item !== tag)
+      : [...current, tag]
+    )
+  }
+
+  const submitRating = () => {
+    saveRating({
+      targetUserId: user.id,
+      targetUserName: user.name,
+      rating: draftRating,
+      tags: draftTags,
+      content: draftContent.trim(),
+      relatedType: 'profile',
+    })
+    setRatingPanelVisible(false)
+    setRatingVersion((current) => current + 1)
+    Taro.showToast({ title: myRating ? '评价已更新' : '评价已提交', icon: 'success' })
   }
 
   const goOverview = (key: 'skills' | 'posts' | 'followers' | 'following') => {
@@ -297,10 +340,11 @@ export default function ProfileView() {
               <Text className='bio-text' numberOfLines={2}>{user.intro || 'TA 还没有填写简介。'}</Text>
             </View>
 
-            <View className='rating-card'>
+            <View className='rating-card' onClick={openRatingPanel}>
               <Text className='rating-label'>评分</Text>
               <Text className='rating-score'>{rating}</Text>
               <Text className='rating-stars'>★★★★★</Text>
+              {!isSelf ? <Text className='rating-action'>{myRating ? `你已评分 ${myRating.rating.toFixed(1)}` : '去评价'}</Text> : null}
             </View>
           </View>
 
@@ -390,6 +434,47 @@ export default function ProfileView() {
             <Text className='empty-text'>TA 暂未发布公开内容</Text>
           )}
         </View>
+
+        {ratingPanelVisible ? (
+          <View className='rating-mask' onClick={() => setRatingPanelVisible(false)}>
+            <View className='rating-panel' onClick={(event) => event.stopPropagation()}>
+              <View className='rating-panel-head'>
+                <Text className='rating-panel-title'>{myRating ? '修改评价' : `评价 ${user.name}`}</Text>
+                <Text className='rating-panel-close' onClick={() => setRatingPanelVisible(false)}>×</Text>
+              </View>
+              <View className='star-row'>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Text
+                    key={star}
+                    className={star <= draftRating ? 'star active' : 'star'}
+                    onClick={() => setDraftRating(star)}
+                  >
+                    ★
+                  </Text>
+                ))}
+              </View>
+              <View className='rating-tag-row'>
+                {RATING_TAGS.map((tag) => (
+                  <Text
+                    key={tag}
+                    className={draftTags.includes(tag) ? 'rating-tag active' : 'rating-tag'}
+                    onClick={() => toggleDraftTag(tag)}
+                  >
+                    {tag}
+                  </Text>
+                ))}
+              </View>
+              <Textarea
+                className='rating-textarea'
+                value={draftContent}
+                maxlength={120}
+                placeholder='可以补充一次具体的合作体验'
+                onInput={(event) => setDraftContent(String(event.detail.value || ''))}
+              />
+              <View className='rating-submit' onClick={submitRating}><Text>提交评价</Text></View>
+            </View>
+          </View>
+        ) : null}
       </View>
     </ScrollView>
   )

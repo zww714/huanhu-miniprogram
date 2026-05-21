@@ -214,6 +214,14 @@ page {
   letter-spacing: -1rpx;
 }
 
+.rating-action {
+  margin-top: 6rpx;
+  color: #64748B;
+  font-size: 19rpx;
+  line-height: 24rpx;
+  font-weight: 700;
+}
+
 .inline-info {
   margin-top: 30rpx;
   display: grid;
@@ -458,6 +466,121 @@ page {
   color: #94A3B8;
   font-size: 26rpx;
   line-height: 36rpx;
+}
+
+.rating-mask {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 80;
+  background: rgba(15, 23, 42, 0.28);
+  display: flex;
+  align-items: flex-end;
+}
+
+.rating-panel {
+  width: 100%;
+  padding: 30rpx 30rpx calc(30rpx + env(safe-area-inset-bottom));
+  border-radius: 34rpx 34rpx 0 0;
+  background: #FFFFFF;
+  box-sizing: border-box;
+}
+
+.rating-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rating-panel-title {
+  color: #0F172A;
+  font-size: 34rpx;
+  line-height: 44rpx;
+  font-weight: 900;
+}
+
+.rating-panel-close {
+  width: 50rpx;
+  height: 50rpx;
+  border-radius: 50%;
+  background: #F1F5F9;
+  color: #64748B;
+  font-size: 34rpx;
+  line-height: 50rpx;
+  text-align: center;
+  font-weight: 800;
+}
+
+.star-row {
+  margin-top: 28rpx;
+  display: flex;
+  justify-content: center;
+  gap: 18rpx;
+}
+
+.star {
+  color: #D6E0EF;
+  font-size: 54rpx;
+  line-height: 60rpx;
+}
+
+.star.active {
+  color: #2563EB;
+}
+
+.rating-tag-row {
+  margin-top: 28rpx;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14rpx;
+}
+
+.rating-tag {
+  height: 54rpx;
+  padding: 0 20rpx;
+  border-radius: 999rpx;
+  background: #F1F5F9;
+  color: #64748B;
+  font-size: 24rpx;
+  line-height: 54rpx;
+  font-weight: 800;
+}
+
+.rating-tag.active {
+  background: #EAF2FF;
+  color: #2563EB;
+}
+
+.rating-textarea {
+  width: 100%;
+  height: 150rpx;
+  margin-top: 24rpx;
+  padding: 22rpx;
+  border-radius: 24rpx;
+  background: #F7FAFF;
+  color: #0F172A;
+  font-size: 26rpx;
+  line-height: 38rpx;
+  box-sizing: border-box;
+}
+
+.rating-submit {
+  height: 78rpx;
+  margin-top: 24rpx;
+  border-radius: 999rpx;
+  background: #2563EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 14rpx 30rpx rgba(37, 99, 235, 0.22);
+}
+
+.rating-submit text {
+  color: #FFFFFF;
+  font-size: 28rpx;
+  font-weight: 900;
 }
 
 .post-preview {

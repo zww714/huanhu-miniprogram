@@ -23,6 +23,7 @@ export default defineAppConfig({
     'pages/my-posts/index',
     'pages/my-followers/index',
     'pages/my-following/index',
+    'pages/my-ratings/index',
     'pages/my-activities/index',
     'pages/my-partners/index',
     'pages/my-favorites/index',

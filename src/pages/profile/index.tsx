@@ -218,7 +218,7 @@ export default function Profile() {
               </Text>
             </View>
 
-            <View className='rating-card'>
+            <View className='rating-card' onClick={() => go(withProfileParams('/pages/my-ratings/index'))}>
               <Text className='rating-label'>评分</Text>
               <Text className='rating-score'>{profileRating}</Text>
               <Text className='rating-stars'>★★★★★</Text>
