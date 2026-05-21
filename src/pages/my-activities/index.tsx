@@ -2,19 +2,29 @@ import { useState } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
 import { getMyActivityRegistrations, cancelActivityRegistration } from '../../utils/api'
+import { ACTIVITIES } from '../../utils/mock'
 import './index.css'
 
+const fallbackRegistrations = ACTIVITIES.slice(0, 2).map((activity, index) => ({
+  id: `mock_registration_${activity.id || index}`,
+  activityId: activity.id || `mock_activity_${index}`,
+  activity,
+}))
+
 export default function MyActivities() {
-  const [registrations, setRegistrations] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  const [registrations, setRegistrations] = useState<any[]>(fallbackRegistrations)
+  const [loading, setLoading] = useState(false)
 
   useDidShow(() => {
-    setLoading(true)
+    setLoading(false)
+    setRegistrations(fallbackRegistrations)
     getMyActivityRegistrations()
-      .then((data) => setRegistrations(Array.isArray(data) ? data : []))
+      .then((data) => {
+        if (Array.isArray(data) && data.length) setRegistrations(data)
+      })
       .catch((e) => {
         console.warn('[MyActivities] failed', e)
-        setRegistrations([])
+        setRegistrations(fallbackRegistrations)
       })
       .finally(() => setLoading(false))
   })

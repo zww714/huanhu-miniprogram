@@ -3,26 +3,38 @@ import Taro, { useDidShow } from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
 import { getFollowing, unfollowUser as apiUnfollowUser, blockUser as apiBlockUser, setSpecialFollow as apiSetSpecialFollow } from '../../utils/api'
 import { openUnifiedUserProfile } from '../../utils/publicProfiles'
+import { MOCK_RELATIONS } from '../../utils/mock'
 import './index.css'
 
+const getFallbackFollowing = (filter: 'all' | 'special') => {
+  const list = MOCK_RELATIONS.filter((user) => user.isFollowing)
+  return filter === 'special' ? list.filter((user) => user.isSpecial) : list
+}
+
 export default function MyFollowing() {
-  const [following, setFollowing] = useState<any[]>([])
-  const [total, setTotal] = useState(0)
-  const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'special'>('all')
+  const [following, setFollowing] = useState<any[]>(getFallbackFollowing('all'))
+  const [total, setTotal] = useState(getFallbackFollowing('all').length)
+  const [loading, setLoading] = useState(false)
   const [manageMode, setManageMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
 
   const loadFollowing = useCallback(() => {
-    setLoading(true)
+    const fallback = getFallbackFollowing(filter)
+    setLoading(false)
+    setFollowing(fallback)
+    setTotal(fallback.length)
     getFollowing({ filter: filter === 'special' ? 'special' : undefined })
       .then((res) => {
-        setFollowing(res.data || [])
-        setTotal(res.total || 0)
+        const data = Array.isArray(res.data) ? res.data : []
+        const next = data.length ? data : fallback
+        setFollowing(next)
+        setTotal(data.length ? (res.total || data.length) : fallback.length)
       })
       .catch((e) => {
         console.warn('[MyFollowing] getFollowing failed', e)
-        setFollowing([])
+        setFollowing(fallback)
+        setTotal(fallback.length)
       })
       .finally(() => setLoading(false))
   }, [filter])

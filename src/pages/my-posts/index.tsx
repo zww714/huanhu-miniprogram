@@ -69,17 +69,21 @@ function getTime(post: ManagedPost) {
 }
 
 export default function MyPosts() {
-  const [posts, setPosts] = useState<ManagedPost[]>([])
+  const [posts, setPosts] = useState<ManagedPost[]>(readPosts())
   const [batchMode, setBatchMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [desc, setDesc] = useState(true)
 
   useDidShow(() => {
-    setPosts(readPosts())
+    const localPosts = readPosts()
+    setPosts(localPosts)
     getMyPosts()
       .then((data) => {
-        if (!Array.isArray(data)) return
-        setPosts(data.map((post: any) => ({
+        if (!Array.isArray(data) || !data.length) {
+          setPosts(localPosts)
+          return
+        }
+        const remotePosts = data.map((post: any) => ({
           id: post.id || post._id,
           title: post.title,
           excerpt: post.excerpt || post.summary || post.content || '',
@@ -89,9 +93,13 @@ export default function MyPosts() {
           createdAt: post.createdAt,
           authorId: post.authorId || post.userId,
           visibility: post.visibility || 'public',
-        })))
+        }))
+        setPosts(remotePosts.length ? remotePosts : localPosts)
       })
-      .catch((e) => console.warn('[MyPosts] getMyPosts failed, fallback local', e))
+      .catch((e) => {
+        console.warn('[MyPosts] getMyPosts failed, fallback local', e)
+        setPosts(localPosts)
+      })
   })
 
   const visiblePosts = useMemo(() => {

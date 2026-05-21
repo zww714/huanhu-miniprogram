@@ -3,23 +3,29 @@ import Taro, { useDidShow } from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
 import { getFollowers, followUser as apiFollowUser, unfollowUser as apiUnfollowUser, blockUser as apiBlockUser, setSpecialFollow as apiSetSpecialFollow } from '../../utils/api'
 import { openUnifiedUserProfile } from '../../utils/publicProfiles'
+import { MOCK_RELATIONS } from '../../utils/mock'
 import './index.css'
 
+const fallbackFollowers = MOCK_RELATIONS.filter((user) => user.isFollower)
+
 export default function MyFollowers() {
-  const [followers, setFollowers] = useState<any[]>([])
-  const [total, setTotal] = useState(0)
-  const [loading, setLoading] = useState(true)
+  const [followers, setFollowers] = useState<any[]>(fallbackFollowers)
+  const [total, setTotal] = useState(fallbackFollowers.length)
+  const [loading, setLoading] = useState(false)
 
   const loadFollowers = useCallback(() => {
-    setLoading(true)
+    setLoading(false)
     getFollowers({})
       .then((res) => {
-        setFollowers(res.data || [])
-        setTotal(res.total || 0)
+        const data = Array.isArray(res.data) ? res.data : []
+        const next = data.length ? data : fallbackFollowers
+        setFollowers(next)
+        setTotal(data.length ? (res.total || data.length) : fallbackFollowers.length)
       })
       .catch((e) => {
         console.warn('[MyFollowers] getFollowers failed', e)
-        setFollowers([])
+        setFollowers(fallbackFollowers)
+        setTotal(fallbackFollowers.length)
       })
       .finally(() => setLoading(false))
   }, [])

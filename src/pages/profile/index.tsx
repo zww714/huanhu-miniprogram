@@ -2,7 +2,7 @@ import { View, Text, ScrollView, Image } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { useState } from 'react'
 import './index.css'
-import { getMyPosts, getMySkills as fetchMySkills, updateProfile } from '../../utils/api'
+import { updateProfile } from '../../utils/api'
 
 import {
   AVATAR_STORAGE_KEY,
@@ -162,18 +162,6 @@ export default function Profile() {
   useDidShow(() => {
     setProfileData(CHEN_PROFILE)
     setAvatarUrl(CHEN_PROFILE.avatar || '')
-
-    fetchMySkills()
-      .then((skills) => {
-        if (Array.isArray(skills) && skills.length) setMySkills(skills)
-      })
-      .catch((e) => console.warn('[Profile] getMySkills failed, fallback to mock', e))
-
-    getMyPosts()
-      .then((posts) => {
-        if (Array.isArray(posts)) setMyPosts(posts)
-      })
-      .catch((e) => console.warn('[Profile] getMyPosts failed, fallback to mock', e))
   })
 
   return (

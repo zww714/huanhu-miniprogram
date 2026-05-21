@@ -143,6 +143,10 @@ function firstChar(name?: string) {
   return name ? name.charAt(0) : '同'
 }
 
+function isRenderableImage(src?: string) {
+  return !!src && !src.startsWith('linear-gradient') && !src.includes('/assets/avatar.png')
+}
+
 function normalizeSkill(item: string | SkillItem): SkillItem {
   return typeof item === 'string' ? { name: item } : item
 }
@@ -607,7 +611,7 @@ export default function Index() {
       <View className='home-user-card' key={`${mode}_${id || index}`}>
         <View className='home-user-card-main'>
           <View className='home-avatar-wrap' onClick={() => handleUserClick(user)}>
-            {user.avatar ? (
+            {isRenderableImage(user.avatar) ? (
               <Image className='home-avatar-img' src={user.avatar} mode='aspectFill' />
             ) : (
               <Text className='home-avatar-text'>{firstChar(name)}</Text>
@@ -676,7 +680,7 @@ export default function Index() {
     return (
       <View className={compact ? 'home-activity-card home-activity-card--compact' : 'home-activity-card'} key={item.id || item._id || item.title}>
         <View className='home-activity-cover'>
-          {item.cover ? <Image className='home-activity-img' src={item.cover} mode='aspectFill' /> : (
+          {isRenderableImage(item.cover) ? <Image className='home-activity-img' src={item.cover} mode='aspectFill' /> : (
             <View className='home-activity-placeholder'>
               <Text>AI科研{'\n'}工作坊</Text>
             </View>
@@ -811,7 +815,7 @@ export default function Index() {
           {user ? (
             <View className='home-detail-user' onClick={() => openChat(user, detailPopup.type === 'topic' ? '校园热议' : '今日推荐')}>
               <View className='home-detail-avatar'>
-                {user.avatar ? <Image className='home-detail-avatar-img' src={user.avatar} mode='aspectFill' /> : <Text>{firstChar(user.name)}</Text>}
+                {isRenderableImage(user.avatar) ? <Image className='home-detail-avatar-img' src={user.avatar} mode='aspectFill' /> : <Text>{firstChar(user.name)}</Text>}
               </View>
               <View className='home-detail-user-main'>
                 <Text className='home-detail-user-name'>{user.name}</Text>
