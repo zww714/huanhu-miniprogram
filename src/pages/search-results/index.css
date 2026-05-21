@@ -176,6 +176,26 @@ page {
   font-weight: 900;
 }
 
+.search-gender {
+  width: 24rpx;
+  height: 24rpx;
+  border-radius: 999rpx;
+  color: #FFFFFF;
+  font-size: 16rpx;
+  line-height: 24rpx;
+  text-align: center;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.search-gender--male {
+  background: #2563EB;
+}
+
+.search-gender--female {
+  background: #EC4899;
+}
+
 .search-author-meta,
 .search-actions text {
   color: #64748B;

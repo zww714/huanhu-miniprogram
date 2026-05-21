@@ -577,6 +577,26 @@ page {
   font-weight: 900;
 }
 
+.home-gender {
+  width: 26rpx;
+  height: 26rpx;
+  border-radius: $radius-pill;
+  color: #FFFFFF;
+  font-size: 18rpx;
+  text-align: center;
+  line-height: 26rpx;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.home-gender--male {
+  background: #2563EB;
+}
+
+.home-gender--female {
+  background: #EC4899;
+}
+
 .home-status-tag {
   padding: 4rpx 12rpx;
   border-radius: $radius-sm;
@@ -1188,6 +1208,12 @@ page {
 .home-detail-user-main {
   flex: 1;
   min-width: 0;
+}
+
+.home-detail-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
 }
 
 .home-detail-user-name,

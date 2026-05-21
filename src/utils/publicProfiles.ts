@@ -44,6 +44,7 @@ export type PublicUser = {
   id: string
   name: string
   avatar?: string
+  gender?: 'male' | 'female' | 'private'
   verified: boolean
   school: string
   college?: string
@@ -74,6 +75,7 @@ export const PUBLIC_USERS: PublicUser[] = [
   {
     id: '10086',
     name: '陈同学',
+    gender: 'male',
     verified: true,
     school: '浙江大学',
     college: '计算机学院',
@@ -90,6 +92,7 @@ export const PUBLIC_USERS: PublicUser[] = [
   {
     id: 'u1',
     name: '科研小达人',
+    gender: 'female',
     verified: true,
     school: '浙江大学',
     college: '计算机学院',
@@ -106,6 +109,7 @@ export const PUBLIC_USERS: PublicUser[] = [
   {
     id: 'u_photo',
     name: '光影捕手',
+    gender: 'male',
     verified: false,
     school: '浙江大学',
     college: '艺术学院',
@@ -122,6 +126,7 @@ export const PUBLIC_USERS: PublicUser[] = [
   {
     id: 'u_math',
     name: '上岸锦鲤',
+    gender: 'female',
     verified: true,
     school: '浙江大学',
     college: '数学科学学院',
@@ -138,6 +143,7 @@ export const PUBLIC_USERS: PublicUser[] = [
   {
     id: 'u_career',
     name: '实习记录员',
+    gender: 'male',
     verified: false,
     school: '浙江大学',
     college: '管理学院',

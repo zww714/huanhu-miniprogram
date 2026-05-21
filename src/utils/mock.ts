@@ -8,6 +8,7 @@ export interface SkillUser {
   major: string
   grade: string
   campus?: string
+  gender?: 'male' | 'female' | 'private'
   verified: boolean
   match: number
   matchRate?: number
@@ -184,7 +185,7 @@ export interface CommentReply {
 // ========== SKILL USERS ==========
 export const SKILL_USERS: SkillUser[] = [
   {
-    id: 1, name: '陈同学', avatar: '',
+    id: 1, name: '陈同学', avatar: '', gender: 'male',
     college: '物理学院', major: '物理学', grade: '博士在读', campus: '紫金港', type: '博士生',
     verified: true, match: 92, matchRate: 92,
     bio: '擅长用AI和编程工具帮助同学快速上手科研与项目实践。',
@@ -193,7 +194,7 @@ export const SKILL_USERS: SkillUser[] = [
     want: ['摄影', '产品设计', '羽毛球', '桌游'], wantToLearn: ['摄影', '产品设计', '羽毛球', '桌游'], interests: ['科研', 'AI', '摄影'],
   },
   {
-    id: 2, name: '小熊软糖', avatar: '',
+    id: 2, name: '小熊软糖', avatar: '', gender: 'female',
     college: '计算机学院', major: '计算机科学', grade: '研一', campus: '玉泉', type: '研究生',
     verified: true, match: 89, matchRate: 89,
     bio: '擅长英语学习方法与翻译技巧，帮助提升语言应用能力。',
@@ -202,7 +203,7 @@ export const SKILL_USERS: SkillUser[] = [
     want: ['Python', '数据分析'], wantToLearn: ['Python', '数据分析'], interests: ['英语', '学习'],
   },
   {
-    id: 3, name: '橘子汽水', avatar: '',
+    id: 3, name: '橘子汽水', avatar: '', gender: 'female',
     college: '电气学院', major: '电气工程', grade: '大三', campus: '紫金港', type: '本科生',
     verified: true, match: 87, matchRate: 87,
     bio: '擅长嵌入式开发与硬件调试，喜欢动手解决实际问题。',
@@ -583,8 +584,8 @@ export const USER_POSTS = [
 
 // ========== PARTNER USERS ==========
 export const PARTNER_USERS = [
-  { id: 1, name: '陈思思', avatar: '', college: '生命科学学院', major: '数据科学', grade: '大二', campus: '紫金港', type: '本科生', bio: '喜欢周末去西湖边骑行，找一起骑行的伙伴！', lookingFor: '骑行搭子', match: 90, matchRate: 90, verified: true, tags: ['运动'], interests: ['骑行', '运动'], wantToLearn: ['摄影'] },
-  { id: 2, name: '赵子轩', avatar: '', college: '计算机学院', major: '计算机科学', grade: '大三', campus: '玉泉', type: '本科生', bio: '刚入坑桌游，想找人一起玩狼人杀和阿瓦隆。', lookingFor: '桌游搭子', match: 87, matchRate: 87, verified: false, tags: ['游戏'], interests: ['桌游', '游戏'], wantToLearn: ['产品设计'] },
+  { id: 1, name: '陈思思', avatar: '', gender: 'female', college: '生命科学学院', major: '数据科学', grade: '大二', campus: '紫金港', type: '本科生', bio: '喜欢周末去西湖边骑行，找一起骑行的伙伴！', lookingFor: '骑行搭子', match: 90, matchRate: 90, verified: true, tags: ['运动'], interests: ['骑行', '运动'], wantToLearn: ['摄影'] },
+  { id: 2, name: '赵子轩', avatar: '', gender: 'male', college: '计算机学院', major: '计算机科学', grade: '大三', campus: '玉泉', type: '本科生', bio: '刚入坑桌游，想找人一起玩狼人杀和阿瓦隆。', lookingFor: '桌游搭子', match: 87, matchRate: 87, verified: false, tags: ['游戏'], interests: ['桌游', '游戏'], wantToLearn: ['产品设计'] },
   { id: 3, name: '林晓晓', avatar: '', college: '外国语学院', major: '英语', grade: '研一', campus: '西溪', type: '研究生', bio: '摄影爱好者，周末喜欢扫街，找摄影小伙伴互拍。', lookingFor: '摄影搭子', match: 83, matchRate: 83, verified: true, tags: ['摄影'], interests: ['摄影', '修图', '徒步', '桌游'], wantToLearn: ['AI工具'] },
   { id: 4, name: '周明远', avatar: '', college: '数学科学学院', major: '数据科学', grade: '研一', campus: '紫金港', type: '研究生', bio: '考研党，每天图书馆打卡，找一起学习监督的研友！', lookingFor: '学习搭子', match: 92, matchRate: 92, verified: true, tags: ['学习'], interests: ['学习', '自习'], wantToLearn: ['Python'] },
   { id: 5, name: '吴悦然', avatar: '', college: '外国语学院', major: '英语', grade: '大一', campus: '西溪', type: '本科生', bio: '民谣吉他爱好者，想组校园乐队，找主唱和鼓手！', lookingFor: '乐队搭子', match: 78, matchRate: 78, verified: false, tags: ['音乐'], interests: ['音乐', '吉他'], wantToLearn: ['摄影'] },
@@ -881,6 +882,7 @@ export const CURRENT_USER = {
   id: '10086',
   name: '陈同学',
   avatar: '',
+  gender: 'male' as 'male' | 'female' | 'private',
 }
 
 export const AVATAR_STORAGE_KEY = 'currentUserAvatar'
@@ -1095,7 +1097,7 @@ export const MY_PROFILE = {
   school: '浙江大学',
   college: '计算机学院',
   grade: '研一',
-  gender: 'private' as 'male' | 'female' | 'private',
+  gender: 'male' as 'male' | 'female' | 'private',
   campus: '紫金港',
   bio: '擅长 Python 和数据分析，想找摄影搭子',
   stats: { skills: 5, posts: 12, followers: 86, following: 42 },

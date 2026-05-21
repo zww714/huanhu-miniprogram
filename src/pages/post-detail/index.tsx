@@ -11,6 +11,7 @@ import {
 import { addComment, deleteComment as apiDeleteComment, deletePost, getComments, getPostDetail, getPosts, replyComment, updatePost, toggleLike, toggleFavorite, getInteractionStatus } from '../../utils/api'
 import { openUnifiedUserProfile } from '../../utils/publicProfiles'
 import { recordBrowse } from '../../utils/history'
+import { getGenderSymbol, getGenderTone } from '../../utils/gender'
 import './index.css'
 
 type Post = {
@@ -39,6 +40,7 @@ type Post = {
     college?: string
     grade?: string
     verified?: boolean
+    gender?: string
   }
   likes?: number
   comments?: number
@@ -57,7 +59,7 @@ const fallbackPost: Post = {
   content: '暂时没有找到这条帖子，请返回发现页重新打开。',
   tags: ['发现'],
   authorId: CURRENT_USER.id,
-  author: { id: CURRENT_USER.id, userId: CURRENT_USER.id, name: CURRENT_USER.name, college: '浙江大学', grade: '在读', avatar: CURRENT_USER.avatar },
+  author: { id: CURRENT_USER.id, userId: CURRENT_USER.id, name: CURRENT_USER.name, college: '浙江大学', grade: '在读', avatar: CURRENT_USER.avatar, gender: CURRENT_USER.gender },
   likes: 0,
   comments: 0,
 }
@@ -74,6 +76,7 @@ function getAuthor(post: Post) {
     college: '浙江大学',
     grade: '在读',
     avatar: '',
+    gender: post.authorId === CURRENT_USER.id ? CURRENT_USER.gender : undefined,
   }
 }
 
@@ -442,6 +445,11 @@ export default function PostDetail() {
               <View className='author-main'>
                 <View className='author-name-row'>
                   <Text className='author-name' onClick={() => goUser(authorId, author.name)}>{author.name}</Text>
+                  {getGenderSymbol({ ...author, id: authorId }) ? (
+                    <Text className={`author-gender author-gender--${getGenderTone({ ...author, id: authorId })}`}>
+                      {getGenderSymbol({ ...author, id: authorId })}
+                    </Text>
+                  ) : null}
                   {author.verified && <Text className='verified'>✓</Text>}
                 </View>
                 <Text className='author-meta'>{author.college || '浙江大学'} · {author.grade || '在读'} · {visibility === 'private' ? '私密' : '公开'}</Text>

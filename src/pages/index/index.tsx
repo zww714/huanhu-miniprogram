@@ -6,6 +6,7 @@ import SearchBar from '../../components/common/SearchBar'
 import TagChip from '../../components/common/TagChip'
 import { getActivities, getPartners, getUsers } from '../../utils/api'
 import { openUnifiedUserProfile } from '../../utils/publicProfiles'
+import { getGenderSymbol, getGenderTone } from '../../utils/gender'
 import './index.scss'
 
 const TABS = ['技能交换', '兴趣搭子', '社区活动']
@@ -615,6 +616,8 @@ export default function Index() {
     const matchRate = getMatchRate(user, index)
     const favorited = !!favoritedUsers[id]
     const name = getUserName(user)
+    const genderSymbol = getGenderSymbol(user as any)
+    const genderTone = getGenderTone(user as any)
     return (
       <View className='home-user-card' key={`${mode}_${id || index}`}>
         <View className='home-user-card-main'>
@@ -630,6 +633,7 @@ export default function Index() {
           <View className='home-user-body'>
             <View className='home-user-title-row' onClick={() => handleUserClick(user)}>
               <Text className='home-user-name'>{name}</Text>
+              {genderSymbol ? <Text className={`home-gender home-gender--${genderTone}`}>{genderSymbol}</Text> : null}
               {user.verified ? <Text className='home-verified'>✓</Text> : null}
               <Text className={index === 0 ? 'home-status-tag home-status-tag--match' : 'home-status-tag home-status-tag--hot'}>
                 {index === 0 ? '高匹配' : '热门'}
@@ -826,7 +830,10 @@ export default function Index() {
                 {isRenderableImage(user.avatar) ? <Image className='home-detail-avatar-img' src={user.avatar} mode='aspectFill' /> : <Text>{firstChar(user.name)}</Text>}
               </View>
               <View className='home-detail-user-main'>
-                <Text className='home-detail-user-name'>{user.name}</Text>
+                <View className='home-detail-name-row'>
+                  <Text className='home-detail-user-name'>{user.name}</Text>
+                  {getGenderSymbol(user as any) ? <Text className={`home-gender home-gender--${getGenderTone(user as any)}`}>{getGenderSymbol(user as any)}</Text> : null}
+                </View>
                 <Text className='home-detail-user-meta'>{user.college} · {user.grade}</Text>
               </View>
               <Text className='home-detail-chat'>聊天</Text>

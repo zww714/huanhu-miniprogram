@@ -97,6 +97,26 @@ page {
   font-weight: 900;
 }
 
+.author-gender {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  color: #FFFFFF;
+  font-size: 11px;
+  line-height: 16px;
+  text-align: center;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.author-gender--male {
+  background: #2563EB;
+}
+
+.author-gender--female {
+  background: #EC4899;
+}
+
 .author-meta,
 .time-text,
 .action-text {

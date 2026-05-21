@@ -7,7 +7,7 @@ page {
 .messages-page {
   min-height: 100vh;
   box-sizing: border-box;
-  padding: 44rpx 32rpx calc(180rpx + env(safe-area-inset-bottom));
+  padding: 36rpx 28rpx calc(170rpx + env(safe-area-inset-bottom));
   background:
     radial-gradient(circle at 15% 0%, rgba(37, 99, 235, 0.1), transparent 220px),
     linear-gradient(180deg, #F6FAFF 0%, #FFFFFF 48%, #F8FAFF 100%);
@@ -15,10 +15,10 @@ page {
 }
 
 .message-overview {
-  min-height: 116rpx;
-  margin: 0 0 34rpx;
-  padding: 24rpx 28rpx;
-  border-radius: 30rpx;
+  min-height: 104rpx;
+  margin: 0 0 28rpx;
+  padding: 22rpx 26rpx;
+  border-radius: 28rpx;
   background: rgba(255, 255, 255, 0.82);
   border: 1rpx solid #E8EEF8;
   box-shadow: 0 12rpx 34rpx rgba(37, 99, 235, 0.08);
@@ -39,20 +39,20 @@ page {
 
 .message-overview-title {
   color: #0F172A;
-  font-size: 34rpx;
-  line-height: 42rpx;
+  font-size: 32rpx;
+  line-height: 40rpx;
   font-weight: 900;
 }
 
 .message-overview-desc {
   color: #7A8AA0;
-  font-size: 25rpx;
-  line-height: 34rpx;
+  font-size: 24rpx;
+  line-height: 32rpx;
 }
 
 .mark-read-btn {
-  min-width: 144rpx;
-  height: 60rpx;
+  min-width: 132rpx;
+  height: 56rpx;
   border-radius: 999rpx;
   background: #2563EB;
   display: flex;
@@ -82,10 +82,11 @@ page {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  margin: 0 8rpx 36rpx;
+  margin: 0 0 30rpx;
 }
 
 .quick-entry {
+  width: 25%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -94,16 +95,16 @@ page {
 
 .quick-icon {
   position: relative;
-  width: 96rpx;
-  height: 96rpx;
-  border-radius: 28rpx;
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 26rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
 }
 
-.quick-icon text {
+.quick-icon > text {
   font-size: 50rpx;
   line-height: 1;
   font-weight: 900;
@@ -113,7 +114,7 @@ page {
   background: linear-gradient(135deg, #FFF1F2 0%, #FFE4E6 100%);
 }
 
-.quick-icon--like text {
+.quick-icon--like > text {
   color: #FF4D5E;
 }
 
@@ -121,7 +122,7 @@ page {
   background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
 }
 
-.quick-icon--follow text {
+.quick-icon--follow > text {
   color: #2563EB;
   font-size: 56rpx;
 }
@@ -130,7 +131,7 @@ page {
   background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
 }
 
-.quick-icon--comment text {
+.quick-icon--comment > text {
   color: #20C997;
   font-size: 42rpx;
   letter-spacing: -3px;
@@ -140,15 +141,9 @@ page {
   background: linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%);
 }
 
-.quick-icon--system text {
+.quick-icon--system > text {
   color: #7C3AED;
-  font-size: 0;
-}
-
-.quick-icon--system text::before {
-  content: '🔔';
-  font-size: 38rpx;
-  line-height: 1;
+  font-size: 36rpx;
 }
 
 .quick-title {
@@ -175,8 +170,8 @@ page {
 
 .message-badge {
   position: absolute;
-  top: -8rpx;
-  right: -8rpx;
+  top: -6rpx;
+  right: -6rpx;
 }
 
 .message-badge text,
@@ -231,14 +226,8 @@ page {
 
 .system-avatar text {
   color: #2563EB;
-  font-size: 0;
+  font-size: 30rpx;
   font-weight: 900;
-}
-
-.system-avatar text::before {
-  content: '🔔';
-  font-size: 42rpx;
-  line-height: 1;
 }
 
 .chat-avatar {

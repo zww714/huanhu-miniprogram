@@ -3,6 +3,7 @@ import Taro, { useDidShow } from '@tarojs/taro'
 import { useState } from 'react'
 import './index.css'
 import { updateProfile } from '../../utils/api'
+import { getGenderSymbol, getGenderTone } from '../../utils/gender'
 
 import {
   AVATAR_STORAGE_KEY,
@@ -21,6 +22,8 @@ const QUICK_ENTRIES = [
   { key: 'activities', icon: '□', label: '我的活动', desc: '报名和参与记录', path: '/pages/my-activities/index', tone: 'blue' },
   { key: 'settings', icon: '◇', label: '设置', desc: '账号与隐私', path: '/pages/settings/index', tone: 'purple' },
 ]
+
+const PROFILE_STORAGE_KEY = 'profileDraft'
 
 const CHEN_PROFILE = {
   ...MY_PROFILE,
@@ -53,21 +56,27 @@ const CHEN_PROFILE = {
   },
 }
 
-function getGenderSymbol(gender?: string) {
-  if (gender === 'male' || gender === '男') return '♂'
-  if (gender === 'female' || gender === '女') return '♀'
-  return ''
+function getSavedProfile() {
+  const saved = Taro.getStorageSync(PROFILE_STORAGE_KEY)
+  if (!saved || typeof saved !== 'object') return {}
+  return saved as Record<string, any>
 }
 
-function getGenderTone(gender?: string) {
-  if (gender === 'male' || gender === '男') return 'male'
-  if (gender === 'female' || gender === '女') return 'female'
-  return 'unknown'
+function getDisplayProfile() {
+  const saved = getSavedProfile()
+  return {
+    ...CHEN_PROFILE,
+    ...saved,
+    name: saved.name || saved.nickname || CHEN_PROFILE.name,
+    bio: saved.bio || saved.intro || CHEN_PROFILE.bio,
+    intro: saved.intro || saved.bio || CHEN_PROFILE.intro,
+  }
 }
 
 export default function Profile() {
-  const [avatarUrl, setAvatarUrl] = useState(CHEN_PROFILE.avatar || '')
-  const [profileData, setProfileData] = useState<any>(CHEN_PROFILE)
+  const initialProfile = getDisplayProfile()
+  const [avatarUrl, setAvatarUrl] = useState(initialProfile.avatar || '')
+  const [profileData, setProfileData] = useState<any>(initialProfile)
   const [mySkills, setMySkills] = useState<any[]>(MY_SKILLS)
   const [myPosts, setMyPosts] = useState<any[]>(MY_POSTS)
 
@@ -172,12 +181,13 @@ export default function Profile() {
   const wantTags = (p.wantToLearn || p.learnWants || CHEN_PROFILE.wantToLearn || MY_LEARN_WANTS.map((item) => item.name)).slice(0, 3)
   const interestTags = (p.interests || CHEN_PROFILE.interests || MY_INTERESTS).slice(0, 3)
   const avatarText = (p.name || CHEN_PROFILE.name || '我').charAt(0)
-  const genderSymbol = getGenderSymbol(p.gender || CHEN_PROFILE.gender)
-  const genderTone = getGenderTone(p.gender || CHEN_PROFILE.gender)
+  const genderSymbol = getGenderSymbol(p)
+  const genderTone = getGenderTone(p)
 
   useDidShow(() => {
-    setProfileData(CHEN_PROFILE)
-    setAvatarUrl(CHEN_PROFILE.avatar || '')
+    const nextProfile = getDisplayProfile()
+    setProfileData(nextProfile)
+    setAvatarUrl(nextProfile.avatar || '')
   })
 
   return (

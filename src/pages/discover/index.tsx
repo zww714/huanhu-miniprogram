@@ -6,6 +6,7 @@ import SearchBar from '../../components/common/SearchBar'
 import { getPosts } from '../../utils/api'
 import { ACTIVITIES, MOCK_POSTS, type Activity } from '../../utils/mock'
 import { openUnifiedUserProfile } from '../../utils/publicProfiles'
+import { getGenderSymbol, getGenderTone } from '../../utils/gender'
 import './index.css'
 
 const CATEGORIES = ['推荐', '科研', '升学', '兴趣', '活动', '兼职']
@@ -46,6 +47,7 @@ type Post = {
     userId?: string
     name: string
     avatar?: string
+    gender?: string
     college?: string
     major?: string
     grade?: string
@@ -65,6 +67,7 @@ type AuthorProfile = {
   id: string
   name: string
   avatar?: string
+  gender?: string
   college: string
   major: string
   grade: string
@@ -86,6 +89,7 @@ type FeedItem = {
   statusType: 'primary' | 'success' | 'warning' | 'danger' | 'purple'
   authorName: string
   authorAvatar?: string
+  authorGender?: string
   authorMeta: string
   authorId?: string
   likeCount: number
@@ -203,6 +207,7 @@ function getAuthor(post: Post): AuthorProfile {
     id: id || post.author?.name || 'unknown-user',
     name: post.authorName || post.author?.name || '同学',
     avatar: post.author?.avatar,
+    gender: post.author?.gender,
     college: post.author?.college || '浙江大学',
     major: post.author?.major || '在读',
     grade: post.author?.grade || '在读',
@@ -266,6 +271,7 @@ function normalizePost(post: Post): FeedItem {
     authorId: author.id,
     authorName: author.name,
     authorAvatar: author.avatar,
+    authorGender: author.gender,
     authorMeta: `${author.college} · ${author.grade}`,
     likeCount: Number(post.likeCount ?? post.likes ?? 0),
     commentCount: Number(post.commentCount ?? post.comments ?? 0),
@@ -491,7 +497,14 @@ export default function Discover() {
                   {isRenderableImage(item.authorAvatar) ? <Image className='feed-avatar-img' src={item.authorAvatar} mode='aspectFill' /> : <Text>{firstChar(item.authorName)}</Text>}
                 </View>
                 <View className='feed-author-text'>
-                  <Text className='feed-author-name'>{item.authorName}</Text>
+                  <View className='feed-author-name-row'>
+                    <Text className='feed-author-name'>{item.authorName}</Text>
+                    {getGenderSymbol({ gender: item.authorGender, name: item.authorName, id: item.authorId }) ? (
+                      <Text className={`feed-gender feed-gender--${getGenderTone({ gender: item.authorGender, name: item.authorName, id: item.authorId })}`}>
+                        {getGenderSymbol({ gender: item.authorGender, name: item.authorName, id: item.authorId })}
+                      </Text>
+                    ) : null}
+                  </View>
                   <Text className='feed-author-meta' numberOfLines={1}>{item.authorMeta}</Text>
                 </View>
               </View>

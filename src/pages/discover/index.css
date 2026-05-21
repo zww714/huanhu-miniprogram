@@ -411,10 +411,36 @@ page {
   gap: 2rpx;
 }
 
+.feed-author-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
 .feed-author-name {
   color: #344563;
   font-size: 24rpx;
   font-weight: 900;
+}
+
+.feed-gender {
+  width: 24rpx;
+  height: 24rpx;
+  border-radius: 999rpx;
+  color: #FFFFFF;
+  font-size: 16rpx;
+  line-height: 24rpx;
+  text-align: center;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.feed-gender--male {
+  background: #2563EB;
+}
+
+.feed-gender--female {
+  background: #EC4899;
 }
 
 .feed-author-meta {

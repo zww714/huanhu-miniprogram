@@ -5,6 +5,7 @@ import SearchBar from '../../components/common/SearchBar'
 import { getPosts } from '../../utils/api'
 import { MOCK_POSTS } from '../../utils/mock'
 import { openUnifiedUserProfile } from '../../utils/publicProfiles'
+import { getGenderSymbol, getGenderTone } from '../../utils/gender'
 import './index.css'
 
 const HOT_RECOMMENDS = ['Python 入门', '科研经验', '摄影搭子', '论文降重', 'AI工具', '校园活动']
@@ -31,6 +32,7 @@ type SearchPost = {
     avatar?: string
     college?: string
     grade?: string
+    gender?: string
   }
   likeCount?: number
   commentCount?: number
@@ -170,6 +172,11 @@ export default function SearchResults() {
                 <Text className='search-desc' numberOfLines={2}>{getDesc(post)}</Text>
                 <View className='search-author' onClick={(event) => { event.stopPropagation(); openAuthor(post) }}>
                   <Text className='search-author-name'>{getAuthorName(post)}</Text>
+                  {getGenderSymbol({ gender: post.author?.gender, name: getAuthorName(post), id: getAuthorId(post) }) ? (
+                    <Text className={`search-gender search-gender--${getGenderTone({ gender: post.author?.gender, name: getAuthorName(post), id: getAuthorId(post) })}`}>
+                      {getGenderSymbol({ gender: post.author?.gender, name: getAuthorName(post), id: getAuthorId(post) })}
+                    </Text>
+                  ) : null}
                   <Text className='search-author-meta'>{post.author?.college || '浙江大学'} · {formatTime(post.createdAt)}</Text>
                 </View>
                 <View className='search-actions'>

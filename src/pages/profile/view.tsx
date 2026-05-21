@@ -22,6 +22,7 @@ import {
   type PublicSkill,
   type PublicUser,
 } from '../../utils/publicProfiles'
+import { getGenderSymbol, getGenderTone } from '../../utils/gender'
 import './view.scss'
 
 type FollowState = {
@@ -170,6 +171,7 @@ export default function ProfileView() {
       interests: remoteUser.interests || fallback.interests,
       followerCount: remoteUser.followerCount ?? remoteUser.stats?.followers ?? fallback.followerCount,
       followingCount: remoteUser.followingCount ?? remoteUser.stats?.following ?? fallback.followingCount,
+      gender: remoteUser.gender || (fallback as any).gender,
     }
   }, [remoteUser, remoteSkills, routeUser.name, userId])
 
@@ -286,6 +288,9 @@ export default function ProfileView() {
             <View className='profile-copy'>
               <View className='name-row'>
                 <Text className='user-name'>{user.name}</Text>
+                {getGenderSymbol(user as any) ? (
+                  <Text className={`view-gender view-gender--${getGenderTone(user as any)}`}>{getGenderSymbol(user as any)}</Text>
+                ) : null}
                 {user.verified && <Text className='verify-badge'>✓</Text>}
               </View>
               <Text className='meta-line' numberOfLines={2}>{metaLine || '浙江大学 · 在读'}</Text>
