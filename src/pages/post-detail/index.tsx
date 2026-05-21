@@ -504,23 +504,6 @@ export default function PostDetail() {
               <Text className='comment-title'>评论互动</Text>
               <Text className='comment-count'>{commentTotal} 条</Text>
             </View>
-            <View className='comment-input-row'>
-              {replyTarget ? (
-                <View className='replying-row'>
-                  <Text>回复 {replyTarget.userName}</Text>
-                  <Text className='cancel-reply' onClick={() => setReplyTarget(null)}>取消</Text>
-                </View>
-              ) : null}
-              <Input
-                className='comment-input'
-                value={commentText}
-                placeholder={replyTarget ? `回复 ${replyTarget.userName}...` : '写下你的想法...'}
-                onInput={(event) => setCommentText(event.detail.value)}
-              />
-              <View className={commentText.trim() ? 'comment-send comment-send--active' : 'comment-send'} onClick={handleSendComment}>
-                <Text>发送</Text>
-              </View>
-            </View>
             {!comments.length ? (
               <View className='comments-empty'><Text>暂时还没有评论</Text></View>
             ) : null}
@@ -560,6 +543,27 @@ export default function PostDetail() {
           </View>
         </View>
       </ScrollView>
+
+      <View className='post-comment-bar'>
+        {replyTarget ? (
+          <View className='replying-row'>
+            <Text>回复 {replyTarget.userName}</Text>
+            <Text className='cancel-reply' onClick={() => setReplyTarget(null)}>取消</Text>
+          </View>
+        ) : null}
+        <View className='comment-compose-row'>
+          <Input
+            className='comment-input'
+            value={commentText}
+            placeholder={replyTarget ? `回复 ${replyTarget.userName}...` : '写下你的想法...'}
+            onInput={(event) => setCommentText(event.detail.value)}
+            cursorSpacing={18}
+          />
+          <View className={commentText.trim() ? 'comment-send comment-send--active' : 'comment-send'} onClick={handleSendComment}>
+            <Text>发送</Text>
+          </View>
+        </View>
+      </View>
     </View>
   )
 }

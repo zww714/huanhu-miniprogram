@@ -5,6 +5,7 @@ page {
 }
 
 .post-page {
+  position: relative;
   min-height: 100vh;
   background:
     radial-gradient(circle at 14% 0%, rgba(37, 99, 235, 0.08), transparent 220px),
@@ -24,7 +25,7 @@ page {
 }
 
 .page-body {
-  padding: 16px 14px calc(28px + env(safe-area-inset-bottom, 0px));
+  padding: 16px 14px calc(104px + env(safe-area-inset-bottom, 0px));
 }
 
 .post-card {
@@ -318,18 +319,29 @@ page {
   font-weight: 800;
 }
 
-.comment-input-row {
+.post-comment-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  padding: 9px 14px calc(10px + env(safe-area-inset-bottom, 0px));
+  background: rgba(255, 255, 255, 0.96);
+  border-top: 1px solid #E8EEF8;
+  box-shadow: 0 -8px 28px rgba(15, 23, 42, 0.06);
+  box-sizing: border-box;
+}
+
+.comment-compose-row {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 10px;
-  flex-wrap: wrap;
 }
 
 .replying-row {
-  width: 100%;
   min-height: 26px;
   padding: 0 12px;
+  margin-bottom: 8px;
   border-radius: 999px;
   background: #F7FBFF;
   display: flex;
@@ -352,8 +364,8 @@ page {
 .comment-input {
   flex: 1;
   min-width: 0;
-  height: 36px;
-  padding: 0 12px;
+  height: 40px;
+  padding: 0 14px;
   border-radius: 999px;
   background: #F7FAFF;
   color: #0F172A;
@@ -361,8 +373,8 @@ page {
 }
 
 .comment-send {
-  width: 58px;
-  height: 36px;
+  width: 62px;
+  height: 40px;
   border-radius: 999px;
   background: #E2E8F0;
   display: flex;
