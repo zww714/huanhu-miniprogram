@@ -28,7 +28,7 @@ export default {
     },
   },
   cache: {
-    enable: false,
+    enable: true,
   },
   mini: {
     postcss: {

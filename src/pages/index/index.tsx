@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import Taro, { useLoad } from '@tarojs/taro'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import Taro, { useDidShow, useLoad } from '@tarojs/taro'
 import { Image, ScrollView, Text, View } from '@tarojs/components'
 import FloatingPostButton from '../../components/common/FloatingPostButton'
 import SearchBar from '../../components/common/SearchBar'
@@ -314,6 +314,24 @@ export default function Index() {
   const [activities, setActivities] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
 
+  const isFirstShow = useRef(true)
+
+  const loadHomeData = useCallback(async () => {
+    setLoading(true)
+    try {
+      const [usersData, partnersData, activitiesData] = await Promise.all([
+        getUsers({ page: 0 }),
+        getPartners(),
+        getActivities({ page: 0 }),
+      ])
+      setSkillUsers(mergePendingSkill(usersData || []))
+      setPartners(mergePendingPartner(partnersData || []))
+      setActivities(mergePendingActivity(activitiesData || []))
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
   useLoad((options) => {
     const tab = Number(options?.tab)
     if ([0, 1, 2].includes(tab)) setActiveTab(tab)
@@ -322,26 +340,16 @@ export default function Index() {
   })
 
   useEffect(() => {
-    let alive = true
-    async function loadHomeData() {
-      setLoading(true)
-      try {
-        const [usersData, partnersData, activitiesData] = await Promise.all([
-          getUsers({ page: 0 }),
-          getPartners(),
-          getActivities({ page: 0 }),
-        ])
-        if (!alive) return
-        setSkillUsers(mergePendingSkill(usersData || []))
-        setPartners(mergePendingPartner(partnersData || []))
-        setActivities(mergePendingActivity(activitiesData || []))
-      } finally {
-        if (alive) setLoading(false)
-      }
+    loadHomeData()
+  }, [loadHomeData])
+
+  useDidShow(() => {
+    if (isFirstShow.current) {
+      isFirstShow.current = false
+      return
     }
     loadHomeData()
-    return () => { alive = false }
-  }, [])
+  })
 
   useEffect(() => {
     setActiveFilter(0)

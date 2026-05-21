@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import Taro, { useLoad } from '@tarojs/taro'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import Taro, { useDidShow, useLoad } from '@tarojs/taro'
 import { Image, ScrollView, Text, View } from '@tarojs/components'
 import FloatingPostButton from '../../components/common/FloatingPostButton'
 import SearchBar from '../../components/common/SearchBar'
@@ -337,6 +337,8 @@ export default function Discover() {
   const [likedItems, setLikedItems] = useState<Record<string, boolean>>({})
   const [favoritedItems, setFavoritedItems] = useState<Record<string, boolean>>({})
 
+  const isFirstShow = useRef(true)
+
   useLoad(() => {
     const pending = Taro.getStorageSync('pendingPost')
     const storedKeyword = Taro.getStorageSync('discoverKeyword')
@@ -347,27 +349,32 @@ export default function Discover() {
     }
   })
 
-  useEffect(() => {
-    let alive = true
-    async function loadPosts() {
-      setLoading(true)
-      try {
-        const selected = CATEGORIES[activeCat]
-        const requestCategory = selected === '推荐' ? '全部' : selected === '兼职' ? '工作' : selected
-        const data = await getPosts({ page: 0, category: requestCategory, keyword: searchQuery.trim() })
-        if (alive) setPosts(mergePendingPost(data?.length ? data : MOCK_POSTS))
-      } catch (e) {
-        console.warn('[Discover] load posts failed', e)
-        if (alive) setPosts(mergePendingPost(MOCK_POSTS))
-      } finally {
-        if (alive) setLoading(false)
-      }
-    }
-    loadPosts()
-    return () => {
-      alive = false
+  const loadPosts = useCallback(async () => {
+    setLoading(true)
+    try {
+      const selected = CATEGORIES[activeCat]
+      const requestCategory = selected === '推荐' ? '全部' : selected === '兼职' ? '工作' : selected
+      const data = await getPosts({ page: 0, category: requestCategory, keyword: searchQuery.trim() })
+      setPosts(mergePendingPost(data?.length ? data : MOCK_POSTS))
+    } catch (e) {
+      console.warn('[Discover] load posts failed', e)
+      setPosts(mergePendingPost(MOCK_POSTS))
+    } finally {
+      setLoading(false)
     }
   }, [activeCat, searchQuery])
+
+  useEffect(() => {
+    loadPosts()
+  }, [loadPosts])
+
+  useDidShow(() => {
+    if (isFirstShow.current) {
+      isFirstShow.current = false
+      return
+    }
+    loadPosts()
+  })
 
   const keyword = searchQuery.trim()
   const feedItems = useMemo(() => {

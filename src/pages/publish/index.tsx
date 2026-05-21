@@ -119,7 +119,8 @@ export default function Publish() {
       level,
       desc: currentDesc.trim(),
     })
-    Taro.reLaunch({ url: '/pages/index/index?refresh=1&tab=0' })
+    Taro.showToast({ title: '发布成功', icon: 'success' })
+    setTimeout(() => Taro.navigateBack(), 500)
   }
 
   const publishPartner = async () => {
@@ -143,7 +144,8 @@ export default function Publish() {
       tags: interests,
       lookingFor: `${interests[0]}搭子`,
     })
-    Taro.reLaunch({ url: '/pages/index/index?refresh=1&tab=1' })
+    Taro.showToast({ title: '发布成功', icon: 'success' })
+    setTimeout(() => Taro.navigateBack(), 500)
   }
 
   const publishActivity = async () => {
@@ -163,7 +165,8 @@ export default function Publish() {
       tags,
     })
     Taro.setStorageSync('pendingActivity', activity)
-    Taro.reLaunch({ url: '/pages/index/index?refresh=1&tab=2' })
+    Taro.showToast({ title: '发布成功', icon: 'success' })
+    setTimeout(() => Taro.navigateBack(), 500)
   }
 
   const choosePostImage = async () => {
@@ -214,7 +217,8 @@ export default function Publish() {
       image: postImage,
     })
     Taro.setStorageSync('pendingPost', post)
-    Taro.reLaunch({ url: '/pages/discover/index?refresh=1' })
+    Taro.showToast({ title: '发布成功', icon: 'success' })
+    setTimeout(() => Taro.navigateBack(), 500)
   }
 
   const handlePublish = async () => {
@@ -231,7 +235,6 @@ export default function Publish() {
       } else {
         await publishSkill()
       }
-      Taro.showToast({ title: '发布成功', icon: 'success' })
     } catch (e) {
       console.warn('[Publish] publish failed', e)
       Taro.showToast({ title: '发布失败，请检查网络或权限', icon: 'none' })

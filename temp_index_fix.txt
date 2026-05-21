@@ -1,7 +1,0 @@
-const TABS = ['技能交换', '兴趣搭子', '社区活动']
-const ACTIVITY_CATEGORIES = ['全部', '技能交换', '兴趣', '志愿', '其他']
-const PARTNER_CATEGORIES = ['全部', '学习', '运动', '游戏', '音乐', '旅行', '摄影', '其他']
-
-const ICONS: Record<string, string> = {
-  trending: '🔥', chef: '🍆', gamepad: '🎮', camera: '📲'
-}
