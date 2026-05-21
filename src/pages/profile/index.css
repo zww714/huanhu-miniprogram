@@ -133,14 +133,12 @@ page {
   font-weight: 800;
 }
 
-.gender-symbol--male,
-.gender-symbol--男 {
+.gender-symbol--male {
   background: #2563EB;
   box-shadow: 0 6rpx 14rpx rgba(37, 99, 235, 0.2);
 }
 
-.gender-symbol--female,
-.gender-symbol--女 {
+.gender-symbol--female {
   background: #EC4899;
   box-shadow: 0 6rpx 14rpx rgba(236, 72, 153, 0.18);
 }
