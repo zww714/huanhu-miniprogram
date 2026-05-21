@@ -184,7 +184,7 @@ export interface CommentReply {
 // ========== SKILL USERS ==========
 export const SKILL_USERS: SkillUser[] = [
   {
-    id: 1, name: '陈同学', avatar: '/assets/avatar.png',
+    id: 1, name: '陈同学', avatar: '',
     college: '物理学院', major: '物理学', grade: '博士在读', campus: '紫金港', type: '博士生',
     verified: true, match: 92, matchRate: 92,
     bio: '擅长用AI和编程工具帮助同学快速上手科研与项目实践。',
@@ -193,7 +193,7 @@ export const SKILL_USERS: SkillUser[] = [
     want: ['摄影', '产品设计', '羽毛球', '桌游'], wantToLearn: ['摄影', '产品设计', '羽毛球', '桌游'], interests: ['科研', 'AI', '摄影'],
   },
   {
-    id: 2, name: '小熊软糖', avatar: '/assets/avatar.png',
+    id: 2, name: '小熊软糖', avatar: '',
     college: '计算机学院', major: '计算机科学', grade: '研一', campus: '玉泉', type: '研究生',
     verified: true, match: 89, matchRate: 89,
     bio: '擅长英语学习方法与翻译技巧，帮助提升语言应用能力。',
@@ -202,7 +202,7 @@ export const SKILL_USERS: SkillUser[] = [
     want: ['Python', '数据分析'], wantToLearn: ['Python', '数据分析'], interests: ['英语', '学习'],
   },
   {
-    id: 3, name: '橘子汽水', avatar: '/assets/avatar.png',
+    id: 3, name: '橘子汽水', avatar: '',
     college: '电气学院', major: '电气工程', grade: '大三', campus: '紫金港', type: '本科生',
     verified: true, match: 87, matchRate: 87,
     bio: '擅长嵌入式开发与硬件调试，喜欢动手解决实际问题。',

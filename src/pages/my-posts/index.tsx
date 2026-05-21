@@ -136,6 +136,7 @@ export default function MyPosts() {
         }
         if (tapIndex === 4) confirmDelete([post.id])
       },
+      fail: () => undefined,
     })
   }
 

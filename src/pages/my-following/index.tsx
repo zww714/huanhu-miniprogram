@@ -124,6 +124,7 @@ export default function MyFollowing() {
     Taro.showActionSheet({
       itemList: ['资料不真实', '骚扰或广告', '不友善内容'],
       success: () => Taro.showToast({ title: '已提交举报', icon: 'success' }),
+      fail: () => undefined,
     })
   }
 
@@ -153,6 +154,7 @@ export default function MyFollowing() {
         if (tapIndex === 3) reportUser()
         if (tapIndex === 4) confirmBlock([user.userId])
       },
+      fail: () => undefined,
     })
   }
 

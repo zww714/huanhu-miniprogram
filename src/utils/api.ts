@@ -151,6 +151,12 @@ function isExpectedCloudFallback(error: any) {
     'FUNCTIONS_EXECUTE_FAIL',
     '云函数错误',
     '获取交互状态失败',
+    '获取用户技能失败',
+    '获取我的技能失败',
+    '获取用户详情失败',
+    '获取帖子失败',
+    '获取我的帖子失败',
+    '获取评论失败',
     '操作失败',
     '该内容暂不可查看',
   ].some((keyword) => message.includes(keyword))
@@ -380,7 +386,7 @@ function normalizePost(post: any) {
   }
   const cleanSeed = seedMap[post._id] || seedMap[post.id]
   const authorMap: Record<string, any> = {
-    user_chen: { name: '陈同学', avatar: '/assets/avatar.png', college: '物理学院', grade: '博士在读' },
+    user_chen: { name: '陈同学', avatar: '', college: '物理学院', grade: '博士在读' },
     user_photo: { name: '光影捕手', college: '艺术学院', grade: '大二' },
     user_orange: { name: '上岸锦鲤', college: '数学学院', grade: '研一' },
     user_xiong: { name: '论文苦手', college: '人文学院', grade: '大三' },
@@ -488,7 +494,7 @@ export async function createPost(params: {
     userId: 'user_chen',
     author: {
       name: '陈同学',
-      avatar: '/assets/avatar.png',
+      avatar: '',
       college: '物理学院',
       grade: '博士在读',
     },

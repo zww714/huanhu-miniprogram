@@ -80,7 +80,7 @@ export default function UserDetail() {
         setRemoteUser(user)
         recordBrowse({ id: userId, type: 'user', title: user.name || routeUser.name || '用户', subtitle: user.college || user.school })
       })
-      .catch((e) => console.warn('[UserDetail] getUserDetail failed, fallback to public mock', e))
+      .catch(() => undefined)
     return () => { alive = false }
   }, [routeUser.id, routeUser.name])
 
@@ -92,7 +92,7 @@ export default function UserDetail() {
       .then((posts) => {
         if (alive && Array.isArray(posts)) setRemotePosts(posts)
       })
-      .catch((e) => console.warn('[UserDetail] getUserPosts failed, fallback public mock', e))
+      .catch(() => undefined)
     return () => { alive = false }
   }, [routeUser.id, routeUser.name])
 
@@ -105,7 +105,7 @@ export default function UserDetail() {
         if (!alive || !Array.isArray(skills)) return
         setRemoteSkills(skills)
       })
-      .catch((e) => console.warn('[UserDetail] getUserSkills failed, fallback to public mock', e))
+      .catch(() => undefined)
     return () => { alive = false }
   }, [routeUser.id, routeUser.name])
 
@@ -128,7 +128,7 @@ export default function UserDetail() {
           })
         }
       })
-      .catch((e) => console.warn('[UserDetail] getFollowStatus failed', e))
+      .catch(() => undefined)
       .finally(() => setRelationLoading(false))
   }, [routeUser.id, routeUser.name])
 
@@ -240,6 +240,7 @@ export default function UserDetail() {
     Taro.showActionSheet({
       itemList: reportReasons,
       success: () => Taro.showToast({ title: '举报已提交', icon: 'success' }),
+      fail: () => undefined,
     })
   }
 
@@ -280,6 +281,7 @@ export default function UserDetail() {
         if (item === '举报用户') reportUser()
         if (item === '拉黑用户') handleBlockUser()
       },
+      fail: () => undefined,
     })
   }
 

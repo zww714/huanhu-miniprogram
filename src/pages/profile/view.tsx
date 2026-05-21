@@ -113,13 +113,13 @@ export default function ProfileView() {
       .then((user) => {
         if (alive && user) setRemoteUser(user)
       })
-      .catch((e) => console.warn('[ProfileView] getUserDetail failed, fallback public mock', e))
+      .catch(() => undefined)
 
     getUserSkills({ userId })
       .then((skills) => {
         if (alive && Array.isArray(skills)) setRemoteSkills(skills.map((item) => normalizeSkill(item, userId)))
       })
-      .catch((e) => console.warn('[ProfileView] getUserSkills failed, fallback public mock', e))
+      .catch(() => undefined)
 
     getPosts({ userId, page: 0 })
       .then((posts) => {
@@ -127,7 +127,7 @@ export default function ProfileView() {
         const name = routeUser.name || remoteUser?.name || '同学'
         setRemotePosts(posts.map((item) => normalizePost(item, userId, name)))
       })
-      .catch((e) => console.warn('[ProfileView] getPosts failed, fallback public mock', e))
+      .catch(() => undefined)
 
     getFollowStatus({ targetUserId: userId })
       .then((status) => {
@@ -224,6 +224,7 @@ export default function ProfileView() {
     Taro.showActionSheet({
       itemList: ['垃圾广告', '不友善内容', '虚假信息', '骚扰行为', '其他'],
       success: () => Taro.showToast({ title: '举报已提交', icon: 'success' }),
+      fail: () => undefined,
     })
   }
 

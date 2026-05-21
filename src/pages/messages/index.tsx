@@ -39,6 +39,10 @@ function firstChar(name: string) {
   return (name || '同').trim().charAt(0) || '同'
 }
 
+function isRenderableImage(src?: string) {
+  return !!src && !src.startsWith('linear-gradient') && !src.includes('/assets/avatar.png')
+}
+
 function normalizeBaseConversations() {
   return CONVERSATIONS
     .filter((item) => item.name !== '系统通知' && item.category !== '系统通知')
@@ -56,10 +60,13 @@ function formatBadge(count: number) {
 }
 
 export default function Messages() {
-  const [conversations, setConversations] = useState<Conversation[]>([])
+  const [conversations, setConversations] = useState<Conversation[]>(normalizeBaseConversations())
   const [unreadCounts, setUnreadCounts] = useState(localGetUnreadCounts())
 
   useDidShow(() => {
+    const baseConversations = normalizeBaseConversations()
+    setConversations(baseConversations)
+
     getNotificationUnreadCounts().then((cloudCounts) => {
       setUnreadCounts(cloudCounts)
       updateMessageTabUnread()
@@ -70,19 +77,22 @@ export default function Messages() {
     async function loadConversations() {
       try {
         const cloudConversations = await getChatConversations()
+        if (!Array.isArray(cloudConversations) || cloudConversations.length === 0) {
+          const chatUnread = baseConversations.reduce((sum, item) => sum + getConversationUnread(item), 0)
+          updateMessageTabUnread(chatUnread)
+          return
+        }
         const cloudIds = new Set(cloudConversations.map((item: Conversation) => item.id))
         const nextConversations = [
           ...cloudConversations,
-          ...normalizeBaseConversations().filter((item) => !cloudIds.has(item.id)),
+          ...baseConversations.filter((item) => !cloudIds.has(item.id)),
         ]
         setConversations(nextConversations)
         const chatUnread = nextConversations.reduce((sum, item) => sum + getConversationUnread(item), 0)
         updateMessageTabUnread(chatUnread)
       } catch (e) {
-        console.warn('[Messages] load conversations failed', e)
-        const nextConversations = normalizeBaseConversations()
-        setConversations(nextConversations)
-        updateMessageTabUnread()
+        const chatUnread = baseConversations.reduce((sum, item) => sum + getConversationUnread(item), 0)
+        updateMessageTabUnread(chatUnread)
       }
     }
 
@@ -177,7 +187,7 @@ export default function Messages() {
           return (
             <View key={conv.id} className='message-row' onClick={() => goChat(conv)}>
               <View className='chat-avatar'>
-                {conv.avatar ? (
+                {isRenderableImage(conv.avatar) ? (
                   <Image className='chat-avatar-img' src={conv.avatar} mode='aspectFill' />
                 ) : (
                   <Text>{firstChar(conv.name)}</Text>

@@ -214,7 +214,11 @@ function getAuthor(post: Post): AuthorProfile {
 }
 
 function isImageCover(cover?: string) {
-  return !!cover && !cover.startsWith('linear-gradient')
+  return !!cover && !cover.startsWith('linear-gradient') && !cover.includes('/assets/avatar.png')
+}
+
+function isRenderableImage(src?: string) {
+  return !!src && !src.startsWith('linear-gradient') && !src.includes('/assets/avatar.png')
 }
 
 function firstChar(name: string) {
@@ -477,7 +481,7 @@ export default function Discover() {
             <>
               <View className='feed-author' onClick={(event) => { event.stopPropagation(); openUser(item) }}>
                 <View className='feed-avatar' style={{ backgroundColor: getAvatarBg(item.authorName) }}>
-                  {item.authorAvatar ? <Image className='feed-avatar-img' src={item.authorAvatar} mode='aspectFill' /> : <Text>{firstChar(item.authorName)}</Text>}
+                  {isRenderableImage(item.authorAvatar) ? <Image className='feed-avatar-img' src={item.authorAvatar} mode='aspectFill' /> : <Text>{firstChar(item.authorName)}</Text>}
                 </View>
                 <View className='feed-author-text'>
                   <Text className='feed-author-name'>{item.authorName}</Text>

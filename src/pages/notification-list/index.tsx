@@ -138,6 +138,7 @@ export default function NotificationList() {
         if (res.tapIndex === 1) deleteOne(item)
         if (res.tapIndex === 2) blockType()
       },
+      fail: () => undefined,
     })
   }
 

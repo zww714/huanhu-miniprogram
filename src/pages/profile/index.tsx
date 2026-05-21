@@ -27,6 +27,7 @@ const CHEN_PROFILE = {
   user_id: MY_PROFILE.user_id || '10086',
   name: '陈同学',
   avatar: '',
+  gender: 'male',
   verified: true,
   school: '浙江大学',
   college: '计算机学院',
@@ -50,6 +51,12 @@ const CHEN_PROFILE = {
     followers: 86,
     following: 42,
   },
+}
+
+function getGenderSymbol(gender?: string) {
+  if (gender === 'male' || gender === '男') return '♂'
+  if (gender === 'female' || gender === '女') return '♀'
+  return ''
 }
 
 export default function Profile() {
@@ -137,6 +144,7 @@ export default function Profile() {
         if (res.tapIndex === 1) chooseAvatarImage('camera')
         if (res.tapIndex === 2) chooseAvatarImage('album')
       },
+      fail: () => undefined,
     })
   }
 
@@ -158,6 +166,7 @@ export default function Profile() {
   const wantTags = (p.wantToLearn || p.learnWants || CHEN_PROFILE.wantToLearn || MY_LEARN_WANTS.map((item) => item.name)).slice(0, 3)
   const interestTags = (p.interests || CHEN_PROFILE.interests || MY_INTERESTS).slice(0, 3)
   const avatarText = (p.name || CHEN_PROFILE.name || '我').charAt(0)
+  const genderSymbol = getGenderSymbol(p.gender || CHEN_PROFILE.gender)
 
   useDidShow(() => {
     setProfileData(CHEN_PROFILE)
@@ -183,6 +192,7 @@ export default function Profile() {
             <View className='profile-info'>
               <View className='name-row'>
                 <Text className='profile-name'>{p.name || CHEN_PROFILE.name}</Text>
+                {genderSymbol ? <Text className={`gender-symbol gender-symbol--${p.gender || CHEN_PROFILE.gender}`}>{genderSymbol}</Text> : null}
                 {p.verified !== false && <View className='verify-dot'><Text>✓</Text></View>}
               </View>
               <Text className='profile-meta' numberOfLines={2}>{metaItems.join(' · ')}</Text>

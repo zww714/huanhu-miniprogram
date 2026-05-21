@@ -43,7 +43,7 @@ export default function UserSkills() {
         if (!alive || !Array.isArray(data)) return
         setRemoteSkills(data)
       })
-      .catch((e) => console.warn('[UserSkills] getUserSkills failed, fallback to public mock', e))
+      .catch(() => undefined)
     return () => { alive = false }
   }, [user.id])
 
