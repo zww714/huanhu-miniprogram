@@ -16,45 +16,52 @@ page {
   box-sizing: border-box;
   min-height: 100vh;
   padding: 0 28rpx calc(120rpx + env(safe-area-inset-bottom));
+  background: #F7FAFF;
   color: #0F172A;
 }
 
-/* ── 导航栏（流动内联，padding-top 避状态栏） ── */
+/* ── 导航栏 ──
+   高度 = 状态栏区域(96rpx) + 导航栏区域(88rpx 匹配原生) = 184rpx
+   字体 = 34rpx/17px weight 600 匹配原生 nav bar
+   ── */
 
 .nav-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: calc(80rpx + env(safe-area-inset-top));
-  padding-bottom: 12rpx;
-  height: 144rpx;
+  background: #FFFFFF;
+  margin: 0 -28rpx;
+  padding: 96rpx 28rpx 0;
+  height: 184rpx;
   box-sizing: border-box;
 }
 
 .nav-back {
-  width: 64rpx;
-  height: 64rpx;
+  width: 88rpx;
+  height: 88rpx;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .nav-back text {
   color: #0F172A;
-  font-size: 48rpx;
+  font-size: 40rpx;
   line-height: 1;
   font-weight: 300;
-  margin-top: -6rpx;
 }
 
 .nav-title {
   color: #0F172A;
-  font-size: 34rpx;
-  line-height: 46rpx;
-  font-weight: 800;
+  font-size: 32rpx;
+  line-height: 88rpx;
+  font-weight: 500;
 }
 
 .nav-spacer {
-  width: 64rpx;
+  width: 88rpx;
+  flex-shrink: 0;
 }
 
 /* ── 个人资料卡片 ── */
@@ -69,6 +76,7 @@ page {
 .profile-card {
   border-radius: 36rpx;
   padding: 34rpx;
+  margin-top: 32rpx;
 }
 
 .profile-main-row {
