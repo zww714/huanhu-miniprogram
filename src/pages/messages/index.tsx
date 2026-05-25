@@ -4,7 +4,7 @@ import { Image, Text, View } from '@tarojs/components'
 import { CONVERSATIONS, type NotificationType } from '../../utils/mock'
 import { getChatConversations, getNotificationUnreadCounts } from '../../utils/api'
 import { getUnreadCounts as localGetUnreadCounts, markAllNotificationsRead, updateMessageTabUnread } from '../../utils/notifications'
-import './index.css'
+import './index.scss'
 
 const QUICK_ENTRIES: Array<{
   title: string

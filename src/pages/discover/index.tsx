@@ -7,7 +7,7 @@ import { getPosts } from '../../utils/api'
 import { ACTIVITIES, MOCK_POSTS, type Activity } from '../../utils/mock'
 import { openUnifiedUserProfile } from '../../utils/publicProfiles'
 import { getGenderSymbol, getGenderTone } from '../../utils/gender'
-import './index.css'
+import './index.scss'
 
 const CATEGORIES = ['推荐', '科研', '升学', '兴趣', '活动', '兼职']
 

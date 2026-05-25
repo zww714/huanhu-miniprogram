@@ -1,7 +1,7 @@
 ﻿import { View, Text, ScrollView, Image } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { useState } from 'react'
-import './index.css'
+import './index.scss'
 import { updateProfile } from '../../utils/api'
 import { getGenderSymbol, getGenderTone } from '../../utils/gender'
 

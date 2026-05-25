@@ -1,8 +1,0 @@
-export default definePageConfig({
-  navigationStyle: 'custom',
-  navigationBarTitleText: '帖子管理',
-  navigationBarTextStyle: 'black',
-  navigationBarBackgroundColor: '#FFFFFF',
-  backgroundColor: '#F8FAFC',
-  usingComponents: {},
-})
