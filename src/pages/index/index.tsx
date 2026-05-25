@@ -1,6 +1,7 @@
 ﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Taro, { useDidShow, useLoad } from '@tarojs/taro'
 import { Image, ScrollView, Text, View } from '@tarojs/components'
+import ErrorBoundary from '../../components/common/ErrorBoundary'
 import FloatingPostButton from '../../components/common/FloatingPostButton'
 import SearchBar from '../../components/common/SearchBar'
 import TagChip from '../../components/common/TagChip'
@@ -855,6 +856,7 @@ export default function Index() {
   }
 
   return (
+    <ErrorBoundary>
     <View className='home-page'>
       <View className='home-scroll'>
         <View className='home-topbar'>
@@ -888,9 +890,6 @@ export default function Index() {
       <FloatingPostButton className='home-floating-post' onClick={handlePublish} />
       {renderDetailPopup()}
     </View>
+    </ErrorBoundary>
   )
 }
-
-
-
-

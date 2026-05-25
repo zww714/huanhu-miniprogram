@@ -16,17 +16,16 @@
 const USE_CLOUD = true
 
 // ============ Cloud SDK 初始化 ============
-let cloudInitialized = false
+// app.ts 已做 wx.cloud.init()，这里只确保可用
+let cloudReady: Promise<void> | null = null
 function initCloud() {
-  if (cloudInitialized) return Promise.resolve()
-  cloudInitialized = true
-  return new Promise((resolve, reject) => {
-    wx.cloud.init({
-      env: 'cloud1-d3geudxpp50aa1802',
-      traceUser: true,
-    })
-    resolve(true)
+  if (cloudReady) return cloudReady
+  cloudReady = new Promise((resolve) => {
+    if (!wx.cloud) { resolve(); return }
+    try { wx.cloud.init({ env: 'cloud1-d3geudxpp50aa1802', traceUser: true }) } catch (_) {}
+    resolve()
   })
+  return cloudReady
 }
 
 // ============ 云函数调用包装 ============

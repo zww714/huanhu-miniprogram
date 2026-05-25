@@ -1,6 +1,7 @@
 ﻿import { View, Text, ScrollView, Image } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { useState } from 'react'
+import ErrorBoundary from '../../components/common/ErrorBoundary'
 import './index.scss'
 import { updateProfile } from '../../utils/api'
 import { getGenderSymbol, getGenderTone } from '../../utils/gender'
@@ -191,6 +192,7 @@ export default function Profile() {
   })
 
   return (
+    <ErrorBoundary>
     <ScrollView scrollY className='profile-scroll' showScrollbar={false} enhanced bounces={false}>
       <View className='profile-page'>
         <View className='profile-card'>
@@ -270,16 +272,8 @@ export default function Profile() {
         </View>
       </View>
     </ScrollView>
+    </ErrorBoundary>
   )
 }
-
-
-
-
-
-
-
-
-
 
 

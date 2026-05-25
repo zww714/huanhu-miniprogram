@@ -4,6 +4,7 @@ import { Image, Text, View } from '@tarojs/components'
 import { CONVERSATIONS, type NotificationType } from '../../utils/mock'
 import { getChatConversations, getNotificationUnreadCounts } from '../../utils/api'
 import { getUnreadCounts as localGetUnreadCounts, markAllNotificationsRead, updateMessageTabUnread } from '../../utils/notifications'
+import ErrorBoundary from '../../components/common/ErrorBoundary'
 import './index.scss'
 
 const QUICK_ENTRIES: Array<{
@@ -150,6 +151,7 @@ export default function Messages() {
   }
 
   return (
+    <ErrorBoundary>
     <View className='messages-page'>
       <View className='message-overview'>
         <View className='message-overview-text'>
@@ -208,11 +210,7 @@ export default function Messages() {
 
       {totalUnread > 0 ? <View className='total-unread-shadow' /> : null}
     </View>
+    </ErrorBoundary>
   )
 }
-
-
-
-
-
 

@@ -1,6 +1,7 @@
 ﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Taro, { useDidShow, useLoad } from '@tarojs/taro'
 import { Image, ScrollView, Text, View } from '@tarojs/components'
+import ErrorBoundary from '../../components/common/ErrorBoundary'
 import FloatingPostButton from '../../components/common/FloatingPostButton'
 import SearchBar from '../../components/common/SearchBar'
 import { getPosts } from '../../utils/api'
@@ -536,6 +537,7 @@ export default function Discover() {
   }
 
   return (
+    <ErrorBoundary>
     <View className='discover-page'>
       <ScrollView scrollY className='discover-scroll' showScrollbar={false}>
         <View className='discover-header'>
@@ -615,9 +617,7 @@ export default function Discover() {
         </View>
       ) : null}
     </View>
+    </ErrorBoundary>
   )
 }
-
-
-
 
