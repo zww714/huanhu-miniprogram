@@ -1,0 +1,257 @@
+// ========================================
+// 提交认证技能 — 表单样式
+// ========================================
+
+.evs-page {
+  min-height: 100vh;
+  background-color: #F8FAFC;
+}
+
+.evs-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 88rpx;
+  padding: 0 28rpx;
+  background: #FFFFFF;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  .nav-back {
+    font-size: 28rpx;
+    color: #2563EB;
+    font-weight: 500;
+  }
+  .nav-title {
+    font-size: 32rpx;
+    font-weight: 600;
+    color: #1E293B;
+  }
+}
+
+.evs-scroll {
+  padding: 0 24rpx 40rpx;
+}
+
+// ===== 分区 =====
+.evs-section {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-top: 20rpx;
+}
+
+.evs-section-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #1E293B;
+  margin-bottom: 20rpx;
+  display: block;
+}
+
+// ===== 字段 =====
+.evs-field {
+  margin-bottom: 20rpx;
+
+  .evs-label {
+    font-size: 26rpx;
+    color: #475569;
+    margin-bottom: 10rpx;
+    display: block;
+
+    .required {
+      color: #EF4444;
+    }
+  }
+
+  .evs-input-wrap {
+    background: #F8FAFC;
+    border: 2rpx solid #E2E8F0;
+    border-radius: 12rpx;
+    padding: 0 16rpx;
+  }
+
+  .evs-input {
+    height: 80rpx;
+    font-size: 26rpx;
+    color: #1E293B;
+  }
+
+  .evs-textarea {
+    width: 100%;
+    height: 160rpx;
+    padding: 16rpx 0;
+    font-size: 26rpx;
+    color: #1E293B;
+    box-sizing: border-box;
+  }
+
+  .evs-picker-value {
+    font-size: 26rpx;
+    color: #1E293B;
+    padding: 22rpx 0;
+    display: block;
+  }
+}
+
+// ===== 等级选择 =====
+.evs-level-row {
+  display: flex;
+  gap: 12rpx;
+
+  .evs-level-btn {
+    flex: 1;
+    padding: 14rpx 0;
+    border-radius: 12rpx;
+    text-align: center;
+    background: #F1F5F9;
+    font-size: 24rpx;
+    color: #64748B;
+    font-weight: 600;
+
+    &.active {
+      background: #2563EB;
+      color: #FFFFFF;
+    }
+  }
+}
+
+// ===== 提示卡片 =====
+.evs-info-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12rpx;
+  background: #EFF6FF;
+  border-radius: 14rpx;
+  padding: 20rpx;
+  margin-top: 20rpx;
+  border: 2rpx solid #BFDBFE;
+
+  .evs-info-icon {
+    font-size: 32rpx;
+    flex-shrink: 0;
+  }
+
+  .evs-info-text {
+    font-size: 24rpx;
+    color: #1E40AF;
+    line-height: 1.5;
+  }
+}
+
+// ===== 图片上传 =====
+.evs-image-grid {
+  display: flex;
+  gap: 12rpx;
+  flex-wrap: wrap;
+
+  .evs-image-item {
+    width: 180rpx;
+    height: 180rpx;
+    position: relative;
+
+    .evs-image {
+      width: 100%;
+      height: 100%;
+      border-radius: 12rpx;
+    }
+
+    .evs-image-remove {
+      position: absolute;
+      top: -8rpx;
+      right: -8rpx;
+      width: 36rpx;
+      height: 36rpx;
+      background: #EF4444;
+      color: #FFFFFF;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 36rpx;
+      font-size: 24rpx;
+      font-weight: 700;
+    }
+  }
+
+  .evs-image-add {
+    width: 180rpx;
+    height: 180rpx;
+    border: 2rpx dashed #CBD5E1;
+    border-radius: 12rpx;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6rpx;
+
+    .evs-add-icon {
+      font-size: 48rpx;
+      color: #94A3B8;
+    }
+    .evs-add-text {
+      font-size: 24rpx;
+      color: #94A3B8;
+    }
+  }
+}
+
+// ===== 流程说明 =====
+.evs-tips {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-top: 20rpx;
+  border: 2rpx solid #F1F5F9;
+
+  .evs-tips-title {
+    font-size: 28rpx;
+    font-weight: 600;
+    color: #1E293B;
+    margin-bottom: 16rpx;
+    display: block;
+  }
+
+  .evs-tip-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14rpx;
+    margin-bottom: 14rpx;
+    &:last-child { margin-bottom: 0; }
+  }
+
+  .evs-tip-num {
+    width: 36rpx;
+    height: 36rpx;
+    background: #2563EB;
+    color: #FFFFFF;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 36rpx;
+    font-size: 22rpx;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .evs-tip-text {
+    font-size: 26rpx;
+    color: #475569;
+    line-height: 1.5;
+    flex: 1;
+  }
+}
+
+// ===== 提交按钮 =====
+.evs-submit-btn {
+  margin-top: 28rpx;
+  background: #2563EB;
+  color: #FFFFFF;
+  border-radius: 14rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  height: 88rpx;
+  line-height: 88rpx;
+}
+
+.evs-bottom-space {
+  height: 48rpx;
+}

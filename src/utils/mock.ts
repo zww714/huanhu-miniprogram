@@ -778,6 +778,34 @@ export type SkillProofDetail = {
   }
 }
 
+// ============ 技能类型区分 ============
+/** 技能类型：self=自定义（天马行空），verified=平台认证 */
+export type SkillType = 'self' | 'verified'
+
+/** 官方验证来源信息 */
+export type VerificationSource = {
+  /** 验证平台名称，如 "雅思考试官网"、"Python Institute" */
+  platformName: string
+  /** 验证入口 URL */
+  platformUrl: string
+  /** 验证方式说明，如 "输入证书编号 XXXXXX 即可查询" */
+  inquiryMethod: string
+  /** 证书编号 / 准考证号 / 身份码 */
+  verificationCode: string
+}
+
+/** 验证审核状态 */
+export type VerificationStatus = 'unverified' | 'pending' | 'verifying' | 'approved' | 'rejected'
+
+/** 验证审核反馈 */
+export type VerificationFeedback = {
+  reviewer?: string
+  comment?: string
+  approvedAt?: string
+  rejectedAt?: string
+  rejectReason?: string
+}
+
 export type SkillDetail = {
   id: string
   userId: string
@@ -786,12 +814,22 @@ export type SkillDetail = {
   levelText: string
   category: string
   icon: string
+  /** @deprecated 使用 skillType + verificationStatus 替代 */
   verified: boolean
   summary: string
   abilityDescription: string
   canHelp: string[]
   proofs: SkillProof[]
   tags: string[]
+  // ===== 新增字段 =====
+  /** 技能类型 */
+  skillType?: SkillType
+  /** 验证状态（认证技能专用） */
+  verificationStatus?: VerificationStatus
+  /** 官方验证来源 */
+  verificationSource?: VerificationSource
+  /** 审核反馈 */
+  verificationFeedback?: VerificationFeedback
 }
 
 export const SKILLS_DETAIL: SkillDetail[] = [
@@ -1103,7 +1141,71 @@ export const MY_PROFILE = {
   stats: { skills: 5, posts: 12, followers: 86, following: 42 },
 }
 
-// ========== MY SKILLS ==========
+// ========== 认证技能（需官方验证） ==========
+/** 认证技能状态文案 */
+export const VERIFICATION_STATUS_TEXT: Record<string, string> = {
+  unverified: '未验证',
+  pending: '待审核',
+  verifying: '验证中',
+  approved: '已验证',
+  rejected: '未通过',
+}
+
+/** 认证技能 mock 数据 */
+export const MY_VERIFIED_SKILLS = [
+  {
+    id: 'verified-ielts',
+    name: '雅思 7.0',
+    level: 4,
+    desc: '学术类雅思总分 7.0，听力 7.5 / 阅读 8.0 / 写作 6.5 / 口语 6.5',
+    tags: ['雅思', '英语', '学术英语'],
+    category: '语言',
+    verificationStatus: 'approved' as const,
+    verificationSource: {
+      platformName: '雅思考试官网',
+      platformUrl: 'https://ielts.neea.cn/',
+      inquiryMethod: '进入官网 → 成绩查询 → 输入准考证号 23CN123456 即可验证',
+      verificationCode: '23CN123456',
+    },
+    verificationFeedback: {
+      reviewer: '平台审核员',
+      comment: '成绩单与学生信息匹配，验证通过',
+      approvedAt: '2026-05-20 14:30',
+    },
+  },
+  {
+    id: 'verified-python-cert',
+    name: 'Python 技术认证',
+    level: 3,
+    desc: 'Python 技术能力中级认证，涵盖 Python 基础语法、数据处理、Web 开发基础',
+    tags: ['Python', '编程', '技术认证'],
+    category: '编程',
+    verificationStatus: 'pending' as const,
+    verificationSource: {
+      platformName: '中国电子学会',
+      platformUrl: 'https://www.qceit.org.cn/',
+      inquiryMethod: '首页 → 证书查询 → 输入证书编号 CEP20250228 即可验证',
+      verificationCode: 'CEP20250228',
+    },
+  },
+  {
+    id: 'verified-cet6',
+    name: '大学英语六级',
+    level: 3,
+    desc: 'CET-6 成绩 532 分，具备良好的英语读写能力',
+    tags: ['英语', 'CET-6', '大学英语'],
+    category: '语言',
+    verificationStatus: 'verifying' as const,
+    verificationSource: {
+      platformName: '中国教育考试网',
+      platformUrl: 'https://www.neea.edu.cn/',
+      inquiryMethod: '首页 → 成绩查询 → 选择CET → 输入准考证号和姓名',
+      verificationCode: '330050241112345',
+    },
+  },
+]
+
+// ========== MY SKILLS（自定义技能）==========
 export const MY_SKILLS = [
   { name: 'AI工具', level: 5, desc: '熟练使用各种AI工具辅助科研与开发', tags: ['ChatGPT', 'Copilot', 'Midjourney'] },
   { name: 'Python', level: 4, desc: '熟练使用 Python 进行数据分析、机器学习与 Web 开发', tags: ['数据分析', 'Django', 'TensorFlow'] },
