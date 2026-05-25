@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+﻿import { useMemo, useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { ScrollView, Text, View } from '@tarojs/components'
 import { INTEREST_DETAILS } from '../../utils/mock'
@@ -14,9 +14,9 @@ export default function InterestDetail() {
   const detail = useMemo(() => INTEREST_DETAILS[interestName], [interestName])
 
   const handleBack = () => Taro.navigateBack()
-  const goPost = (postId: string) => Taro.navigateTo({ url: `/pages/post-detail/index?id=${encodeURIComponent(postId)}` })
+  const goPost = (postId: string) => Taro.navigateTo({ url: `/sp-content/pages/post-detail/index?id=${encodeURIComponent(postId)}` })
   const goChat = (id: string, name: string) => Taro.navigateTo({
-    url: `/pages/contact-request/index?userId=${encodeURIComponent(id)}&name=${encodeURIComponent(name)}&category=${encodeURIComponent(interestName || '兴趣搭子')}&source=interest-detail`,
+    url: `/sp-social/pages/contact-request/index?userId=${encodeURIComponent(id)}&name=${encodeURIComponent(name)}&category=${encodeURIComponent(interestName || '兴趣搭子')}&source=interest-detail`,
   })
 
   if (!detail) {
@@ -101,3 +101,5 @@ export default function InterestDetail() {
     </View>
   )
 }
+
+

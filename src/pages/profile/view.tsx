@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Image, Textarea } from '@tarojs/components'
+﻿import { View, Text, ScrollView, Image, Textarea } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { useEffect, useMemo, useState } from 'react'
 import {
@@ -205,7 +205,7 @@ export default function ProfileView() {
       return
     }
     Taro.navigateTo({
-      url: `/pages/chat/index?userId=${encodeURIComponent(user.id)}&id=${encodeURIComponent(user.id)}&name=${encodeURIComponent(user.name)}&category=${encodeURIComponent('个人主页')}`,
+      url: `/sp-social/pages/chat/index?userId=${encodeURIComponent(user.id)}&id=${encodeURIComponent(user.id)}&name=${encodeURIComponent(user.name)}&category=${encodeURIComponent('个人主页')}`,
     })
   }
 
@@ -242,7 +242,7 @@ export default function ProfileView() {
 
   const openRatingPanel = () => {
     if (isSelf) {
-      Taro.navigateTo({ url: `/pages/my-ratings/index?userId=${encodeURIComponent(user.id)}&name=${encodeURIComponent(user.name)}` })
+      Taro.navigateTo({ url: `/sp-content/pages/my-ratings/index?userId=${encodeURIComponent(user.id)}&name=${encodeURIComponent(user.name)}` })
       return
     }
     const existing = getMyRatingForUser(user.id)
@@ -275,23 +275,23 @@ export default function ProfileView() {
 
   const goOverview = (key: 'skills' | 'posts' | 'followers' | 'following') => {
     const pathMap = {
-      skills: '/pages/user-skills/index',
-      posts: '/pages/user-posts/index',
-      followers: '/pages/user-followers/index',
-      following: '/pages/user-following/index',
+      skills: '/sp-content/pages/user-skills/index',
+      posts: '/sp-content/pages/user-posts/index',
+      followers: '/sp-content/pages/user-followers/index',
+      following: '/sp-content/pages/user-following/index',
     }
     Taro.navigateTo({ url: `${pathMap[key]}?userId=${encodeURIComponent(user.id)}` })
   }
 
   const goSkill = (skill: PublicSkill) => {
     Taro.navigateTo({
-      url: `/pages/skill-detail/index?userId=${encodeURIComponent(user.id)}&skillId=${encodeURIComponent(skill.id)}`,
+      url: `/sp-content/pages/skill-detail/index?userId=${encodeURIComponent(user.id)}&skillId=${encodeURIComponent(skill.id)}`,
     })
   }
 
   const openPost = (post: PublicPost) => {
     setPendingPublicPost(post, user)
-    Taro.navigateTo({ url: `/pages/post-detail/index?postId=${encodeURIComponent(post.id)}&from=profile-view` })
+    Taro.navigateTo({ url: `/sp-content/pages/post-detail/index?postId=${encodeURIComponent(post.id)}&from=profile-view` })
   }
 
   const renderSection = (
@@ -479,3 +479,11 @@ export default function ProfileView() {
     </ScrollView>
   )
 }
+
+
+
+
+
+
+
+

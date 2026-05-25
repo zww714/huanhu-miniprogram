@@ -1,4 +1,4 @@
-import Taro, { useDidShow } from '@tarojs/taro'
+﻿import Taro, { useDidShow } from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
 import { useState } from 'react'
 import { getNotifications, markNotificationsRead } from '../../utils/api'
@@ -25,7 +25,7 @@ export default function MessageLikes() {
       setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, read: true } : i))
     }
     if (item.targetType === 'post' && item.targetId) {
-      Taro.navigateTo({ url: `/pages/post-detail/index?postId=${encodeURIComponent(item.targetId)}` })
+      Taro.navigateTo({ url: `/sp-content/pages/post-detail/index?postId=${encodeURIComponent(item.targetId)}` })
     }
   }
 
@@ -86,3 +86,4 @@ export default function MessageLikes() {
     </View>
   )
 }
+

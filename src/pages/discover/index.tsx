@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Taro, { useDidShow, useLoad } from '@tarojs/taro'
 import { Image, ScrollView, Text, View } from '@tarojs/components'
 import FloatingPostButton from '../../components/common/FloatingPostButton'
@@ -393,7 +393,7 @@ export default function Discover() {
   }, [activeCat, keyword, posts])
 
   const openPost = (item: FeedItem) => {
-    Taro.navigateTo({ url: `/pages/post-detail/index?postId=${encodeURIComponent(item.id)}&from=discover` })
+    Taro.navigateTo({ url: `/sp-content/pages/post-detail/index?postId=${encodeURIComponent(item.id)}&from=discover` })
   }
 
   const openActivityRegister = (activity: Activity) => {
@@ -406,7 +406,7 @@ export default function Discover() {
       `participants=${encodeURIComponent(String(activity.participants || activity.participantCount || 0))}`,
       `maxParticipants=${encodeURIComponent(String(activity.maxParticipants || ''))}`,
     ].join('&')
-    Taro.navigateTo({ url: `/pages/activity-register/index?${query}` })
+    Taro.navigateTo({ url: `/sp-content/pages/activity-register/index?${query}` })
   }
 
   const openFeedItem = (item: FeedItem) => {
@@ -427,7 +427,7 @@ export default function Discover() {
   }
 
   const openSearch = () => {
-    Taro.navigateTo({ url: `/pages/search-results/index?keyword=${encodeURIComponent(searchQuery)}&from=discover` })
+    Taro.navigateTo({ url: `/sp-common/pages/search-results/index?keyword=${encodeURIComponent(searchQuery)}&from=discover` })
   }
 
   const toggleLike = (id: string) => {
@@ -532,7 +532,7 @@ export default function Discover() {
 
   const openTopicSearch = (topic: string) => {
     const keyword = topic.replace(/^#\s*/, '')
-    Taro.navigateTo({ url: `/pages/search-results/index?keyword=${encodeURIComponent(keyword)}&from=discover-topic` })
+    Taro.navigateTo({ url: `/sp-common/pages/search-results/index?keyword=${encodeURIComponent(keyword)}&from=discover-topic` })
   }
 
   return (
@@ -587,7 +587,7 @@ export default function Discover() {
 
       <FloatingPostButton
         className='discover-floating-post'
-        onClick={() => Taro.navigateTo({ url: '/pages/publish/index?mode=post' })}
+        onClick={() => Taro.navigateTo({ url: '/sp-content/pages/publish/index?mode=post' })}
       />
       {topicPopupOpen ? (
         <View className='topic-modal-mask' onClick={() => setTopicPopupOpen(false)}>
@@ -617,3 +617,7 @@ export default function Discover() {
     </View>
   )
 }
+
+
+
+

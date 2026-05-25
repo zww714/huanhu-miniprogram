@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Image, Text, View } from '@tarojs/components'
 import { CONVERSATIONS, type NotificationType } from '../../utils/mock'
@@ -106,12 +106,12 @@ export default function Messages() {
 
   const navigateNotice = (type: NotificationType) => {
     const directPages: Record<string, string> = {
-      likes: '/pages/message-likes/index',
-      follows: '/pages/message-follows/index',
-      comments: '/pages/message-comments/index',
-      system: '/pages/message-system/index',
+      likes: '/sp-social/pages/message-likes/index',
+      follows: '/sp-social/pages/message-follows/index',
+      comments: '/sp-social/pages/message-comments/index',
+      system: '/sp-social/pages/message-system/index',
     }
-    const url = directPages[type] || `/pages/notification-list/index?type=${type}`
+    const url = directPages[type] || `/sp-social/pages/notification-list/index?type=${type}`
     Taro.navigateTo({ url })
   }
 
@@ -121,7 +121,7 @@ export default function Messages() {
     )
     updateMessageTabUnread(Math.max(0, chatUnreadTotal - getConversationUnread(conv)))
     Taro.navigateTo({
-      url: `/pages/chat/index?id=${encodeURIComponent(conv.id)}&name=${encodeURIComponent(conv.name)}&category=${encodeURIComponent(conv.category || '聊天')}`,
+      url: `/sp-social/pages/chat/index?id=${encodeURIComponent(conv.id)}&name=${encodeURIComponent(conv.name)}&category=${encodeURIComponent(conv.category || '聊天')}`,
     })
   }
 
@@ -210,3 +210,9 @@ export default function Messages() {
     </View>
   )
 }
+
+
+
+
+
+

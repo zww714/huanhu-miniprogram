@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import Taro, { useDidShow, useLoad } from '@tarojs/taro'
 import { Image, ScrollView, Text, View } from '@tarojs/components'
 import { type AppNotification, type NotificationType } from '../../utils/mock'
@@ -161,7 +161,7 @@ export default function NotificationList() {
       }
     }
     if (item.targetType === 'post' && item.targetId) {
-      Taro.navigateTo({ url: `/pages/post-detail/index?postId=${encodeURIComponent(item.targetId)}` })
+      Taro.navigateTo({ url: `/sp-content/pages/post-detail/index?postId=${encodeURIComponent(item.targetId)}` })
       return
     }
     if (item.targetType === 'user' && item.targetId) {
@@ -251,3 +251,4 @@ export default function NotificationList() {
     </View>
   )
 }
+

@@ -1,4 +1,4 @@
-import { View, Text, ScrollView } from '@tarojs/components'
+﻿import { View, Text, ScrollView } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { useEffect, useMemo, useState } from 'react'
 import { getUserPosts } from '../../utils/api'
@@ -65,12 +65,12 @@ export default function UserPosts() {
   const goBack = () => {
     const pages = getCurrentPages()
     if (pages.length > 1) Taro.navigateBack()
-    else Taro.navigateTo({ url: `/pages/profile/view?userId=${encodeURIComponent(user.id)}` })
+    else Taro.navigateTo({ url: `/sp-profile/pages/profile/view?userId=${encodeURIComponent(user.id)}` })
   }
 
   const openPost = (post: PublicPost) => {
     if (!(post as any).canManage) setPendingPublicPost(post, user)
-    Taro.navigateTo({ url: `/pages/post-detail/index?postId=${encodeURIComponent(post.id)}&from=user-posts` })
+    Taro.navigateTo({ url: `/sp-content/pages/post-detail/index?postId=${encodeURIComponent(post.id)}&from=user-posts` })
   }
 
   return (
@@ -114,3 +114,5 @@ export default function UserPosts() {
     </ScrollView>
   )
 }
+
+

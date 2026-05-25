@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Taro, { useDidShow, useLoad } from '@tarojs/taro'
 import { Image, ScrollView, Text, View } from '@tarojs/components'
 import FloatingPostButton from '../../components/common/FloatingPostButton'
@@ -425,7 +425,7 @@ export default function Index() {
       return
     }
     Taro.navigateTo({
-      url: `/pages/chat/index?userId=${encodeURIComponent(id)}&id=${encodeURIComponent(id)}&name=${encodeURIComponent(user.name || '同学')}&category=${encodeURIComponent(category)}`,
+      url: `/sp-social/pages/chat/index?userId=${encodeURIComponent(id)}&id=${encodeURIComponent(id)}&name=${encodeURIComponent(user.name || '同学')}&category=${encodeURIComponent(category)}`,
     })
   }
 
@@ -434,7 +434,7 @@ export default function Index() {
   }
 
   const openSearchPanel = () => {
-    Taro.navigateTo({ url: `/pages/search-results/index?keyword=${encodeURIComponent(searchQuery)}&tab=${activeTab}` })
+    Taro.navigateTo({ url: `/sp-common/pages/search-results/index?keyword=${encodeURIComponent(searchQuery)}&tab=${activeTab}` })
   }
 
   const submitSearch = (value?: string) => {
@@ -448,7 +448,7 @@ export default function Index() {
     Taro.setStorageSync('homeRecentSearches', nextRecent)
     setSearchQuery(text)
     setSearchPanelOpen(false)
-    Taro.navigateTo({ url: `/pages/search-results/index?keyword=${encodeURIComponent(text)}&tab=${activeTab}` })
+    Taro.navigateTo({ url: `/sp-common/pages/search-results/index?keyword=${encodeURIComponent(text)}&tab=${activeTab}` })
   }
 
   const selectFilter = (index: number) => {
@@ -458,7 +458,7 @@ export default function Index() {
 
   const handlePublish = () => {
     const mode = activeTab === 1 ? 'partner' : activeTab === 2 ? 'activity' : 'skill'
-    Taro.navigateTo({ url: `/pages/publish/index?mode=${mode}` })
+    Taro.navigateTo({ url: `/sp-content/pages/publish/index?mode=${mode}` })
   }
 
   const handleUserClick = (user: SkillUser) => {
@@ -479,7 +479,7 @@ export default function Index() {
       `participants=${encodeURIComponent(String(activity.participants || activity.participantCount || 0))}`,
       `maxParticipants=${encodeURIComponent(String(activity.maxParticipants || ''))}`,
     ].join('&')
-    Taro.navigateTo({ url: `/pages/activity-register/index?${query}` })
+    Taro.navigateTo({ url: `/sp-content/pages/activity-register/index?${query}` })
   }
 
   const handleRecommendationClick = (id: string) => {
@@ -890,3 +890,7 @@ export default function Index() {
     </View>
   )
 }
+
+
+
+

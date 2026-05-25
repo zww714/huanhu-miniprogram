@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { Image, ScrollView, Text, View } from '@tarojs/components'
 import { CURRENT_USER, SKILL_PROOFS, type SkillProofDetail } from '../../utils/mock'
@@ -74,7 +74,7 @@ export default function SkillProofDetailPage() {
   const handleContact = () => {
     if (!proof) return
     Taro.navigateTo({
-      url: `/pages/contact-request/index?userId=${encodeURIComponent(proof.userId)}&skillId=${encodeURIComponent(proof.skillId)}&proofId=${encodeURIComponent(proof.id)}&name=${encodeURIComponent(proof.submitterName)}&category=${encodeURIComponent(proof.relatedSkill)}&source=skill-proof`,
+      url: `/sp-social/pages/contact-request/index?userId=${encodeURIComponent(proof.userId)}&skillId=${encodeURIComponent(proof.skillId)}&proofId=${encodeURIComponent(proof.id)}&name=${encodeURIComponent(proof.submitterName)}&category=${encodeURIComponent(proof.relatedSkill)}&source=skill-proof`,
     })
   }
 
@@ -237,3 +237,4 @@ export default function SkillProofDetailPage() {
     </View>
   )
 }
+

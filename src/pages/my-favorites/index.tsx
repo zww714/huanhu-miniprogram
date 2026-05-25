@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import Taro from '@tarojs/taro'
 import { Image, Text, View } from '@tarojs/components'
 import { MOCK_POSTS } from '../../utils/mock'
@@ -107,7 +107,7 @@ export default function MyFavorites() {
   }, [])
 
   const goPostDetail = (postId: string) => {
-    Taro.navigateTo({ url: `/pages/post-detail/index?postId=${encodeURIComponent(postId)}` })
+    Taro.navigateTo({ url: `/sp-content/pages/post-detail/index?postId=${encodeURIComponent(postId)}` })
   }
 
   if (loading) {
@@ -172,3 +172,4 @@ export default function MyFavorites() {
     </View>
   )
 }
+

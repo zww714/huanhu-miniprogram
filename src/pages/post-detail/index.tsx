@@ -207,7 +207,7 @@ export default function PostDetail() {
 
   useShareAppMessage(() => ({
     title: displayPost.title || '换乎校园帖子',
-    path: `/pages/post-detail/index?postId=${encodeURIComponent(postId || '')}`,
+    path: `/sp-content/pages/post-detail/index?postId=${encodeURIComponent(postId || '')}`,
     imageUrl: images[0],
   }))
 
@@ -220,8 +220,8 @@ export default function PostDetail() {
     openUnifiedUserProfile(userId, name)
   }
 
-  const handleEditPost = () => Taro.navigateTo({ url: `/pages/publish/index?mode=edit&postId=${encodeURIComponent(postId)}` })
-  const handleManagePost = () => Taro.navigateTo({ url: `/pages/post-manage/index?postId=${encodeURIComponent(postId)}` })
+  const handleEditPost = () => Taro.navigateTo({ url: `/sp-content/pages/publish/index?mode=edit&postId=${encodeURIComponent(postId)}` })
+  const handleManagePost = () => Taro.navigateTo({ url: `/sp-content/pages/post-manage/index?postId=${encodeURIComponent(postId)}` })
   const handleToggleVisibility = () => {
     const nextVisibility = visibility === 'public' ? 'private' : 'public'
     setVisibility(nextVisibility)
@@ -567,3 +567,6 @@ export default function PostDetail() {
     </View>
   )
 }
+
+
+

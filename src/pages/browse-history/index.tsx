@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
 import { getBrowseHistory, clearBrowseHistory, type BrowseItem } from '../../utils/history'
@@ -52,9 +52,9 @@ export default function BrowseHistory() {
 
   const handleTap = (item: BrowseItem) => {
     const urls: Record<BrowseItem['type'], string> = {
-      post: `/pages/post-detail/index?postId=${encodeURIComponent(item.id)}`,
-      skill: `/pages/skill-detail/index?skillId=${encodeURIComponent(item.id)}`,
-      user: `/pages/user-detail/index?userId=${encodeURIComponent(item.id)}&name=${encodeURIComponent(item.title)}`,
+      post: `/sp-content/pages/post-detail/index?postId=${encodeURIComponent(item.id)}`,
+      skill: `/sp-content/pages/skill-detail/index?skillId=${encodeURIComponent(item.id)}`,
+      user: `/sp-content/pages/user-detail/index?userId=${encodeURIComponent(item.id)}&name=${encodeURIComponent(item.title)}`,
     }
     Taro.navigateTo({ url: urls[item.type] })
   }
@@ -93,3 +93,6 @@ export default function BrowseHistory() {
     </View>
   )
 }
+
+
+

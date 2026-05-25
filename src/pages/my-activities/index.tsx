@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
 import { getMyActivityRegistrations, cancelActivityRegistration } from '../../utils/api'
@@ -31,7 +31,7 @@ export default function MyActivities() {
 
   const goActivity = (item: any) => {
     Taro.navigateTo({
-      url: `/pages/activity-register/index?id=${encodeURIComponent(item.activityId)}&title=${encodeURIComponent(item.activity?.title || '')}&time=${encodeURIComponent(item.activity?.time || '')}&location=${encodeURIComponent(item.activity?.location || '')}`,
+      url: `/sp-content/pages/activity-register/index?id=${encodeURIComponent(item.activityId)}&title=${encodeURIComponent(item.activity?.title || '')}&time=${encodeURIComponent(item.activity?.time || '')}&location=${encodeURIComponent(item.activity?.location || '')}`,
     })
   }
 
@@ -130,3 +130,4 @@ export default function MyActivities() {
     </View>
   )
 }
+

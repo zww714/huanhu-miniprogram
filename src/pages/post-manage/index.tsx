@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { ScrollView, Text, View } from '@tarojs/components'
 import { getPostDetail, updatePost, deletePost } from '../../utils/api'
@@ -29,7 +29,7 @@ export default function PostManage() {
   })
 
   const handleBack = () => Taro.navigateBack()
-  const handleEdit = () => Taro.navigateTo({ url: `/pages/publish/index?mode=edit&postId=${encodeURIComponent(postId)}` })
+  const handleEdit = () => Taro.navigateTo({ url: `/sp-content/pages/publish/index?mode=edit&postId=${encodeURIComponent(postId)}` })
   const handleToggleVisibility = () => {
     if (!postId || !post) return
     const nextVisibility = post.visibility === 'public' ? 'private' : 'public'
@@ -137,3 +137,4 @@ export default function PostManage() {
     </View>
   )
 }
+

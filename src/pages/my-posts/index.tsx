@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+﻿import { useMemo, useState } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
 import { CURRENT_USER, MOCK_POSTS, MY_POSTS } from '../../utils/mock'
@@ -117,7 +117,7 @@ export default function MyPosts() {
   }
 
   const goDetail = (postId: string) => {
-    Taro.navigateTo({ url: `/pages/post-detail/index?postId=${encodeURIComponent(postId)}&from=mine` })
+    Taro.navigateTo({ url: `/sp-content/pages/post-detail/index?postId=${encodeURIComponent(postId)}&from=mine` })
   }
 
   const showPostMenu = (post: ManagedPost) => {
@@ -126,8 +126,8 @@ export default function MyPosts() {
       itemColor: '#1E293B',
       success: ({ tapIndex }) => {
         if (tapIndex === 0) goDetail(post.id)
-        if (tapIndex === 1) Taro.navigateTo({ url: `/pages/publish/index?mode=edit&postId=${encodeURIComponent(post.id)}` })
-        if (tapIndex === 2) Taro.navigateTo({ url: `/pages/post-manage/index?postId=${encodeURIComponent(post.id)}` })
+        if (tapIndex === 1) Taro.navigateTo({ url: `/sp-content/pages/publish/index?mode=edit&postId=${encodeURIComponent(post.id)}` })
+        if (tapIndex === 2) Taro.navigateTo({ url: `/sp-content/pages/post-manage/index?postId=${encodeURIComponent(post.id)}` })
         if (tapIndex === 3) {
           const next = posts.map((item) => item.id === post.id ? { ...item, visibility: item.visibility === 'private' ? 'public' : 'private' } : item)
           updatePosts(next)
@@ -240,3 +240,6 @@ export default function MyPosts() {
     </View>
   )
 }
+
+
+

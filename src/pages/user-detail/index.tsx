@@ -1,4 +1,4 @@
-import { View, Text, ScrollView } from '@tarojs/components'
+﻿import { View, Text, ScrollView } from '@tarojs/components'
 import Taro, { useDidShow, useLoad } from '@tarojs/taro'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { CURRENT_USER } from '../../utils/mock'
@@ -291,29 +291,29 @@ export default function UserDetail() {
       return
     }
     Taro.navigateTo({
-      url: `/pages/chat/index?userId=${encodeURIComponent(detailUser.id)}&id=${encodeURIComponent(detailUser.id)}&name=${encodeURIComponent(detailUser.name)}&category=${encodeURIComponent('个人主页')}`,
+      url: `/sp-social/pages/chat/index?userId=${encodeURIComponent(detailUser.id)}&id=${encodeURIComponent(detailUser.id)}&name=${encodeURIComponent(detailUser.name)}&category=${encodeURIComponent('个人主页')}`,
     })
   }
 
   const goOverview = (key: 'skills' | 'posts' | 'followers' | 'following') => {
     const pathMap = {
-      skills: '/pages/user-skills/index',
-      posts: '/pages/user-posts/index',
-      followers: '/pages/user-followers/index',
-      following: '/pages/user-following/index',
+      skills: '/sp-content/pages/user-skills/index',
+      posts: '/sp-content/pages/user-posts/index',
+      followers: '/sp-content/pages/user-followers/index',
+      following: '/sp-content/pages/user-following/index',
     }
     Taro.navigateTo({ url: `${pathMap[key]}?userId=${encodeURIComponent(detailUser.id)}` })
   }
 
   const goSkill = (skillId: string) => {
     Taro.navigateTo({
-      url: `/pages/skill-detail/index?userId=${encodeURIComponent(detailUser.id)}&skillId=${encodeURIComponent(skillId)}`,
+      url: `/sp-content/pages/skill-detail/index?userId=${encodeURIComponent(detailUser.id)}&skillId=${encodeURIComponent(skillId)}`,
     })
   }
 
   const openPost = (post: PublicPost) => {
     setPendingPublicPost(post, detailUser)
-    Taro.navigateTo({ url: `/pages/post-detail/index?postId=${encodeURIComponent(post.id)}&from=user-detail` })
+    Taro.navigateTo({ url: `/sp-content/pages/post-detail/index?postId=${encodeURIComponent(post.id)}&from=user-detail` })
   }
 
   return (
@@ -487,3 +487,10 @@ export default function UserDetail() {
     </ScrollView>
   )
 }
+
+
+
+
+
+
+

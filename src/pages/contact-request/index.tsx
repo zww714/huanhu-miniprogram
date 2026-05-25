@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { Text, Textarea, View } from '@tarojs/components'
 import { CURRENT_USER } from '../../utils/mock'
@@ -74,7 +74,7 @@ export default function ContactRequest() {
     Taro.showToast({ title: '已发送联系申请', icon: 'success' })
     setTimeout(() => {
       Taro.navigateTo({
-        url: `/pages/chat/index?id=${encodeURIComponent(targetId)}&name=${encodeURIComponent(targetName)}&category=${encodeURIComponent(category)}`,
+        url: `/sp-social/pages/chat/index?id=${encodeURIComponent(targetId)}&name=${encodeURIComponent(targetName)}&category=${encodeURIComponent(category)}`,
       })
     }, 500)
   }
@@ -146,3 +146,4 @@ export default function ContactRequest() {
     </View>
   )
 }
+

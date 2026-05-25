@@ -1,0 +1,130 @@
+/* postcss-pxtransform disable */
+
+page {
+  background: #F7FAFF;
+}
+
+.settings-page {
+  min-height: 100vh;
+  padding: 28rpx 32rpx calc(72rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(37, 99, 235, 0.08), transparent 240rpx),
+    linear-gradient(180deg, #F7FAFF 0%, #F4F7FB 100%);
+  color: #111827;
+}
+
+.settings-card,
+.login-card {
+  background: #FFFFFF;
+  border-radius: 28rpx;
+  border: 1rpx solid #E8EEF8;
+  box-shadow: 0 12rpx 34rpx rgba(37, 99, 235, 0.06);
+  overflow: hidden;
+}
+
+.settings-row {
+  min-height: 132rpx;
+  padding: 0 28rpx;
+  display: flex;
+  align-items: center;
+  gap: 22rpx;
+  border-bottom: 1rpx solid #EEF2F8;
+  box-sizing: border-box;
+}
+
+.settings-row.last {
+  border-bottom: 0;
+}
+
+.settings-icon {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 22rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.settings-icon text {
+  font-size: 28rpx;
+  line-height: 34rpx;
+  font-weight: 900;
+}
+
+.settings-icon--blue {
+  background: #EAF2FF;
+}
+
+.settings-icon--blue text {
+  color: #2563EB;
+}
+
+.settings-icon--green {
+  background: #EAFBF3;
+}
+
+.settings-icon--green text {
+  color: #16A34A;
+}
+
+.settings-icon--purple {
+  background: #F2EEFF;
+}
+
+.settings-icon--purple text {
+  color: #7C3AED;
+}
+
+.settings-icon--orange {
+  background: #FFF4E5;
+}
+
+.settings-icon--orange text {
+  color: #F97316;
+}
+
+.settings-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.settings-title {
+  color: #17233D;
+  font-size: 31rpx;
+  line-height: 38rpx;
+  font-weight: 800;
+}
+
+.settings-desc {
+  color: #8A96AA;
+  font-size: 24rpx;
+  line-height: 32rpx;
+}
+
+.settings-arrow {
+  color: #B8C2D2;
+  font-size: 42rpx;
+  line-height: 42rpx;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.login-card {
+  height: 96rpx;
+  margin-top: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-card text {
+  color: #2563EB;
+  font-size: 30rpx;
+  line-height: 38rpx;
+  font-weight: 800;
+}

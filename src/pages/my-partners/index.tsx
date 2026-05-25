@@ -1,4 +1,4 @@
-import Taro from '@tarojs/taro'
+﻿import Taro from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
 import { PARTNER_USERS } from '../../utils/mock'
 import './index.css'
@@ -16,7 +16,7 @@ export default function MyPartners() {
               <Text style={{ fontSize: '15px', fontWeight: '700', color: '#1E293B' }}>{user.name}</Text>
               <Text style={{ fontSize: '12px', color: '#94A3B8', marginTop: '3px' }}>{user.lookingFor} · 匹配度 {user.match}%</Text>
             </View>
-            <View onClick={() => Taro.navigateTo({ url: `/pages/chat/index?id=${user.id}&name=${encodeURIComponent(user.name)}&category=兴趣搭子` })} style={{ padding: '6px 12px', backgroundColor: '#2563EB', borderRadius: '999px' }}>
+            <View onClick={() => Taro.navigateTo({ url: `/sp-social/pages/chat/index?id=${user.id}&name=${encodeURIComponent(user.name)}&category=兴趣搭子` })} style={{ padding: '6px 12px', backgroundColor: '#2563EB', borderRadius: '999px' }}>
               <Text style={{ color: '#FFF', fontSize: '12px', fontWeight: '600' }}>联系</Text>
             </View>
           </View>
@@ -26,3 +26,4 @@ export default function MyPartners() {
     </View>
   )
 }
+

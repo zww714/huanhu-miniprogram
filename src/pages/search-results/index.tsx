@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+﻿import { useMemo, useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { Image, Text, View } from '@tarojs/components'
 import SearchBar from '../../components/common/SearchBar'
@@ -117,7 +117,7 @@ export default function SearchResults() {
   }
 
   const openPost = (post: SearchPost) => {
-    Taro.navigateTo({ url: `/pages/post-detail/index?postId=${encodeURIComponent(getPostId(post))}&from=search&keyword=${encodeURIComponent(keyword)}` })
+    Taro.navigateTo({ url: `/sp-content/pages/post-detail/index?postId=${encodeURIComponent(getPostId(post))}&from=search&keyword=${encodeURIComponent(keyword)}` })
   }
 
   const openAuthor = (post: SearchPost) => {
@@ -192,3 +192,4 @@ export default function SearchResults() {
     </View>
   )
 }
+

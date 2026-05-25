@@ -1,4 +1,4 @@
-import { View, Text, ScrollView } from '@tarojs/components'
+﻿import { View, Text, ScrollView } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { useEffect, useMemo, useState } from 'react'
 import { getUserSkills } from '../../utils/api'
@@ -50,11 +50,11 @@ export default function UserSkills() {
   const goBack = () => {
     const pages = getCurrentPages()
     if (pages.length > 1) Taro.navigateBack()
-    else Taro.navigateTo({ url: `/pages/profile/view?userId=${encodeURIComponent(user.id)}` })
+    else Taro.navigateTo({ url: `/sp-profile/pages/profile/view?userId=${encodeURIComponent(user.id)}` })
   }
 
   const openSkill = (skillId: string) => {
-    Taro.navigateTo({ url: `/pages/skill-detail/index?userId=${encodeURIComponent(user.id)}&skillId=${encodeURIComponent(skillId)}` })
+    Taro.navigateTo({ url: `/sp-content/pages/skill-detail/index?userId=${encodeURIComponent(user.id)}&skillId=${encodeURIComponent(skillId)}` })
   }
 
   return (
@@ -95,3 +95,5 @@ export default function UserSkills() {
     </ScrollView>
   )
 }
+
+

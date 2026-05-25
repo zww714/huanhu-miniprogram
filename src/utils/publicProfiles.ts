@@ -1,4 +1,4 @@
-import Taro from '@tarojs/taro'
+﻿import Taro from '@tarojs/taro'
 import { CURRENT_USER } from './mock'
 
 export type PublicSkill = {
@@ -459,7 +459,7 @@ export function openUnifiedUserProfile(userId?: string | number, name?: string) 
   const query = normalizedId
     ? `userId=${encodeURIComponent(normalizedId)}`
     : `name=${encodeURIComponent(name || '同学')}`
-  Taro.navigateTo({ url: `/pages/profile/view?${query}` })
+  Taro.navigateTo({ url: `/sp-profile/pages/profile/view?${query}` })
 }
 
 export function getPublicSkills(userId: string) {
@@ -581,3 +581,4 @@ export function setPendingPublicPost(post: PublicPost, author: PublicUser) {
     },
   })
 }
+

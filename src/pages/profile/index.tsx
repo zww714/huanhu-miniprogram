@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Image } from '@tarojs/components'
+﻿import { View, Text, ScrollView, Image } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { useState } from 'react'
 import './index.css'
@@ -17,10 +17,10 @@ import {
 } from '../../utils/mock'
 
 const QUICK_ENTRIES = [
-  { key: 'favorites', icon: '☆', label: '我的收藏', desc: '收藏的帖子和技能', path: '/pages/my-favorites/index', tone: 'blue' },
-  { key: 'history', icon: '◷', label: '浏览记录', desc: '最近看过的内容', path: '/pages/browse-history/index', tone: 'green' },
-  { key: 'activities', icon: '□', label: '我的活动', desc: '报名和参与记录', path: '/pages/my-activities/index', tone: 'blue' },
-  { key: 'settings', icon: '◇', label: '设置', desc: '账号与隐私', path: '/pages/settings/index', tone: 'purple' },
+  { key: 'favorites', icon: '☆', label: '我的收藏', desc: '收藏的帖子和技能', path: '/sp-content/pages/my-favorites/index', tone: 'blue' },
+  { key: 'history', icon: '◷', label: '浏览记录', desc: '最近看过的内容', path: '/sp-content/pages/browse-history/index', tone: 'green' },
+  { key: 'activities', icon: '□', label: '我的活动', desc: '报名和参与记录', path: '/sp-content/pages/my-activities/index', tone: 'blue' },
+  { key: 'settings', icon: '◇', label: '设置', desc: '账号与隐私', path: '/sp-profile/pages/settings/index', tone: 'purple' },
 ]
 
 const PROFILE_STORAGE_KEY = 'profileDraft'
@@ -155,7 +155,7 @@ export default function Profile() {
     Taro.showActionSheet({
       itemList: ['选择系统头像', '拍照', '从照片库选择'],
       success: (res) => {
-        if (res.tapIndex === 0) go('/pages/avatar-select/index')
+        if (res.tapIndex === 0) go('/sp-profile/pages/avatar-select/index')
         if (res.tapIndex === 1) chooseAvatarImage('camera')
         if (res.tapIndex === 2) chooseAvatarImage('album')
       },
@@ -218,7 +218,7 @@ export default function Profile() {
               </Text>
             </View>
 
-            <View className='rating-card' onClick={() => go(withProfileParams('/pages/my-ratings/index'))}>
+            <View className='rating-card' onClick={() => go(withProfileParams('/sp-content/pages/my-ratings/index'))}>
               <Text className='rating-label'>评分</Text>
               <Text className='rating-score'>{profileRating}</Text>
               <Text className='rating-stars'>★★★★★</Text>
@@ -236,17 +236,17 @@ export default function Profile() {
             </View>
           </View>
 
-          <View className='edit-profile-btn' onClick={() => go('/pages/edit-profile/index')}>
+          <View className='edit-profile-btn' onClick={() => go('/sp-profile/pages/edit-profile/index')}>
             <Text>编辑资料</Text>
           </View>
         </View>
 
         <View className='stats-card'>
           {[
-            { label: '技能', value: statValues.skills, icon: '</>', url: withProfileParams('/pages/my-skills/index', { self: 1 }) },
-            { label: '发布', value: statValues.posts, icon: '+', url: withProfileParams('/pages/my-posts/index', { self: 1 }) },
-            { label: '粉丝', value: statValues.followers, icon: '○', url: withProfileParams('/pages/my-followers/index') },
-            { label: '关注', value: statValues.following, icon: '◎', url: withProfileParams('/pages/my-following/index') },
+            { label: '技能', value: statValues.skills, icon: '</>', url: withProfileParams('/sp-content/pages/my-skills/index', { self: 1 }) },
+            { label: '发布', value: statValues.posts, icon: '+', url: withProfileParams('/sp-content/pages/my-posts/index', { self: 1 }) },
+            { label: '粉丝', value: statValues.followers, icon: '○', url: withProfileParams('/sp-content/pages/my-followers/index') },
+            { label: '关注', value: statValues.following, icon: '◎', url: withProfileParams('/sp-content/pages/my-following/index') },
           ].map((item, index) => (
             <View key={item.label} className={`stat-item ${index < 3 ? 'with-line' : ''}`} onClick={() => safeGo(item.url)}>
               <Text className='stat-icon'>{item.icon}</Text>
@@ -272,3 +272,14 @@ export default function Profile() {
     </ScrollView>
   )
 }
+
+
+
+
+
+
+
+
+
+
+

@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Image } from '@tarojs/components'
+﻿import { View, Text, ScrollView, Image } from '@tarojs/components'
 import Taro, { useDidShow, useLoad } from '@tarojs/taro'
 import { useCallback, useMemo, useState } from 'react'
 import { getFollowing } from '../../utils/api'
@@ -53,7 +53,7 @@ export default function UserFollowing() {
   const goBack = () => {
     const pages = getCurrentPages()
     if (pages.length > 1) Taro.navigateBack()
-    else Taro.navigateTo({ url: `/pages/profile/view?userId=${encodeURIComponent(user.id)}` })
+    else Taro.navigateTo({ url: `/sp-profile/pages/profile/view?userId=${encodeURIComponent(user.id)}` })
   }
 
   const openUser = (target: any) => {
@@ -97,3 +97,4 @@ export default function UserFollowing() {
     </ScrollView>
   )
 }
+

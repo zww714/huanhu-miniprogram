@@ -1,0 +1,5 @@
+export default definePageConfig({
+  navigationStyle: 'custom',
+  navigationBarTitleText: 'TA的技能',
+  backgroundColor: '#F7FAFF',
+})

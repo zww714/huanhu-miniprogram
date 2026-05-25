@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { ScrollView, Text, View } from '@tarojs/components'
 import { CURRENT_USER, SKILLS_DETAIL, type SkillDetail, type SkillProof } from '../../utils/mock'
@@ -112,14 +112,14 @@ export default function SkillDetailPage() {
   const isOwner = !!skill && ((skill as any).isOwner || skill.userId === CURRENT_USER.id)
   const handleBack = () => Taro.navigateBack()
   const handleMore = () => Taro.showToast({ title: '更多功能后续开放', icon: 'none' })
-  const handleEditSkill = () => Taro.navigateTo({ url: `/pages/edit-skills/index?skillId=${encodeURIComponent(skill?.id || '')}` })
+  const handleEditSkill = () => Taro.navigateTo({ url: `/sp-content/pages/edit-skills/index?skillId=${encodeURIComponent(skill?.id || '')}` })
   const handleSubmitProof = () => {
     Taro.showToast({ title: '证明材料提交功能即将开放', icon: 'none' })
   }
   const handleContact = () => {
     if (!skill) return
     Taro.navigateTo({
-      url: `/pages/contact-request/index?userId=${encodeURIComponent(skill.userId)}&skillId=${encodeURIComponent(skill.id)}&name=${encodeURIComponent('TA')}&category=${encodeURIComponent(skill.name)}&source=skill-detail`,
+      url: `/sp-social/pages/contact-request/index?userId=${encodeURIComponent(skill.userId)}&skillId=${encodeURIComponent(skill.id)}&name=${encodeURIComponent('TA')}&category=${encodeURIComponent(skill.name)}&source=skill-detail`,
     })
   }
   const handleProofClick = (proof: SkillProof) => {
@@ -128,7 +128,7 @@ export default function SkillDetailPage() {
       return
     }
     Taro.navigateTo({
-      url: `/pages/skill-proof-detail/index?skillId=${encodeURIComponent(skill.id)}&proofId=${encodeURIComponent(proof.id)}&userId=${encodeURIComponent(skill.userId)}`,
+      url: `/sp-content/pages/skill-proof-detail/index?skillId=${encodeURIComponent(skill.id)}&proofId=${encodeURIComponent(proof.id)}&userId=${encodeURIComponent(skill.userId)}`,
     })
   }
 
@@ -257,3 +257,6 @@ export default function SkillDetailPage() {
     </View>
   )
 }
+
+
+
