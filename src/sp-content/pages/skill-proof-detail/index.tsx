@@ -1,7 +1,7 @@
 ﻿import { useEffect, useMemo, useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { Image, ScrollView, Text, View } from '@tarojs/components'
-import { CURRENT_USER, SKILL_PROOFS, type SkillProofDetail } from '../../../utils/mock'
+import { CURRENT_USER, MY_VERIFIED_SKILLS, SKILL_PROOFS, VERIFICATION_STATUS_TEXT, type SkillProofDetail } from '../../../utils/mock'
 import { getSkillProofDetail } from '../../../utils/api'
 import './index.css'
 
@@ -33,10 +33,15 @@ export default function SkillProofDetailPage() {
   const [skillId, setSkillId] = useState('')
   const [targetUserId, setTargetUserId] = useState('')
 
+  const [skillName, setSkillName] = useState('')
+  const [isVerifiedRoute, setIsVerifiedRoute] = useState(false)
+
   useLoad((options) => {
     setProofId(String(options?.proofId || ''))
     setSkillId(String(options?.skillId || ''))
     setTargetUserId(String(options?.userId || ''))
+    setSkillName(String(options?.skillName || ''))
+    setIsVerifiedRoute(options?.type === 'verified')
   })
 
   const [cloudProof, setCloudProof] = useState<any>(null)
@@ -143,6 +148,63 @@ export default function SkillProofDetailPage() {
 
       <ScrollView scrollY className='proof-scroll' showScrollbar={false} enhanced bounces={false}>
         <View className='page-body'>
+          {/* 认证技能 → 验证来源卡片 */}
+          {isVerifiedRoute && (() => {
+            const vs = MY_VERIFIED_SKILLS.find((s) => s.name === skillName || s.id === skillId)
+            if (!vs) return null
+            const st = vs.verificationSource
+            const fb = vs.verificationFeedback
+            return (
+              <View className='card' style={{ border: '2rpx solid #D1FAE5' }}>
+                <View className='section-title'>
+                  <Text style={{ fontSize: '28rpx', fontWeight: 600, color: '#059669' }}>✅ 认证技能验证</Text>
+                </View>
+                <Text className='section-subtitle' style={{ fontSize: '24rpx', color: '#64748B', marginBottom: '16rpx' }}>
+                  此技能已提交官方认证材料，可通过以下信息进行验证
+                </Text>
+                {st && (
+                  <View style={{ background: '#F8FAFC', borderRadius: '12rpx', padding: '16rpx', marginBottom: '12rpx' }}>
+                    <View style={{ marginBottom: '10rpx' }}>
+                      <Text style={{ fontSize: '24rpx', color: '#94A3B8' }}>验证平台 </Text>
+                      <Text style={{ fontSize: '24rpx', color: '#334155', fontWeight: 500 }}>{st.platformName}</Text>
+                    </View>
+                    <View style={{ marginBottom: '10rpx' }}>
+                      <Text style={{ fontSize: '24rpx', color: '#94A3B8' }}>证书编号 </Text>
+                      <Text style={{ fontFamily: 'monospace', fontSize: '24rpx', color: '#2563EB', background: '#EFF6FF', padding: '2rpx 8rpx', borderRadius: '4rpx' }}>{st.verificationCode}</Text>
+                    </View>
+                    <View style={{ marginBottom: '10rpx' }}>
+                      <Text style={{ fontSize: '24rpx', color: '#94A3B8' }}>验证入口 </Text>
+                      <Text style={{ fontSize: '24rpx', color: '#475569', wordBreak: 'break-all' }}>{st.platformUrl}</Text>
+                    </View>
+                    <View>
+                      <Text style={{ fontSize: '24rpx', color: '#94A3B8' }}>验证方式 </Text>
+                      <Text style={{ fontSize: '24rpx', color: '#475569' }}>{st.inquiryMethod}</Text>
+                    </View>
+                    <View
+                      style={{ marginTop: '14rpx', background: '#2563EB', borderRadius: '10rpx', padding: '14rpx 0', textAlign: 'center' }}
+                      onClick={() => {
+                        Taro.setClipboardData({
+                          data: st.platformUrl,
+                          success: () => Taro.showToast({ title: '官网链接已复制，可前往验证', icon: 'success' }),
+                        })
+                      }}
+                    >
+                      <Text style={{ color: '#FFFFFF', fontSize: '26rpx', fontWeight: 600 }}>🔗 复制官网链接前往验证</Text>
+                    </View>
+                  </View>
+                )}
+                {fb && (
+                  <View style={{ background: vs.verificationStatus === 'rejected' ? '#FEF2F2' : '#ECFDF5', borderRadius: '10rpx', padding: '12rpx 16rpx' }}>
+                    <Text style={{ fontSize: '24rpx', color: '#334155' }}>
+                      {vs.verificationStatus === 'rejected' ? '❌ ' : '✅ '}审核反馈：{fb.comment || fb.rejectReason || '暂无备注'}
+                    </Text>
+                    {fb.reviewer && <Text style={{ fontSize: '22rpx', color: '#94A3B8', marginTop: '4rpx' }}>审核人：{fb.reviewer}</Text>}
+                  </View>
+                )}
+              </View>
+            )
+          })()}
+
           <View className='card main-card'>
             <View className='proof-title-row'>
               <Text className='proof-title'>{proof.title}</Text>
