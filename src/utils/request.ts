@@ -1,11 +1,9 @@
 ﻿import Taro from '@tarojs/taro'
+import { API_BASE_URL, MAX_RETRIES } from './config'
 
 // ========================================
 // 统一网络请求层 — 支持重试、Loading、错误提示
 // ========================================
-
-const BASE_URL = 'https://api.huanhu.zju.edu.cn'
-const MAX_RETRIES = 2
 
 interface RequestOptions {
   url: string
@@ -33,7 +31,7 @@ export const request = <T = any>(options: RequestOptions): Promise<T> => {
     }
 
     Taro.request({
-      url: BASE_URL + url,
+      url: API_BASE_URL + url,
       method,
       data,
       header: {

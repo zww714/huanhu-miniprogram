@@ -33,6 +33,7 @@
   preloadRule: {
     'pages/index/index': { network: 'all', packages: ['sp-common', 'sp-social'] },
     'pages/discover/index': { network: 'all', packages: ['sp-content'] },
+    'pages/messages/index': { network: 'all', packages: ['sp-social'] },
     'pages/profile/index': { network: 'all', packages: ['sp-profile'] },
   },
   usingComponents: {},

@@ -11,6 +11,7 @@
  *   const users = await getUsers({ category: 'Python' })
  *   const detail = await getUserDetail({ userId: 'xxx' })
  */
+import { CLOUD_ENV } from './config'
 
 // ============ 开关：true=用云函数，false=用mock数据 ============
 const USE_CLOUD = true
@@ -22,7 +23,7 @@ function initCloud() {
   if (cloudReady) return cloudReady
   cloudReady = new Promise((resolve) => {
     if (!wx.cloud) { resolve(); return }
-    try { wx.cloud.init({ env: 'cloud1-d3geudxpp50aa1802', traceUser: true }) } catch (_) {}
+    try { wx.cloud.init({ env: CLOUD_ENV, traceUser: true }) } catch (_) {}
     resolve()
   })
   return cloudReady
