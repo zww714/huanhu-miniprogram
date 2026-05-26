@@ -3,9 +3,10 @@
  */
 import {
   initCloud, delay, apiWarn, USE_CLOUD,
-  getAllCloudDocuments, addCloudDocument, login,
+  getAllCloudDocuments, addCloudDocument,
   CHAT_USER_KEY, LOCAL_MESSAGES_KEY, LOCAL_CONVERSATIONS_KEY,
 } from './base'
+import { login } from './user'
 import { CONVERSATIONS } from '../utils/mock'
 import type { Conversation } from '../utils/mock'
 
