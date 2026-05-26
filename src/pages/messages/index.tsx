@@ -70,21 +70,17 @@ export default function Messages() {
 
     getNotificationUnreadCounts().then((cloudCounts) => {
       setUnreadCounts(cloudCounts)
+      updateMessageTabUnread()
     }).catch(() => {
       setUnreadCounts(localGetUnreadCounts())
     })
-
-    function badgeTotal(chatUnread: number) {
-      const notifUnread = Object.values(localGetUnreadCounts()).reduce((s, c) => s + c, 0)
-      return chatUnread + notifUnread
-    }
 
     async function loadConversations() {
       try {
         const cloudConversations = await getChatConversations()
         if (!Array.isArray(cloudConversations) || cloudConversations.length === 0) {
           const chatUnread = baseConversations.reduce((sum, item) => sum + getConversationUnread(item), 0)
-          updateMessageTabUnread(badgeTotal(chatUnread))
+          updateMessageTabUnread(chatUnread)
           return
         }
         const cloudIds = new Set(cloudConversations.map((item: Conversation) => item.id))
@@ -94,10 +90,10 @@ export default function Messages() {
         ]
         setConversations(nextConversations)
         const chatUnread = nextConversations.reduce((sum, item) => sum + getConversationUnread(item), 0)
-        updateMessageTabUnread(badgeTotal(chatUnread))
+        updateMessageTabUnread(chatUnread)
       } catch (e) {
         const chatUnread = baseConversations.reduce((sum, item) => sum + getConversationUnread(item), 0)
-        updateMessageTabUnread(badgeTotal(chatUnread))
+        updateMessageTabUnread(chatUnread)
       }
     }
 
@@ -110,7 +106,13 @@ export default function Messages() {
   const totalUnread = notificationUnreadTotal + chatUnreadTotal
 
   const navigateNotice = (type: NotificationType) => {
-    const url = `/sp-social/pages/notification-list/index?type=${type}`
+    const directPages: Record<string, string> = {
+      likes: '/sp-social/pages/message-likes/index',
+      follows: '/sp-social/pages/message-follows/index',
+      comments: '/sp-social/pages/message-comments/index',
+      system: '/sp-social/pages/message-system/index',
+    }
+    const url = directPages[type] || `/sp-social/pages/notification-list/index?type=${type}`
     Taro.navigateTo({ url })
   }
 
