@@ -1,8 +1,8 @@
-﻿import { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { ScrollView, Text, View } from '@tarojs/components'
 import { INTEREST_DETAILS } from '../../../utils/mock'
-import './index.css'
+import './index.scss'
 
 export default function InterestDetail() {
   const [interestName, setInterestName] = useState('')

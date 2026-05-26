@@ -2,7 +2,7 @@ import { useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { ScrollView, Text, View } from '@tarojs/components'
 import { AVATAR_STORAGE_KEY, SYSTEM_AVATARS } from '../../../utils/mock'
-import './index.css'
+import './index.scss'
 
 export default function AvatarSelect() {
   const [selectedAvatar, setSelectedAvatar] = useState('')

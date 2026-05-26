@@ -3,7 +3,7 @@ import Taro, { useDidShow, useLoad } from '@tarojs/taro'
 import { useCallback, useMemo, useState } from 'react'
 import { getFollowing } from '../../../api'
 import { getPublicUser, normalizePublicUserId, openUnifiedUserProfile } from '../../../utils/publicProfiles'
-import '../user-followers/index.css'
+import '../user-followers/index.scss'
 
 const MOCK_FOLLOWING = [
   { id: 'follow-1', name: '夏日微风', school: '浙江大学', college: '计算机科学与技术', grade: '大三', intro: '专注前端开发，热爱开源与分享' },

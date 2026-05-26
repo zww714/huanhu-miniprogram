@@ -3,7 +3,7 @@ import Taro, { useLoad } from '@tarojs/taro'
 import { useEffect, useMemo, useState } from 'react'
 import { getUserSkills } from '../../../api'
 import { getPublicSkills, getPublicUser, normalizePublicUserId } from '../../../utils/publicProfiles'
-import './index.css'
+import './index.scss'
 
 const FALLBACK_SKILLS = [
   { id: 'photo', name: '摄影', level: 4, intro: '擅长人像与街拍，擅长用光影表达故事。', tags: ['人像', '街拍', '光影', '后期'], icon: '▣' },

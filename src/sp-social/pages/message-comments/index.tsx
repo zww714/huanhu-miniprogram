@@ -2,7 +2,7 @@ import Taro, { useDidShow } from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
 import { useState } from 'react'
 import { getNotifications, markNotificationsRead } from '../../../api'
-import './index.css'
+import './index.scss'
 
 export default function MessageComments() {
   const [items, setItems] = useState<any[]>([])

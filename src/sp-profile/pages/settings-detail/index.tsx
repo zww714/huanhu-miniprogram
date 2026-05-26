@@ -1,7 +1,7 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { Switch, Text, View } from '@tarojs/components'
-import './index.css'
+import './index.scss'
 
 type SettingType = 'account' | 'notice' | 'privacy' | 'about'
 

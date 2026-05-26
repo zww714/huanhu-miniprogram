@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import Taro from '@tarojs/taro'
 import { Button, Input, Text, View } from '@tarojs/components'
 import { getSavedLoginUser, login, phoneCodeLogin, saveWechatProfile, sendSmsCode } from '../../../api'
-import './index.css'
+import './index.scss'
 
 type LoginMode = 'wechat' | 'phone'
 

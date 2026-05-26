@@ -1,7 +1,7 @@
-﻿import Taro from '@tarojs/taro'
+import Taro from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
 import { PARTNER_USERS } from '../../../utils/mock'
-import './index.css'
+import './index.scss'
 
 export default function MyPartners() {
   return (

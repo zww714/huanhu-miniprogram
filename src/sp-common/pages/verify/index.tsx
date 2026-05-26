@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import Taro from '@tarojs/taro'
 import { View, Text, Input, Button, ScrollView } from '@tarojs/components'
-import './index.css'
+import './index.scss'
 
 export default function Verify() {
   const [identityType, setIdentityType] = useState<'student' | 'teacher'>('student')

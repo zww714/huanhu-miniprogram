@@ -3,7 +3,7 @@ import Taro, { useDidShow, useLoad } from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
 import { CURRENT_USER } from '../../../utils/mock'
 import { getRatingSummary } from '../../../utils/ratings'
-import './index.css'
+import './index.scss'
 
 const STARS = [5, 4, 3, 2, 1]
 

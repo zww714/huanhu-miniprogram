@@ -4,7 +4,7 @@ import { Image, Text, View } from '@tarojs/components'
 import { MOCK_POSTS } from '../../../utils/mock'
 import { getMyFavorites } from '../../../api'
 import { openUnifiedUserProfile } from '../../../utils/publicProfiles'
-import './index.css'
+import './index.scss'
 
 type FavoriteItem = {
   _id: string

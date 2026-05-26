@@ -12,7 +12,7 @@ import { addComment, deleteComment as apiDeleteComment, deletePost, getComments,
 import { openUnifiedUserProfile } from '../../../utils/publicProfiles'
 import { recordBrowse } from '../../../utils/history'
 import { getGenderSymbol, getGenderTone } from '../../../utils/gender'
-import './index.css'
+import './index.scss'
 
 type Post = {
   id?: string

@@ -3,7 +3,7 @@ import Taro from '@tarojs/taro'
 import { Button, Input, Text, Textarea, View } from '@tarojs/components'
 import { MY_PROFILE } from '../../../utils/mock'
 import { getCurrentUser, updateProfile } from '../../../api'
-import './index.css'
+import './index.scss'
 
 type Gender = 'male' | 'female' | 'private'
 

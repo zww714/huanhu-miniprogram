@@ -14,7 +14,7 @@ import {
   updateMessageTabUnread,
 } from '../../../utils/notifications'
 import { openUnifiedUserProfile } from '../../../utils/publicProfiles'
-import './index.css'
+import './index.scss'
 
 const validTypes: NotificationType[] = ['likes', 'follows', 'comments', 'system']
 const filters = [

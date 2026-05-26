@@ -5,7 +5,7 @@ import { CURRENT_USER, SKILLS_DETAIL, type SkillDetail, type SkillProof } from '
 import { PUBLIC_SKILLS } from '../../../utils/publicProfiles'
 import { getSkillDetail, getSkillProofs, getSkillProofCount } from '../../../api'
 import { recordBrowse } from '../../../utils/history'
-import './index.css'
+import './index.scss'
 
 const proofTypeText: Record<SkillProof['type'], string> = {
   portfolio: '作品集',

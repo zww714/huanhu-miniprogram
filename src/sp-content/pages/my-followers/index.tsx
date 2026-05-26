@@ -4,7 +4,7 @@ import { Text, View } from '@tarojs/components'
 import { getFollowers, followUser as apiFollowUser, unfollowUser as apiUnfollowUser, blockUser as apiBlockUser, setSpecialFollow as apiSetSpecialFollow } from '../../../api'
 import { openUnifiedUserProfile } from '../../../utils/publicProfiles'
 import { MOCK_RELATIONS } from '../../../utils/mock'
-import './index.css'
+import './index.scss'
 
 const fallbackFollowers = MOCK_RELATIONS.filter((user) => user.isFollower)
 

@@ -3,7 +3,7 @@ import Taro, { useLoad } from '@tarojs/taro'
 import { Button, Input, Text, Textarea, View } from '@tarojs/components'
 import { MY_LEARN_WANTS } from '../../../utils/mock'
 import { createSkill, deleteSkill, getMySkills, updateSkill } from '../../../api'
-import './index.css'
+import './index.scss'
 
 type EditType = 'can' | 'want'
 type Visibility = 'public' | 'private'

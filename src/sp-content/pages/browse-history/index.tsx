@@ -1,8 +1,8 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
 import { getBrowseHistory, clearBrowseHistory, type BrowseItem } from '../../../utils/history'
-import './index.css'
+import './index.scss'
 
 const typeLabels: Record<BrowseItem['type'], string> = {
   post: '帖子',

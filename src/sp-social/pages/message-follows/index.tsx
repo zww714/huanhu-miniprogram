@@ -3,7 +3,7 @@ import { Text, View } from '@tarojs/components'
 import { useState } from 'react'
 import { getNotifications, markNotificationsRead } from '../../../api'
 import { openUnifiedUserProfile } from '../../../utils/publicProfiles'
-import './index.css'
+import './index.scss'
 
 export default function MessageFollows() {
   const [items, setItems] = useState<any[]>([])

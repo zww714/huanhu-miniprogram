@@ -9,7 +9,7 @@ import {
   setPendingPublicPost,
   type PublicPost,
 } from '../../../utils/publicProfiles'
-import './index.css'
+import './index.scss'
 
 const FALLBACK_POSTS = [
   { id: 'autumn', title: '浙大之秋：银杏大道的光影', summary: '午后的阳光洒在银杏叶上，整条路都变成了金色。随手一拍就是壁纸...', tags: ['摄影', '校园风景'], likeCount: 156, commentCount: 32, viewCount: '1.2k', createdAt: '2天前', cover: '秋' },

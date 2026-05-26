@@ -3,7 +3,7 @@ import Taro, { useLoad } from '@tarojs/taro'
 import { Image, Input, ScrollView, Text, Textarea, View } from '@tarojs/components'
 import { createActivity, createPost, getPostDetail, publishPartnerProfile, publishSkillNeed, updatePost } from '../../../api'
 import { MOCK_POSTS, MY_POSTS } from '../../../utils/mock'
-import './index.css'
+import './index.scss'
 
 type PublishMode = 'skill' | 'partner' | 'activity' | 'post'
 

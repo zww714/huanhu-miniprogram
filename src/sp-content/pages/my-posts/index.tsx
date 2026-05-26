@@ -3,7 +3,7 @@ import Taro, { useDidShow } from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
 import { CURRENT_USER, MOCK_POSTS, MY_POSTS } from '../../../utils/mock'
 import { deletePost, getMyPosts, updatePost } from '../../../api'
-import './index.css'
+import './index.scss'
 
 type ManagedPost = {
   id: string

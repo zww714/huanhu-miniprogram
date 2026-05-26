@@ -3,7 +3,7 @@ import Taro, { useLoad } from '@tarojs/taro'
 import { Image, ScrollView, Text, View } from '@tarojs/components'
 import { CURRENT_USER, MY_VERIFIED_SKILLS, SKILL_PROOFS, VERIFICATION_STATUS_TEXT, type SkillProofDetail } from '../../../utils/mock'
 import { getSkillProofDetail } from '../../../api'
-import './index.css'
+import './index.scss'
 
 const typeText: Record<SkillProofDetail['type'], string> = {
   portfolio: '作品集',

@@ -1,6 +1,6 @@
-﻿import Taro from '@tarojs/taro'
+import Taro from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
-import './index.css'
+import './index.scss'
 
 const SETTINGS = [
   {

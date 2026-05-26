@@ -3,7 +3,7 @@ import Taro, { useDidShow } from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
 import { getMyActivityRegistrations, cancelActivityRegistration } from '../../../api'
 import { ACTIVITIES } from '../../../utils/mock'
-import './index.css'
+import './index.scss'
 
 const fallbackRegistrations = ACTIVITIES.slice(0, 2).map((activity, index) => ({
   id: `mock_registration_${activity.id || index}`,

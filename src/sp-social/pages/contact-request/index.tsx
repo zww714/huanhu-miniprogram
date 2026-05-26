@@ -1,8 +1,8 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { Text, Textarea, View } from '@tarojs/components'
 import { CURRENT_USER } from '../../../utils/mock'
-import './index.css'
+import './index.scss'
 
 type ContactOptions = {
   userId?: string

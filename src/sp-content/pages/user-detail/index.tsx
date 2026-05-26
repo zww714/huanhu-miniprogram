@@ -19,7 +19,7 @@ import {
   type PublicPost,
   type PublicRelation,
 } from '../../../utils/publicProfiles'
-import './index.css'
+import './index.scss'
 
 type FollowRelation = {
   isFollowing: boolean

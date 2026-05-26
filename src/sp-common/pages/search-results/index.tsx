@@ -6,7 +6,7 @@ import { getPosts } from '../../../api'
 import { MOCK_POSTS } from '../../../utils/mock'
 import { openUnifiedUserProfile } from '../../../utils/publicProfiles'
 import { getGenderSymbol, getGenderTone } from '../../../utils/gender'
-import './index.css'
+import './index.scss'
 
 const HOT_RECOMMENDS = ['Python 入门', '科研经验', '摄影搭子', '论文降重', 'AI工具', '校园活动']
 

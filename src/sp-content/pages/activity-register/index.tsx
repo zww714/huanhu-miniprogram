@@ -2,7 +2,7 @@ import { useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { Button, Input, Text, Textarea, View } from '@tarojs/components'
 import { registerActivity } from '../../../api'
-import './index.css'
+import './index.scss'
 
 export default function ActivityRegister() {
   const [activity, setActivity] = useState({
