@@ -1,8 +1,8 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import Taro, { useDidShow, useLoad } from '@tarojs/taro'
 import { Image, ScrollView, Text, View } from '@tarojs/components'
 import { type AppNotification, type NotificationType } from '../../../utils/mock'
-import { getNotifications as apiGetNotifications, markNotificationsRead as apiMarkRead, deleteNotification as apiDeleteNotification, getNotificationUnreadCounts as apiGetUnreadCounts } from '../../../utils/api'
+import { getNotifications as apiGetNotifications, markNotificationsRead as apiMarkRead, deleteNotification as apiDeleteNotification, getNotificationUnreadCounts as apiGetUnreadCounts } from '../../../api'
 import {
   blockNotificationType,
   getBlockedNotificationTypes,

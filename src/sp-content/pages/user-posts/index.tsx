@@ -1,7 +1,7 @@
-﻿import { View, Text, ScrollView } from '@tarojs/components'
+import { View, Text, ScrollView } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { useEffect, useMemo, useState } from 'react'
-import { getUserPosts } from '../../../utils/api'
+import { getUserPosts } from '../../../api'
 import {
   getPublicPosts,
   getPublicUser,

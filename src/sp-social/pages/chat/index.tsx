@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { Input, ScrollView, Text, View } from '@tarojs/components'
-import { getChatMessages, sendChatMessage } from '../../../utils/api'
+import { getChatMessages, sendChatMessage } from '../../../api'
 import './index.css'
 
 type ChatMessage = {

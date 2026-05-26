@@ -1,8 +1,8 @@
-﻿import { View, Text, ScrollView } from '@tarojs/components'
+import { View, Text, ScrollView } from '@tarojs/components'
 import Taro, { useDidShow, useLoad } from '@tarojs/taro'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { CURRENT_USER } from '../../../utils/mock'
-import { getUserDetail, getUserPosts, getUserSkills, followUser as apiFollowUser, unfollowUser as apiUnfollowUser, blockUser as apiBlockUser, setSpecialFollow as apiSetSpecialFollow, getFollowStatus as apiGetFollowStatus } from '../../../utils/api'
+import { getUserDetail, getUserPosts, getUserSkills, followUser as apiFollowUser, unfollowUser as apiUnfollowUser, blockUser as apiBlockUser, setSpecialFollow as apiSetSpecialFollow, getFollowStatus as apiGetFollowStatus } from '../../../api'
 import { recordBrowse } from '../../../utils/history'
 import {
   getFollowingForUser,

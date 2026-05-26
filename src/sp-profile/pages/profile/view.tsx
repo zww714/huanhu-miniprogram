@@ -6,7 +6,7 @@ import {
   getFollowStatus,
   getUserDetail,
   unfollowUser as apiUnfollowUser,
-} from '../../../utils/api'
+} from '../../../api'
 import { CURRENT_USER } from '../../../utils/mock'
 import {
   getPublicSkills,

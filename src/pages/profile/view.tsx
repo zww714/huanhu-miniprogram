@@ -1,4 +1,4 @@
-﻿import { View, Text, ScrollView, Image, Textarea } from '@tarojs/components'
+import { View, Text, ScrollView, Image, Textarea } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { useEffect, useMemo, useState } from 'react'
 import {
@@ -8,7 +8,7 @@ import {
   getUserDetail,
   getUserSkills,
   unfollowUser as apiUnfollowUser,
-} from '../../utils/api'
+} from '../../api'
 import { CURRENT_USER } from '../../utils/mock'
 import {
   getPublicPosts,

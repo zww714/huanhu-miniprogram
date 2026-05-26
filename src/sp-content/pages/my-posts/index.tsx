@@ -1,8 +1,8 @@
-﻿import { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
 import { CURRENT_USER, MOCK_POSTS, MY_POSTS } from '../../../utils/mock'
-import { deletePost, getMyPosts, updatePost } from '../../../utils/api'
+import { deletePost, getMyPosts, updatePost } from '../../../api'
 import './index.css'
 
 type ManagedPost = {

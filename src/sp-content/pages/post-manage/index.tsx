@@ -1,7 +1,7 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { ScrollView, Text, View } from '@tarojs/components'
-import { getPostDetail, updatePost, deletePost } from '../../../utils/api'
+import { getPostDetail, updatePost, deletePost } from '../../../api'
 import './index.css'
 
 export default function PostManage() {

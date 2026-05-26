@@ -1,7 +1,7 @@
-﻿import { View, Text, ScrollView, Image } from '@tarojs/components'
+import { View, Text, ScrollView, Image } from '@tarojs/components'
 import Taro, { useDidShow, useLoad } from '@tarojs/taro'
 import { useCallback, useMemo, useState } from 'react'
-import { getFollowing } from '../../../utils/api'
+import { getFollowing } from '../../../api'
 import { getPublicUser, normalizePublicUserId, openUnifiedUserProfile } from '../../../utils/publicProfiles'
 import '../user-followers/index.css'
 

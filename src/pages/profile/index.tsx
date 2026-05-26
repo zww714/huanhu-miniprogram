@@ -1,9 +1,9 @@
-﻿import { View, Text, ScrollView, Image } from '@tarojs/components'
+import { View, Text, ScrollView, Image } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { useState } from 'react'
 import ErrorBoundary from '../../components/common/ErrorBoundary'
 import './index.scss'
-import { updateProfile } from '../../utils/api'
+import { updateProfile } from '../../api'
 import { getGenderSymbol, getGenderTone } from '../../utils/gender'
 
 import {

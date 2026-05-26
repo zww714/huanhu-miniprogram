@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
-import { getFollowing, unfollowUser as apiUnfollowUser, blockUser as apiBlockUser, setSpecialFollow as apiSetSpecialFollow } from '../../../utils/api'
+import { getFollowing, unfollowUser as apiUnfollowUser, blockUser as apiBlockUser, setSpecialFollow as apiSetSpecialFollow } from '../../../api'
 import { openUnifiedUserProfile } from '../../../utils/publicProfiles'
 import { MOCK_RELATIONS } from '../../../utils/mock'
 import './index.css'

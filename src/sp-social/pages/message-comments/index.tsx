@@ -1,7 +1,7 @@
-﻿import Taro, { useDidShow } from '@tarojs/taro'
+import Taro, { useDidShow } from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
 import { useState } from 'react'
-import { getNotifications, markNotificationsRead } from '../../../utils/api'
+import { getNotifications, markNotificationsRead } from '../../../api'
 import './index.css'
 
 export default function MessageComments() {

@@ -1,8 +1,8 @@
-﻿import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import Taro from '@tarojs/taro'
 import { Image, Text, View } from '@tarojs/components'
 import { MOCK_POSTS } from '../../../utils/mock'
-import { getMyFavorites } from '../../../utils/api'
+import { getMyFavorites } from '../../../api'
 import { openUnifiedUserProfile } from '../../../utils/publicProfiles'
 import './index.css'
 

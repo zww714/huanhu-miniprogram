@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import Taro, { useLoad, useShareAppMessage } from '@tarojs/taro'
 import { Button, Image, Input, ScrollView, Text, View } from '@tarojs/components'
 import {
@@ -8,7 +8,7 @@ import {
   POST_COMMENTS,
   type Comment,
 } from '../../../utils/mock'
-import { addComment, deleteComment as apiDeleteComment, deletePost, getComments, getPostDetail, getPosts, replyComment, updatePost, toggleLike, toggleFavorite, getInteractionStatus } from '../../../utils/api'
+import { addComment, deleteComment as apiDeleteComment, deletePost, getComments, getPostDetail, getPosts, replyComment, updatePost, toggleLike, toggleFavorite, getInteractionStatus } from '../../../api'
 import { openUnifiedUserProfile } from '../../../utils/publicProfiles'
 import { recordBrowse } from '../../../utils/history'
 import { getGenderSymbol, getGenderTone } from '../../../utils/gender'

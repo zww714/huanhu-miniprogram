@@ -1,7 +1,7 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
-import { getMyActivityRegistrations, cancelActivityRegistration } from '../../../utils/api'
+import { getMyActivityRegistrations, cancelActivityRegistration } from '../../../api'
 import { ACTIVITIES } from '../../../utils/mock'
 import './index.css'
 

@@ -1,7 +1,7 @@
-﻿import { View, Text, ScrollView } from '@tarojs/components'
+import { View, Text, ScrollView } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { useEffect, useMemo, useState } from 'react'
-import { getUserSkills } from '../../../utils/api'
+import { getUserSkills } from '../../../api'
 import { getPublicSkills, getPublicUser, normalizePublicUserId } from '../../../utils/publicProfiles'
 import './index.css'
 

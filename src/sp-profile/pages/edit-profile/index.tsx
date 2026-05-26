@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import Taro from '@tarojs/taro'
 import { Button, Input, Text, Textarea, View } from '@tarojs/components'
 import { MY_PROFILE } from '../../../utils/mock'
-import { getCurrentUser, updateProfile } from '../../../utils/api'
+import { getCurrentUser, updateProfile } from '../../../api'
 import './index.css'
 
 type Gender = 'male' | 'female' | 'private'

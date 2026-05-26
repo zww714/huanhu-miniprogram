@@ -1,9 +1,9 @@
-﻿import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { ScrollView, Text, View } from '@tarojs/components'
 import { CURRENT_USER, SKILLS_DETAIL, type SkillDetail, type SkillProof } from '../../../utils/mock'
 import { PUBLIC_SKILLS } from '../../../utils/publicProfiles'
-import { getSkillDetail, getSkillProofs, getSkillProofCount } from '../../../utils/api'
+import { getSkillDetail, getSkillProofs, getSkillProofCount } from '../../../api'
 import { recordBrowse } from '../../../utils/history'
 import './index.css'
 
