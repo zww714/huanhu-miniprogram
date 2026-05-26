@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import Taro, { useDidShow, useLoad } from '@tarojs/taro'
 import { Image, ScrollView, Text, View } from '@tarojs/components'
 import { type AppNotification, type NotificationType } from '../../../utils/mock'
@@ -46,6 +46,7 @@ function NoticeAvatar({ item, title }: { item: AppNotification; title: string })
 }
 
 export default function NotificationList() {
+  const isFirstShow = useRef(true)
   const [type, setType] = useState<NotificationType>('likes')
   const [filter, setFilter] = useState<FilterKey>('all')
   const [items, setItems] = useState<AppNotification[]>([])
@@ -76,7 +77,13 @@ export default function NotificationList() {
     refresh(nextType)
   })
 
-  useDidShow(() => refresh())
+  useDidShow(() => {
+    if (isFirstShow.current) {
+      isFirstShow.current = false
+      return
+    }
+    refresh()
+  })
 
   const unreadCount = items.filter((item) => !item.read).length
   const title = notificationTitles[type]
