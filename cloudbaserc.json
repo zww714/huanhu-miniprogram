@@ -44,6 +44,7 @@
     { "name": "skillProof", "timeout": 15, "runtime": "Nodejs18.15", "handler": "index.main" },
     { "name": "initData", "timeout": 30, "runtime": "Nodejs18.15", "handler": "index.main" },
     { "name": "bootstrapData", "timeout": 60, "runtime": "Nodejs18.15", "handler": "index.main" },
-    { "name": "seed", "timeout": 60, "runtime": "Nodejs18.15", "handler": "index.main" }
+    { "name": "seed", "timeout": 60, "runtime": "Nodejs18.15", "handler": "index.main" },
+    { "name": "_shared", "timeout": 5, "runtime": "Nodejs18.15", "handler": "index.main", "ignore": true }
   ]
 }
