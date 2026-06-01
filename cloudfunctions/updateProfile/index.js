@@ -1,26 +1,13 @@
-const cloud = require('wx-server-sdk')
-
-cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
-
-const db = cloud.database()
+/**
+ * 云函数 - 更新个人资料
+ */
+const { ok, fail, db, cloud } = require('./shared')
 const users = db.collection('users')
 
 const ALLOWED_FIELDS = [
-  'name',
-  'avatar',
-  'gender',
-  'school',
-  'college',
-  'major',
-  'grade',
-  'campus',
-  'intro',
-  'bio',
-  'interests',
-  'canTeach',
-  'skills',
-  'wantToLearn',
-  'learnWants',
+  'name', 'avatar', 'gender', 'school', 'college',
+  'major', 'grade', 'campus', 'intro', 'bio',
+  'interests', 'canTeach', 'skills', 'wantToLearn', 'learnWants',
 ]
 
 function normalizeProfilePayload(event) {
@@ -85,13 +72,13 @@ function normalizeUser(doc) {
 exports.main = async (event = {}) => {
   try {
     const { OPENID } = cloud.getWXContext()
-    if (!OPENID) return { code: -1, msg: '获取用户身份失败' }
+    if (!OPENID) return fail('获取用户身份失败', -1)
 
     const current = await users.where({ openid: OPENID }).limit(1).get()
-    if (!current.data.length) return { code: -2, msg: '用户不存在，请先登录' }
+    if (!current.data.length) return fail('用户不存在，请先登录', -2)
 
     const profile = normalizeProfilePayload(event)
-    if (!Object.keys(profile).length) return { code: -3, msg: '没有可更新的资料字段' }
+    if (!Object.keys(profile).length) return fail('没有可更新的资料字段', -3)
 
     delete profile._id
     delete profile.id
@@ -105,14 +92,9 @@ exports.main = async (event = {}) => {
     await users.doc(userId).update({ data: profile })
 
     const updated = await users.doc(userId).get()
-    return {
-      code: 0,
-      msg: '保存成功',
-      currentUser: normalizeUser(updated.data),
-      userData: normalizeUser(updated.data),
-    }
+    return ok({ msg: '更新成功', currentUser: normalizeUser(updated.data), userData: normalizeUser(updated.data) })
   } catch (err) {
     console.error('[updateProfile]', err)
-    return { code: -4, msg: '保存资料失败', error: err.message || err }
+    return fail('更新资料失败', -4)
   }
 }

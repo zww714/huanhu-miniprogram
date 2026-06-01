@@ -1,7 +1,5 @@
 // 云函数入口文件 - 导入种子数据
-const cloud = require('wx-server-sdk')
-cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
-const db = cloud.database()
+const { ok, fail, db, cloud } = require('./shared')
 
 // ========== 种子数据 ==========
 

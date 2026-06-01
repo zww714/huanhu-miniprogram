@@ -1,8 +1,7 @@
-const cloud = require('wx-server-sdk')
-
-cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
-
-const db = cloud.database()
+/**
+ * 云函数 - 删除帖子
+ */
+const { ok, fail, db, cloud } = require('./shared')
 
 async function refreshPostCount(userId) {
   const total = await db.collection('posts').where({ authorId: userId, status: 'normal' }).count()
@@ -19,25 +18,22 @@ exports.main = async (event = {}) => {
   try {
     const { OPENID } = cloud.getWXContext()
     const postId = event.postId || event.id
-    if (!OPENID) return { code: -1, msg: '获取用户身份失败' }
-    if (!postId) return { code: -2, msg: '缺少 postId' }
+    if (!OPENID) return fail('获取用户身份失败', -1)
+    if (!postId) return fail('缺少 postId', -2)
 
     const postRes = await db.collection('posts').doc(postId).get()
     const post = postRes.data
-    if (!post || post.status === 'deleted') return { code: -3, msg: '帖子不存在或已删除' }
-    if (post.openid !== OPENID) return { code: -4, msg: '只能删除自己的帖子' }
+    if (!post || post.status === 'deleted') return fail('帖子不存在或已删除', -3)
+    if (post.openid !== OPENID) return fail('只可删除自己的帖子', -4)
 
     await db.collection('posts').doc(postId).update({
-      data: {
-        status: 'deleted',
-        updatedAt: db.serverDate(),
-      },
+      data: { status: 'deleted', updatedAt: db.serverDate() },
     })
     await refreshPostCount(post.authorId || post.userId)
 
-    return { code: 0, msg: '已删除' }
+    return ok(null, { msg: '已删除' })
   } catch (err) {
     console.error('[deletePost]', err)
-    return { code: -5, msg: '删除帖子失败', error: err.message || err }
+    return fail('删除帖子失败', -5)
   }
 }

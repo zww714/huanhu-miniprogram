@@ -488,7 +488,7 @@ export default function Publish() {
         <Text style={{ fontSize: '14px', fontWeight: '600', color: '#1E293B', marginBottom: '8px' }}>图片</Text>
         {postImage ? (
           <View onClick={choosePostImage} style={{ width: '100%', height: '150px', borderRadius: '10px', overflow: 'hidden', border: '1px solid #E2E8F0', backgroundColor: '#FFF' }}>
-            <Image src={postImage} mode="aspectFill" style={{ width: '100%', height: '150px' }} />
+            <Image src={postImage} mode="aspectFill" style={{ width: '100%', height: '150px' }} lazyLoad />
           </View>
         ) : (
           <View onClick={choosePostImage} style={{ height: '100px', borderRadius: '10px', border: '1px dashed #CBD5E1', backgroundColor: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

@@ -136,7 +136,7 @@ export default function MyFavorites() {
             <View className='fav-author-row'>
               <View className='fav-avatar' onClick={(e) => { e.stopPropagation(); openUnifiedUserProfile(post.authorId, post.author?.name) }}>
                 {isRenderableImage(post.author?.avatar) ? (
-                  <Image src={post.author.avatar} mode='aspectFill' className='fav-avatar-img' />
+                  <Image src={post.author.avatar} mode='aspectFill' className='fav-avatar-img' lazyLoad />
                 ) : (
                   <Text className='fav-avatar-text'>{(post.author?.name || '同').charAt(0)}</Text>
                 )}

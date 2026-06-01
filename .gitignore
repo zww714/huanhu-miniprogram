@@ -12,6 +12,8 @@ $RECYCLE.BIN/
 
 # Node.js
 node_modules/
+cloudfunctions/**/package-lock.json
+_cloud_verify/
 
 # Build output
 dist/

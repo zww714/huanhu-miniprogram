@@ -1,8 +1,7 @@
-const cloud = require('wx-server-sdk')
-
-cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
-
-const db = cloud.database()
+/**
+ * 云函数 - 添加评论
+ */
+const { ok, fail, db, cloud } = require('./shared')
 const _ = db.command
 
 exports.main = async (event = {}) => {
@@ -10,30 +9,25 @@ exports.main = async (event = {}) => {
     const { postId, content } = event
     const { OPENID } = cloud.getWXContext()
 
-    if (!OPENID) return { code: -1, msg: '获取用户身份失败' }
-    if (!postId) return { code: -2, msg: '缺少 postId' }
-    if (!content || !String(content).trim()) return { code: -3, msg: '评论内容不能为空' }
+    if (!OPENID) return fail('获取用户身份失败', -1)
+    if (!postId) return fail('缺少 postId', -2)
+    if (!content || !String(content).trim()) return fail('评论内容不能为空', -3)
 
-    // Get current user
     const userRes = await db.collection('users').where({ openid: OPENID }).limit(1).get()
-    if (!userRes.data.length) return { code: -4, msg: '用户不存在，请先登录' }
+    if (!userRes.data.length) return fail('用户不存在，请先登录', -4)
     const user = userRes.data[0]
 
-    // Verify post exists
     const postRes = await db.collection('posts').doc(postId).get()
     const post = postRes.data
-    if (!post || post.status === 'deleted') return { code: -5, msg: '帖子不存在或已被删除' }
+    if (!post || post.status === 'deleted') return fail('帖子不存在或已被删除', -5)
 
-    // Private post: only author can comment
     const postAuthorId = post.authorId || post.userId || ''
     if (post.visibility === 'private' && postAuthorId !== user._id) {
-      return { code: -6, msg: '该帖子暂不允许评论' }
+      return fail('该内容不允许操作', -6)
     }
 
-    // Clean content
     const cleanContent = String(content).trim()
 
-    // Create comment
     const addRes = await db.collection('comments').add({
       data: {
         postId,
@@ -50,69 +44,58 @@ exports.main = async (event = {}) => {
       },
     })
 
-    // Increment post commentCount
     await db.collection('posts').doc(postId).update({
-      data: { commentCount: _.inc(1), updatedAt: db.serverDate() },
+      data: { commentCount: _.inc(1), comments: _.inc(1), updatedAt: db.serverDate() },
     }).catch(() => {})
 
-    // Also update the post's comments field if it exists
-    await db.collection('posts').doc(postId).update({
-      data: { comments: _.inc(1) },
-    }).catch(() => {})
-
-    return {
-      code: 0,
-      data: {
-        _id: addRes._id,
-        id: addRes._id,
-        postId,
-        content: cleanContent,
-        parentId: null,
-        replyToUserId: null,
-        rootId: null,
-        likeCount: 0,
-        canDelete: true,
-        author: {
-          _id: user._id,
-          name: user.name || '同学',
-          avatar: user.avatar || '',
-          college: user.college || '',
-          major: user.major || '',
-          grade: user.grade || '',
-          campus: user.campus || '',
-          verified: !!user.verified,
+    // 发送评论通知（放在 return 之前）
+    if (postAuthorId && postAuthorId !== user._id) {
+      await db.collection('notifications').add({
+        data: {
+          userId: postAuthorId,
+          type: 'comments',
+          title: '收到新的评论',
+          content: `${user.name || '同学'} 评论了你的分享`,
+          fromUserId: user._id,
+          fromUserName: user.name || '同学',
+          targetType: 'post',
+          targetId: postId,
+          targetTitle: post.title || '',
+          read: false,
+          createdAt: db.serverDate(),
         },
-        replyToUser: null,
-        replies: [],
-        topReplies: [],
-        replyCount: 0,
-        createdAt: db.serverDate(),
-        status: 'normal',
-      },
+      }).catch((e) => console.warn('[addComment] create notification failed', e))
     }
 
-    // 创建评论通知
-    const notiTargetId = myId
-    if (postAuthorId && postAuthorId !== notiTargetId) {
-      const notiData = {
-        userId: postAuthorId,
-        type: 'comments',
-        title: '收到新的评论',
-        content: `${normalizedAuthor.name || '同学'} 评论了你的发布`,
-        fromUserId: myId,
-        fromUserName: normalizedAuthor.name || '同学',
-        targetType: 'post',
-        targetId: postId,
-        targetTitle: postTitle || '',
-        read: false,
-        createdAt: db.serverDate(),
-      }
-      await db.collection('notifications').add({ data: notiData }).catch((e) => {
-        console.warn('[addComment] create notification failed', e)
-      })
-    }
+    return ok({
+      _id: addRes._id,
+      id: addRes._id,
+      postId,
+      content: cleanContent,
+      parentId: null,
+      replyToUserId: null,
+      rootId: null,
+      likeCount: 0,
+      canDelete: true,
+      author: {
+        _id: user._id,
+        name: user.name || '同学',
+        avatar: user.avatar || '',
+        college: user.college || '',
+        major: user.major || '',
+        grade: user.grade || '',
+        campus: user.campus || '',
+        verified: !!user.verified,
+      },
+      replyToUser: null,
+      replies: [],
+      topReplies: [],
+      replyCount: 0,
+      createdAt: db.serverDate(),
+      status: 'normal',
+    })
   } catch (err) {
     console.error('[addComment]', err)
-    return { code: -10, msg: '评论失败', error: err.message || err }
+    return fail('评论失败', -10)
   }
 }

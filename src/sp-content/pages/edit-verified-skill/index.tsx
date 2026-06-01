@@ -174,7 +174,7 @@ export default function EditVerifiedSkill() {
             <View className='evs-image-grid'>
               {images.map((src, i) => (
                 <View key={i} className='evs-image-item'>
-                  <Image className='evs-image' src={src} mode='aspectFill' />
+                  <Image className='evs-image' src={src} mode='aspectFill' lazyLoad />
                   <Text className='evs-image-remove' onClick={() => handleRemoveImage(i)}>×</Text>
                 </View>
               ))}

@@ -1,17 +1,16 @@
-﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Taro, { useDidShow, useLoad } from '@tarojs/taro'
-import { Image, ScrollView, Text, View } from '@tarojs/components'
+import { Image, Text, View } from '@tarojs/components'
 import ErrorBoundary from '../../components/common/ErrorBoundary'
 import FloatingPostButton from '../../components/common/FloatingPostButton'
 import SearchBar from '../../components/common/SearchBar'
-import TagChip from '../../components/common/TagChip'
 import { getActivities, getPartners, getUsers } from '../../api'
 import { openUnifiedUserProfile } from '../../utils/publicProfiles'
 import { getGenderSymbol, getGenderTone } from '../../utils/gender'
 import './index.scss'
 import {
   TABS, SKILL_FILTERS, PARTNER_FILTERS, ACTIVITY_FILTERS,
-  SEARCH_SUGGESTIONS, TODAY_RECOMMENDATIONS, HOT_TOPICS,
+  TODAY_RECOMMENDATIONS, HOT_TOPICS,
   type SkillItem, type SkillUser, type Activity,
 } from './utils/constants'
 import {
@@ -22,13 +21,18 @@ import {
   userMatchesKeyword, activityMatchesKeyword,
   mergePendingSkill, mergePendingPartner, mergePendingActivity,
 } from './utils/helpers'
+import DetailPopup from './components/DetailPopup'
+import Skeleton from './components/Skeleton'
+import HeroBanner from './components/HeroBanner'
+import Filters from './components/Filters'
+import TodayRecommend from './components/TodayRecommend'
+import HotTopics from './components/HotTopics'
+import Empty from './components/Empty'
 export default function Index() {
   const [activeTab, setActiveTab] = useState(0)
   const [activeFilter, setActiveFilter] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
-  const [searchDraft, setSearchDraft] = useState('')
-  const [searchPanelOpen, setSearchPanelOpen] = useState(false)
-  const [recentSearches, setRecentSearches] = useState<string[]>([])
+
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false)
   const [detailPopup, setDetailPopup] = useState<any>(null)
   const [expandedTags, setExpandedTags] = useState<Record<string, boolean>>({})
@@ -41,17 +45,28 @@ export default function Index() {
   const isFirstShow = useRef(true)
 
   const loadHomeData = useCallback(async () => {
+    const LOAD_TIMEOUT = 4000
     setLoading(true)
+
+    // Force loading to end after max 4s to avoid infinite skeleton
+    const forceStop = setTimeout(() => {
+      setLoading(false)
+    }, LOAD_TIMEOUT)
+
     try {
       const [usersData, partnersData, activitiesData] = await Promise.all([
         getUsers({ page: 0 }),
         getPartners(),
         getActivities({ page: 0 }),
       ])
+      clearTimeout(forceStop)
       setSkillUsers(mergePendingSkill(usersData || []))
       setPartners(mergePendingPartner(partnersData || []))
       setActivities(mergePendingActivity(activitiesData || []))
+    } catch (e) {
+      console.warn('[Home] loadHomeData failed:', e)
     } finally {
+      clearTimeout(forceStop)
       setLoading(false)
     }
   }, [])
@@ -59,8 +74,7 @@ export default function Index() {
   useLoad((options) => {
     const tab = Number(options?.tab)
     if ([0, 1, 2].includes(tab)) setActiveTab(tab)
-    const stored = Taro.getStorageSync('homeRecentSearches')
-    if (Array.isArray(stored)) setRecentSearches(stored.slice(0, 6))
+
   })
 
   useEffect(() => {
@@ -82,10 +96,10 @@ export default function Index() {
   const keyword = lower(searchQuery)
   const filters = activeTab === 0 ? SKILL_FILTERS : activeTab === 1 ? PARTNER_FILTERS : ACTIVITY_FILTERS
   const activeFilterLabel = filters[activeFilter] || '全部'
-  const visibleRecommendations = TODAY_RECOMMENDATIONS.filter((item) => (
+  const visibleRecommendations = useMemo(() => TODAY_RECOMMENDATIONS.filter((item) => (
     activeFilterLabel === '全部' || activeFilterLabel === '热门' || item.category === activeFilterLabel
-  ))
-  const heroCopy = [
+  )), [activeFilterLabel])
+  const heroCopy = useMemo(() => [
     {
       title: '和全校同学交换技能',
       desc: '分享你的特长，找到想学的知识',
@@ -113,7 +127,7 @@ export default function Index() {
         ['伴', '兴趣匹配', '结伴同行'],
       ],
     },
-  ][activeTab]
+  ][activeTab], [activeTab])
 
   const filteredSkillUsers = useMemo(() => {
     return skillUsers.filter((user) => {
@@ -141,7 +155,7 @@ export default function Index() {
     })
   }, [activeFilterLabel, activities, keyword])
 
-  const openChat = (user: { id?: string | number; _id?: string; name?: string }, category = '首页推荐') => {
+  const openChat = useCallback((user: { id?: string | number; _id?: string; name?: string }, category = '首页推荐') => {
     const id = getRecordId(user)
     if (!id) {
       Taro.showToast({ title: '用户信息不存在', icon: 'none' })
@@ -150,45 +164,36 @@ export default function Index() {
     Taro.navigateTo({
       url: `/sp-social/pages/chat/index?userId=${encodeURIComponent(id)}&id=${encodeURIComponent(id)}&name=${encodeURIComponent(user.name || '同学')}&category=${encodeURIComponent(category)}`,
     })
-  }
+  }, [])
 
-  const handleStartChat = (user: SkillUser) => {
+  const handleStartChat = useCallback((user: SkillUser) => {
     openChat(user, activeTab === 1 ? '兴趣搭子' : '技能交换')
-  }
+  }, [activeTab])
 
-  const openSearchPanel = () => {
+  const handleDetailClose = useCallback(() => setDetailPopup(null), [])
+  const handleExpandDetail = useCallback((data: any) => setDetailPopup(data), [])
+  const handleDetailChat = useCallback(openChat, [])
+
+  const openSearchPanel = useCallback(() => {
     Taro.navigateTo({ url: `/sp-common/pages/search-results/index?keyword=${encodeURIComponent(searchQuery)}&tab=${activeTab}` })
-  }
+  }, [searchQuery, activeTab])
 
-  const submitSearch = (value?: string) => {
-    const text = (value ?? searchDraft).trim()
-    if (!text) {
-      Taro.showToast({ title: '请输入搜索词', icon: 'none' })
-      return
-    }
-    const nextRecent = [text, ...recentSearches.filter((item) => item !== text)].slice(0, 6)
-    setRecentSearches(nextRecent)
-    Taro.setStorageSync('homeRecentSearches', nextRecent)
-    setSearchQuery(text)
-    setSearchPanelOpen(false)
-    Taro.navigateTo({ url: `/sp-common/pages/search-results/index?keyword=${encodeURIComponent(text)}&tab=${activeTab}` })
-  }
 
-  const selectFilter = (index: number) => {
+  const selectFilter = useCallback((index: number) => {
     setActiveFilter(index)
     setFilterDropdownOpen(false)
-  }
+  }, [])
 
-  const handlePublish = () => {
+  const handlePublish = useCallback(() => {
     const mode = activeTab === 1 ? 'partner' : activeTab === 2 ? 'activity' : 'skill'
     Taro.navigateTo({ url: `/sp-content/pages/publish/index?mode=${mode}` })
-  }
+  }, [activeTab])
 
-  const handleUserClick = (user: SkillUser) => {
+  const handleUserClick = useCallback((user: SkillUser) => {
     openUnifiedUserProfile(getRecordId(user), getUserName(user))
-  }
+  }, [])
 
-  const handleActivityRegister = (activity: Activity, isFull: boolean) => {
+  const handleActivityRegister = useCallback((activity: Activity, isFull: boolean) => {
     if (isFull) {
       Taro.showToast({ title: '活动已满', icon: 'none' })
       return
@@ -203,21 +208,23 @@ export default function Index() {
       `maxParticipants=${encodeURIComponent(String(activity.maxParticipants || ''))}`,
     ].join('&')
     Taro.navigateTo({ url: `/sp-content/pages/activity-register/index?${query}` })
-  }
+  }, [])
 
-  const handleRecommendationClick = (id: string) => {
+  const handleRecommendationClick = useCallback((id: string) => {
     const item = TODAY_RECOMMENDATIONS.find((rec) => rec.id === id)
     if (item) setDetailPopup({ type: 'recommendation', ...item })
-  }
+  }, [])
 
-  const handleTopicClick = (id: string) => {
+  const handleTopicClick = useCallback((id: string) => {
     const topic = HOT_TOPICS.find((item) => item.id === id)
     if (topic) setDetailPopup({ type: 'topic', ...topic })
-  }
+  }, [])
 
-  const toggleTagGroup = (key: string) => {
+  const toggleTagGroup = useCallback((key: string) => {
     setExpandedTags((current) => ({ ...current, [key]: !current[key] }))
-  }
+  }, [])
+
+  const toggleFilterDropdown = useCallback(() => setFilterDropdownOpen((open) => !open), [])
 
   const renderTagGroup = (
     title: string,
@@ -252,85 +259,11 @@ export default function Index() {
     )
   }
 
-  const renderHeroBanner = () => (
-    <View className='home-hero'>
-      <View className='home-hero-paper' />
-      <View className='home-hero-art home-hero-art--one' />
-      <View className='home-hero-art home-hero-art--two' />
-      <View className='home-hero-content'>
-        <Text className='home-hero-title'>{heroCopy.title}</Text>
-        <Text className='home-hero-desc'>{heroCopy.desc}</Text>
-      </View>
-      <View className='home-hero-features'>
-        {heroCopy.features.map((item) => (
-          <View className='home-hero-feature' key={item[1]}>
-            <Text className='home-hero-feature-icon'>{item[0]}</Text>
-            <View>
-              <Text className='home-hero-feature-title'>{item[1]}</Text>
-              <Text className='home-hero-feature-desc'>{item[2]}</Text>
-            </View>
-          </View>
-        ))}
-      </View>
-    </View>
-  )
 
-  const renderFilters = () => (
-    <View className='home-filter-wrap'>
-      <View className='home-filter-row'>
-        <ScrollView scrollX showScrollbar={false} className='home-filter-scroll'>
-          <View className='home-filter-list'>
-            {filters.map((item, index) => (
-              <TagChip
-                key={item}
-                text={item}
-                active={activeFilter === index}
-                type={activeFilter === index ? 'primary' : item === '热门' ? 'warning' : 'default'}
-                onClick={() => selectFilter(index)}
-              />
-            ))}
-          </View>
-        </ScrollView>
-        <View className={filterDropdownOpen ? 'home-filter-more home-filter-more--open' : 'home-filter-more'} onClick={() => setFilterDropdownOpen((open) => !open)}>
-          <Text>⌄</Text>
-        </View>
-      </View>
-      {filterDropdownOpen ? (
-        <View className='home-filter-dropdown'>
-          {filters.map((item, index) => (
-            <View
-              key={`dropdown_${item}`}
-              className={activeFilter === index ? 'home-filter-option home-filter-option--active' : 'home-filter-option'}
-              onClick={() => selectFilter(index)}
-            >
-              <Text>{item}</Text>
-            </View>
-          ))}
-        </View>
-      ) : null}
-    </View>
-  )
 
-  const renderTodayRecommend = () => (
-    <View className='home-section home-recommend-section'>
-      <View className='home-section-header'>
-        <Text className='home-section-title'>今日推荐</Text>
-        <Text className='home-section-more' onClick={() => setDetailPopup({ type: 'recommendation-list', title: '今日推荐', detail: '根据当前分类为你筛选的推荐内容。' })}>查看全部 〉</Text>
-      </View>
-      <View className='home-recommend-grid'>
-        {(visibleRecommendations.length ? visibleRecommendations : TODAY_RECOMMENDATIONS).map((item) => (
-          <View className={`home-recommend-card home-recommend-card--${item.tone}`} key={item.id} onClick={() => handleRecommendationClick(item.id)}>
-            <View className='home-recommend-head'>
-              <Text className='home-recommend-label' numberOfLines={1}>{item.label}</Text>
-              {item.badge ? <Text className='home-recommend-badge'>{item.badge}</Text> : null}
-            </View>
-            <Text className='home-recommend-title' numberOfLines={1}>{item.title}</Text>
-            <Text className='home-recommend-desc' numberOfLines={1}>{item.desc}</Text>
-          </View>
-        ))}
-      </View>
-    </View>
-  )
+
+
+
 
   const renderUserCard = (user: SkillUser, index: number, mode: 'skill' | 'partner') => {
     const id = getRecordId(user)
@@ -346,7 +279,7 @@ export default function Index() {
         <View className='home-user-card-main'>
           <View className='home-avatar-wrap' onClick={() => handleUserClick(user)}>
             {isRenderableImage(user.avatar) ? (
-              <Image className='home-avatar-img' src={user.avatar} mode='aspectFill' />
+              <Image className='home-avatar-img' src={user.avatar} mode='aspectFill' lazyLoad />
             ) : (
               <Text className='home-avatar-text'>{firstChar(name)}</Text>
             )}
@@ -415,7 +348,7 @@ export default function Index() {
     return (
       <View className={compact ? 'home-activity-card home-activity-card--compact' : 'home-activity-card'} key={item.id || item._id || item.title}>
         <View className='home-activity-cover'>
-          {isRenderableImage(item.cover) ? <Image className='home-activity-img' src={item.cover} mode='aspectFill' /> : (
+          {isRenderableImage(item.cover) ? <Image className='home-activity-img' src={item.cover} mode='aspectFill' lazyLoad /> : (
             <View className='home-activity-placeholder'>
               <Text>AI科研{'\n'}工作坊</Text>
             </View>
@@ -442,140 +375,10 @@ export default function Index() {
     )
   }
 
-  const renderHotTopics = () => (
-    <View className='home-section home-topic-section'>
-      <View className='home-section-header'>
-        <Text className='home-section-title'>本周校园热议</Text>
-        <Text className='home-section-more' onClick={() => setDetailPopup({ type: 'topic-list', title: '本周校园热议', detail: '这里展示本周在校园内讨论热度较高的话题。' })}>更多 〉</Text>
-      </View>
-      <View className='home-topic-grid'>
-        {HOT_TOPICS.map((topic) => (
-          <View className='home-topic-card' key={topic.id} onClick={() => handleTopicClick(topic.id)}>
-            <Text className={topic.badge === '热' ? 'home-topic-badge home-topic-badge--hot' : 'home-topic-badge home-topic-badge--new'}>{topic.badge}</Text>
-            <View className='home-topic-content'>
-              <Text className='home-topic-title' numberOfLines={1}>{topic.title}</Text>
-              <Text className='home-topic-stats'>{topic.stats}</Text>
-            </View>
-          </View>
-        ))}
-      </View>
-    </View>
-  )
 
-  const renderEmpty = () => (
-    <View className='home-empty'>
-      <Text className='home-empty-title'>{loading ? '正在加载内容...' : '没有找到相关内容'}</Text>
-      <Text className='home-empty-desc'>换个关键词试试，或发布你的需求</Text>
-    </View>
-  )
 
-  const renderSkillExchange = () => (
-    <>
-      {renderHeroBanner()}
-      {renderFilters()}
-      {renderTodayRecommend()}
-      <View className='home-card-list'>
-        {!filteredSkillUsers.length ? renderEmpty() : filteredSkillUsers.slice(0, 6).map((user, index) => renderUserCard(user, index, 'skill'))}
-      </View>
-      {renderActivityCard(activities[0], true)}
-      {renderHotTopics()}
-    </>
-  )
 
-  const renderInterestPartners = () => (
-    <>
-      {renderHeroBanner()}
-      {renderFilters()}
-      <View className='home-card-list'>
-        {!filteredPartners.length ? renderEmpty() : filteredPartners.slice(0, 6).map((user, index) => renderUserCard(user, index, 'partner'))}
-      </View>
-      {renderHotTopics()}
-    </>
-  )
 
-  const renderActivities = () => (
-    <>
-      {renderHeroBanner()}
-      {renderFilters()}
-      <View className='home-card-list home-activity-list'>
-        {!filteredActivities.length ? renderEmpty() : filteredActivities.slice(0, 6).map((activity) => renderActivityCard(activity))}
-      </View>
-      {renderHotTopics()}
-    </>
-  )
-
-  const renderSearchPanel = () => {
-    const words = recentSearches.length ? recentSearches : SEARCH_SUGGESTIONS
-    return searchPanelOpen ? (
-      <View className='home-modal-mask' onClick={() => setSearchPanelOpen(false)}>
-        <View className='home-search-panel' onClick={(event) => event.stopPropagation()}>
-          <View className='home-search-panel-head'>
-            <Text className='home-search-panel-title'>搜索</Text>
-            <Text className='home-search-panel-close' onClick={() => setSearchPanelOpen(false)}>关闭</Text>
-          </View>
-          <SearchBar
-            className='home-search-panel-input'
-            value={searchDraft}
-            placeholder='输入技能、搭子、活动或帖子'
-            onInput={setSearchDraft}
-            onConfirm={submitSearch}
-          />
-          <View className='home-search-suggest-head'>
-            <Text>{recentSearches.length ? '最近搜索' : '推荐搜索'}</Text>
-          </View>
-          <View className='home-search-suggest-list'>
-            {words.map((word) => (
-              <View className='home-search-suggest-item' key={word} onClick={() => submitSearch(word)}>
-                <Text>{word}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-      </View>
-    ) : null
-  }
-
-  const renderDetailPopup = () => {
-    if (!detailPopup) return null
-    const user = detailPopup.user
-    const list = detailPopup.type === 'recommendation-list' ? TODAY_RECOMMENDATIONS : detailPopup.type === 'topic-list' ? HOT_TOPICS : []
-    return (
-      <View className='home-modal-mask' onClick={() => setDetailPopup(null)}>
-        <View className='home-detail-panel' onClick={(event) => event.stopPropagation()}>
-          <View className='home-detail-head'>
-            <Text className='home-detail-title'>{detailPopup.title}</Text>
-            <Text className='home-detail-close' onClick={() => setDetailPopup(null)}>×</Text>
-          </View>
-          <Text className='home-detail-desc'>{detailPopup.detail}</Text>
-          {user ? (
-            <View className='home-detail-user' onClick={() => openChat(user, detailPopup.type === 'topic' ? '校园热议' : '今日推荐')}>
-              <View className='home-detail-avatar'>
-                {isRenderableImage(user.avatar) ? <Image className='home-detail-avatar-img' src={user.avatar} mode='aspectFill' /> : <Text>{firstChar(user.name)}</Text>}
-              </View>
-              <View className='home-detail-user-main'>
-                <View className='home-detail-name-row'>
-                  <Text className='home-detail-user-name'>{user.name}</Text>
-                  {getGenderSymbol(user as any) ? <Text className={`home-gender home-gender--${getGenderTone(user as any)}`}>{getGenderSymbol(user as any)}</Text> : null}
-                </View>
-                <Text className='home-detail-user-meta'>{user.college} · {user.grade}</Text>
-              </View>
-              <Text className='home-detail-chat'>聊天</Text>
-            </View>
-          ) : null}
-          {list.length ? (
-            <View className='home-detail-list'>
-              {list.map((item) => (
-                <View className='home-detail-list-item' key={item.id} onClick={() => setDetailPopup({ type: detailPopup.type === 'topic-list' ? 'topic' : 'recommendation', ...item })}>
-                  <Text className='home-detail-list-title'>{item.title}</Text>
-                  <Text className='home-detail-list-meta'>{'stats' in item ? item.stats : item.desc}</Text>
-                </View>
-              ))}
-            </View>
-          ) : null}
-        </View>
-      </View>
-    )
-  }
 
   return (
     <ErrorBoundary>
@@ -604,13 +407,53 @@ export default function Index() {
           ))}
         </View>
 
-        {activeTab === 0 ? renderSkillExchange() : null}
-        {activeTab === 1 ? renderInterestPartners() : null}
-        {activeTab === 2 ? renderActivities() : null}
+        {loading ? (
+          <Skeleton />
+        ) : (
+          <>
+            {activeTab === 0 ? (
+              <>
+                <HeroBanner title={heroCopy.title} desc={heroCopy.desc} features={heroCopy.features} />
+                <Filters filters={filters} activeFilter={activeFilter} filterDropdownOpen={filterDropdownOpen} onSelectFilter={selectFilter} onToggleFilterDropdown={toggleFilterDropdown} />
+                <TodayRecommend items={visibleRecommendations.length ? visibleRecommendations : TODAY_RECOMMENDATIONS} onExpandDetail={handleExpandDetail} onRecommendationClick={handleRecommendationClick} />
+                <View className='home-card-list'>
+                  {!filteredSkillUsers.length ? <Empty /> : filteredSkillUsers.slice(0, 6).map((user, index) => renderUserCard(user, index, 'skill'))}
+                </View>
+                {renderActivityCard(activities[0], true)}
+                <HotTopics topics={HOT_TOPICS} onExpandDetail={handleExpandDetail} onTopicClick={handleTopicClick} />
+              </>
+            ) : null}
+            {activeTab === 1 ? (
+              <>
+                <HeroBanner title={heroCopy.title} desc={heroCopy.desc} features={heroCopy.features} />
+                <Filters filters={filters} activeFilter={activeFilter} filterDropdownOpen={filterDropdownOpen} onSelectFilter={selectFilter} onToggleFilterDropdown={toggleFilterDropdown} />
+                <View className='home-card-list'>
+                  {!filteredPartners.length ? <Empty /> : filteredPartners.slice(0, 6).map((user, index) => renderUserCard(user, index, 'partner'))}
+                </View>
+                <HotTopics topics={HOT_TOPICS} onExpandDetail={handleExpandDetail} onTopicClick={handleTopicClick} />
+              </>
+            ) : null}
+            {activeTab === 2 ? (
+              <>
+                <HeroBanner title={heroCopy.title} desc={heroCopy.desc} features={heroCopy.features} />
+                <Filters filters={filters} activeFilter={activeFilter} filterDropdownOpen={filterDropdownOpen} onSelectFilter={selectFilter} onToggleFilterDropdown={toggleFilterDropdown} />
+                <View className='home-card-list home-activity-list'>
+                  {!filteredActivities.length ? <Empty /> : filteredActivities.slice(0, 6).map((activity) => renderActivityCard(activity))}
+                </View>
+                <HotTopics topics={HOT_TOPICS} onExpandDetail={handleExpandDetail} onTopicClick={handleTopicClick} />
+              </>
+            ) : null}
+          </>
+        )}
       </View>
 
       <FloatingPostButton className='home-floating-post' onClick={handlePublish} />
-      {renderDetailPopup()}
+      <DetailPopup
+        detailPopup={detailPopup}
+        onClose={handleDetailClose}
+        onExpandDetail={handleExpandDetail}
+        onChat={handleDetailChat}
+      />
     </View>
     </ErrorBoundary>
   )

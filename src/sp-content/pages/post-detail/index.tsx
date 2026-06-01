@@ -108,7 +108,7 @@ function Avatar({ name, avatar, onClick }: { name: string; avatar?: string; onCl
   return (
     <View className='avatar' onClick={onClick}>
       {isRenderableImage(avatar) ? (
-        <Image src={avatar} mode='aspectFill' className='avatar-img' />
+        <Image src={avatar} mode='aspectFill' className='avatar-img' lazyLoad />
       ) : (
         <Text>{name.charAt(0) || '同'}</Text>
       )}
@@ -466,7 +466,7 @@ export default function PostDetail() {
             ))}
 
             {images.map((image) => (
-              <Image key={image} src={image} mode='aspectFill' className='post-image' />
+              <Image key={image} src={image} mode='aspectFill' className='post-image' lazyLoad />
             ))}
 
             {!images.length && displayPost.cover && !isImageCover(displayPost.cover) && (

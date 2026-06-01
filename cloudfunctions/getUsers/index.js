@@ -1,4 +1,4 @@
-const { ok, fail, getOpenId, db } = require('../_shared/index')
+const { ok, fail, getOpenId, db } = require('./shared')
 
 exports.main = async (event = {}) => {
   try {

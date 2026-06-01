@@ -1,8 +1,7 @@
-const cloud = require('wx-server-sdk')
-
-cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
-
-const db = cloud.database()
+/**
+ * 云函数 - 更新帖子
+ */
+const { ok, fail, db, cloud } = require('./shared')
 
 const ALLOWED_FIELDS = ['title', 'content', 'summary', 'excerpt', 'category', 'mainCategory', 'tags', 'images', 'cover', 'visibility']
 
@@ -24,7 +23,9 @@ function cleanUpdate(event) {
   }
   if (data.tags !== undefined && !Array.isArray(data.tags)) data.tags = []
   if (data.images !== undefined && !Array.isArray(data.images)) data.images = []
-  if (data.visibility !== undefined) data.visibility = data.visibility === 'private' || data.visibility === '私密' ? 'private' : 'public'
+  if (data.visibility !== undefined) {
+    data.visibility = data.visibility === 'private' || data.visibility === '私密' ? 'private' : 'public'
+  }
   delete data.excerpt
   return data
 }
@@ -33,22 +34,22 @@ exports.main = async (event = {}) => {
   try {
     const { OPENID } = cloud.getWXContext()
     const postId = event.postId || event.id
-    if (!OPENID) return { code: -1, msg: '获取用户身份失败' }
-    if (!postId) return { code: -2, msg: '缺少 postId' }
+    if (!OPENID) return fail('获取用户身份失败', -1)
+    if (!postId) return fail('缺少 postId', -2)
 
     const postRes = await db.collection('posts').doc(postId).get()
     const post = postRes.data
-    if (!post || post.status === 'deleted') return { code: -3, msg: '帖子不存在或已删除' }
-    if (post.openid !== OPENID) return { code: -4, msg: '只能修改自己的帖子' }
+    if (!post || post.status === 'deleted') return fail('帖子不存在或已删除', -3)
+    if (post.openid !== OPENID) return fail('只可修改自己的帖子', -4)
 
     const data = cleanUpdate(event)
-    if (!Object.keys(data).length) return { code: -5, msg: '没有可更新的字段' }
+    if (!Object.keys(data).length) return fail('没有可更新的字段', -5)
     data.updatedAt = db.serverDate()
 
     await db.collection('posts').doc(postId).update({ data })
-    return { code: 0, msg: '保存成功' }
+    return ok({ msg: '更新成功' })
   } catch (err) {
     console.error('[updatePost]', err)
-    return { code: -6, msg: '保存帖子失败', error: err.message || err }
+    return fail('更新帖子失败', -6)
   }
 }

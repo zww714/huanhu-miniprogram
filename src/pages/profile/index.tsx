@@ -199,7 +199,7 @@ export default function Profile() {
           <View className='profile-main-row'>
             <View className='avatar-wrap' onClick={handleAvatarTap}>
               {avatarUrl && !systemAvatar ? (
-                <Image className='avatar-image' src={avatarUrl} mode='aspectFill' />
+                <Image className='avatar-image' src={avatarUrl} mode='aspectFill' lazyLoad />
               ) : (
                 <View className='avatar' style={{ backgroundColor: systemAvatar?.bg || '#2563EB' }}>
                   <Text style={{ color: systemAvatar?.color || '#FFFFFF' }}>{systemAvatar?.text || avatarText}</Text>

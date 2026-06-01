@@ -1,8 +1,7 @@
-const cloud = require('wx-server-sdk')
-
-cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
-
-const db = cloud.database()
+/**
+ * 云函数 - 获取用户详情
+ */
+const { ok, fail, db, cloud } = require('./shared')
 const _ = db.command
 
 function toPublicUser(doc, relation) {
@@ -54,12 +53,11 @@ exports.main = async (event = {}) => {
   try {
     const { userId } = event
     const { OPENID } = cloud.getWXContext()
-    if (!userId) return { code: -1, msg: '缺少 userId' }
+    if (!userId) return fail('缺少 userId', -1)
 
     const target = await db.collection('users').doc(userId).get()
-    if (!target.data) return { code: -2, msg: '用户不存在' }
+    if (!target.data) return fail('用户不存在', -2)
 
-    let myId = ''
     let isFollowing = false
     let isFollower = false
 
@@ -72,9 +70,8 @@ exports.main = async (event = {}) => {
 
       if (current.data.length) {
         const me = current.data[0]
-        myId = me._id
         isFollowing = (me.following || []).includes(userId)
-        isFollower = (target.data.following || []).includes(myId)
+        isFollower = (target.data.following || []).includes(me._id)
       }
     }
 
@@ -93,9 +90,9 @@ exports.main = async (event = {}) => {
       posts: postsRes.data || [],
     })
 
-    return { code: 0, userData }
+    return ok(userData)
   } catch (err) {
     console.error('[getUserDetail]', err)
-    return { code: -3, msg: '获取用户详情失败', error: err.message || err }
+    return fail('获取用户详情失败', -3)
   }
 }

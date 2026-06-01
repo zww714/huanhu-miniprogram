@@ -1,8 +1,7 @@
-const cloud = require('wx-server-sdk')
-
-cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
-
-const db = cloud.database()
+/**
+ * 云函数 - 获取技能详情
+ */
+const { ok, fail, db, cloud } = require('./shared')
 
 function normalizeSkill(doc, isOwner) {
   const publicData = {
@@ -11,8 +10,8 @@ function normalizeSkill(doc, isOwner) {
     userId: doc.userId,
     name: doc.name || '',
     level: Number(doc.level || 1),
-    levelText: doc.levelText || (Number(doc.level || 1) >= 4 ? '熟练掌握' : '持续提升中'),
-    category: doc.category || '技能',
+    levelText: doc.levelText || (Number(doc.level || 1) >= 4 ? '熟练掌握' : '持续学习中'),
+    category: doc.category || '其他',
     icon: doc.icon || String(doc.name || '技').slice(0, 1),
     verified: Number(doc.proofCount || 0) > 0,
     intro: doc.intro || doc.desc || '',
@@ -40,7 +39,7 @@ exports.main = async (event = {}) => {
   try {
     const { skillId } = event
     const { OPENID } = cloud.getWXContext()
-    if (!skillId) return { code: -1, msg: '缺少 skillId' }
+    if (!skillId) return fail('缺少 skillId', -1)
 
     let skillDoc
     try {
@@ -52,17 +51,17 @@ exports.main = async (event = {}) => {
     }
 
     if (!skillDoc || skillDoc.status === 'deleted') {
-      return { code: -2, msg: '该技能不存在或已被删除' }
+      return fail('该技能不存在或已被删除', -2)
     }
 
     const isOwner = !!OPENID && skillDoc.openid === OPENID
     if (!isOwner && skillDoc.visibility !== 'public') {
-      return { code: -3, msg: '该技能不存在或已被删除' }
+      return fail('该技能不存在或已被删除', -3)
     }
 
-    return { code: 0, data: normalizeSkill(skillDoc, isOwner) }
+    return ok(normalizeSkill(skillDoc, isOwner))
   } catch (err) {
     console.error('[getSkillDetail]', err)
-    return { code: -4, msg: '获取技能详情失败', error: err.message || err }
+    return fail('获取技能详情失败', -4)
   }
 }

@@ -1,39 +1,35 @@
-// 云函数 - 获取所有用户（首页技能交换列表）
-const cloud = require('wx-server-sdk')
-cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
-const db = cloud.database()
-const usersCollection = db.collection('users')
+/**
+ * 云函数 - 获取发现页用户列表
+ */
+const { ok, fail, paginate, db } = require('./shared')
 
-exports.main = async (event, context) => {
-  const { category, page = 0, pageSize = 20 } = event
-
+exports.main = async (event) => {
   try {
+    const { category, page: page0 = 0, pageSize = 20 } = event
+
     let query = {}
-    // 如果有分类筛选，按技能名称匹配
-    if (category && category !== '全部' && category !== '热门') {
+    if (category && category !== '全部' && category !== '综合') {
       query = { 'skills.name': db.RegExp({ regexp: category, options: 'i' }) }
     }
 
-    const result = await usersCollection
-      .where(query)
-      .field({
-        openid: false, phone: false, following: false, followers: false,
-      })
-      .skip(page * pageSize)
-      .limit(pageSize)
-      .orderBy('stats.skills', 'desc')
-      .get()
+    const result = await paginate('users', query, {
+      page: Number(page0) + 1,
+      pageSize: Number(pageSize),
+      orderBy: 'stats.skills',
+      select: [
+        'name', 'avatar', 'gender', 'school', 'college', 'major', 'grade',
+        'campus', 'intro', 'verified', 'canTeach', 'skills', 'can',
+        'wantToLearn', 'interests', 'skillCount', 'postCount',
+        'followerCount', 'followingCount', 'stats', 'createdAt', 'updatedAt',
+      ],
+    })
 
-    const total = await usersCollection.where(query).count()
-
-    return {
-      code: 0,
-      data: result.data,
-      total: total.total,
-      hasMore: (page + 1) * pageSize < total.total,
-    }
+    return ok(result.data, {
+      total: result.total,
+      hasMore: result.hasMore,
+    })
   } catch (err) {
     console.error('[getUsers]', err)
-    return { code: -1, msg: '获取用户列表失败', error: err }
+    return fail('获取用户列表失败')
   }
 }

@@ -1,8 +1,7 @@
-const cloud = require('wx-server-sdk')
-
-cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
-
-const db = cloud.database()
+/**
+ * 云函数 - 创建技能
+ */
+const { ok, fail, db, cloud } = require('./shared')
 
 const ALLOWED_VISIBILITY = ['public', 'private']
 
@@ -13,7 +12,7 @@ function cleanSkill(event) {
     level: Math.min(Math.max(Number(event.level || 3), 1), 5),
     intro: String(event.intro || event.desc || '').trim(),
     tags: Array.isArray(event.tags) ? event.tags.filter(Boolean) : [],
-    category: String(event.category || '技能').trim(),
+    category: String(event.category || '其他').trim(),
     proofCount: 0,
     workCount: 0,
     visibility: ALLOWED_VISIBILITY.includes(event.visibility) ? event.visibility : 'public',
@@ -35,13 +34,13 @@ async function refreshSkillCount(userId) {
 exports.main = async (event = {}) => {
   try {
     const { OPENID } = cloud.getWXContext()
-    if (!OPENID) return { code: -1, msg: '获取用户身份失败' }
+    if (!OPENID) return fail('获取用户身份失败', -1)
 
     const userRes = await db.collection('users').where({ openid: OPENID }).limit(1).get()
-    if (!userRes.data.length) return { code: -2, msg: '用户不存在，请先登录' }
+    if (!userRes.data.length) return fail('用户不存在，请先登录', -2)
 
     const data = cleanSkill(event)
-    if (!data.name) return { code: -3, msg: '请输入技能名称' }
+    if (!data.name) return fail('请输入技能名称', -3)
 
     const userId = userRes.data[0]._id
     const added = await db.collection('skills').add({
@@ -55,9 +54,9 @@ exports.main = async (event = {}) => {
     })
     await refreshSkillCount(userId)
 
-    return { code: 0, data: { ...data, _id: added._id, id: added._id, userId } }
+    return ok({ ...data, _id: added._id, id: added._id, userId })
   } catch (err) {
     console.error('[createSkill]', err)
-    return { code: -4, msg: '新增技能失败', error: err.message || err }
+    return fail('创建技能失败', -4)
   }
 }

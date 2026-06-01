@@ -190,7 +190,7 @@ export default function Messages() {
             <View key={conv.id} className='message-row' onClick={() => goChat(conv)}>
               <View className='chat-avatar'>
                 {isRenderableImage(conv.avatar) ? (
-                  <Image className='chat-avatar-img' src={conv.avatar} mode='aspectFill' />
+                  <Image className='chat-avatar-img' src={conv.avatar} mode='aspectFill' lazyLoad />
                 ) : (
                   <Text>{firstChar(conv.name)}</Text>
                 )}

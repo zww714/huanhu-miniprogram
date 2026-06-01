@@ -80,7 +80,7 @@ export default function UserFollowing() {
           {list.map((item, index) => (
             <View className='user-card' key={item.userId || item.id} onClick={() => openUser(item)}>
               <View className='avatar' style={{ backgroundColor: avatarColor(index) }}>
-                {isRenderableImage(item.avatar) ? <Image className='avatar-img' src={item.avatar} mode='aspectFill' /> : <Text>{(item.name || '?').charAt(0)}</Text>}
+                {isRenderableImage(item.avatar) ? <Image className='avatar-img' src={item.avatar} mode='aspectFill' lazyLoad /> : <Text>{(item.name || '?').charAt(0)}</Text>}
               </View>
               <View className='user-main'>
                 <View className='name-row'>

@@ -162,7 +162,7 @@ export default function SearchResults() {
           return (
             <View className='search-card' key={getPostId(post)} onClick={() => openPost(post)}>
               <View className='search-cover'>
-                {isImage(cover) ? <Image className='search-cover-img' src={cover} mode='aspectFill' /> : <Text>{post.mainCategory || post.category || '帖子'}</Text>}
+                {isImage(cover) ? <Image className='search-cover-img' src={cover} mode='aspectFill' lazyLoad /> : <Text>{post.mainCategory || post.category || '帖子'}</Text>}
               </View>
               <View className='search-main'>
                 <View className='search-title-row'>

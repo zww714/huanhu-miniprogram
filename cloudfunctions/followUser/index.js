@@ -1,52 +1,40 @@
-// 云函数 - 关注用户（使用 follows 集合）
-const cloud = require('wx-server-sdk')
-cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
-const db = cloud.database()
-const _ = db.command
+/**
+ * 云函数 - 关注用户
+ */
+const { ok, fail, db, cloud } = require('./shared')
 
 exports.main = async (event = {}) => {
   try {
     const { targetUserId } = event
     const { OPENID } = cloud.getWXContext()
 
-    if (!OPENID) return { code: -1, msg: '获取用户身份失败' }
-    if (!targetUserId) return { code: -2, msg: '缺少 targetUserId' }
+    if (!OPENID) return fail('获取用户身份失败', -1)
+    if (!targetUserId) return fail('缺少 targetUserId', -2)
 
-    // 查当前用户
     const myRes = await db.collection('users').where({ openid: OPENID }).limit(1).get()
-    if (!myRes.data.length) return { code: -3, msg: '用户未登录' }
+    if (!myRes.data.length) return fail('用户未登录', -3)
     const myUser = myRes.data[0]
     const myId = myUser._id
 
-    // 不能关注自己
-    if (myId === targetUserId) return { code: -4, msg: '不能关注自己' }
+    if (myId === targetUserId) return fail('不能关注自己', -4)
 
-    // 查目标用户是否存在
     const targetRes = await db.collection('users').doc(targetUserId).get()
-    const target = targetRes.data
-    if (!target) return { code: -5, msg: '目标用户不存在' }
+    if (!targetRes.data) return fail('目标用户不存在', -5)
 
-    // 查现有关注记录
     const existRes = await db.collection('follows')
-      .where({
-        followerId: myId,
-        followerOpenid: OPENID,
-        followingId: targetUserId,
-      })
+      .where({ followerId: myId, followerOpenid: OPENID, followingId: targetUserId })
       .limit(1)
       .get()
 
     if (existRes.data.length) {
       const record = existRes.data[0]
       if (record.status === 'active') {
-        return { code: 0, data: { isFollowing: true } }
+        return ok({ isFollowing: true })
       }
-      // 重新激活已取消的记录
       await db.collection('follows').doc(record._id).update({
         data: { status: 'active', updatedAt: db.serverDate() },
       })
     } else {
-      // 新建关注记录
       await db.collection('follows').add({
         data: {
           followerId: myId,
@@ -61,7 +49,6 @@ exports.main = async (event = {}) => {
       })
     }
 
-    // 更新双方计数
     const myFollowingCount = await db.collection('follows')
       .where({ followerId: myId, status: 'active' }).count()
     await db.collection('users').doc(myId).update({
@@ -74,17 +61,11 @@ exports.main = async (event = {}) => {
       data: { 'stats.followers': targetFollowerCount.total },
     }).catch(() => {})
 
-    // 判断是否互相关注
     const reverseRes = await db.collection('follows')
-      .where({
-        followerId: targetUserId,
-        followingId: myId,
-        status: 'active',
-      })
+      .where({ followerId: targetUserId, followingId: myId, status: 'active' })
       .limit(1).get()
     const isMutual = reverseRes.data.length > 0
 
-    // 创建关注通知
     const isExisting = existRes.data.length > 0 && existRes.data[0].status === 'active'
     if (!isExisting && myId !== targetUserId) {
       const notiData = {
@@ -105,17 +86,14 @@ exports.main = async (event = {}) => {
       })
     }
 
-    return {
-      code: 0,
-      data: {
-        isFollowing: true,
-        isMutual,
-        followerCount: targetFollowerCount.total,
-        followingCount: myFollowingCount.total,
-      },
-    }
+    return ok({
+      isFollowing: true,
+      isMutual,
+      followerCount: targetFollowerCount.total,
+      followingCount: myFollowingCount.total,
+    })
   } catch (err) {
     console.error('[followUser]', err)
-    return { code: -10, msg: '操作失败', error: err.message || err }
+    return fail('关注失败', -10)
   }
 }

@@ -1,8 +1,4 @@
-const cloud = require('wx-server-sdk')
-
-cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
-
-const db = cloud.database()
+const { ok, fail, db, cloud } = require('./shared')
 const _ = db.command
 
 const SEED_TAG = 'huanhu-initial-v1'

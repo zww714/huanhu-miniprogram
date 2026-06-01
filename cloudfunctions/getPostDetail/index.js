@@ -1,8 +1,7 @@
-const cloud = require('wx-server-sdk')
-
-cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
-
-const db = cloud.database()
+/**
+ * 云函数 - 获取帖子详情
+ */
+const { ok, fail, db, cloud } = require('./shared')
 
 async function getAuthor(userId) {
   try {
@@ -63,23 +62,23 @@ exports.main = async (event = {}) => {
   try {
     const { postId } = event
     const { OPENID } = cloud.getWXContext()
-    if (!postId) return { code: -1, msg: '缺少 postId' }
+    if (!postId) return fail('缺少 postId', -1)
 
     const postRes = await db.collection('posts').doc(postId).get()
     const post = postRes.data
-    if (!post || post.status === 'deleted') return { code: -2, msg: '该帖子不存在或已被删除' }
+    if (!post || post.status === 'deleted') return fail('该帖子不存在或已被删除', -2)
 
     const canManage = !!OPENID && post.openid === OPENID
-    if (!canManage && post.visibility !== 'public') return { code: -3, msg: '该内容暂不可查看' }
+    if (!canManage && post.visibility !== 'public') return fail('该内容不可查看', -3)
 
     await db.collection('posts').doc(postId).update({
       data: { viewCount: db.command.inc(1) },
     }).catch(() => {})
 
     const author = await getAuthor(post.authorId || post.userId)
-    return { code: 0, data: normalize({ ...post, viewCount: Number(post.viewCount || 0) + 1 }, author, canManage) }
+    return ok(normalize({ ...post, viewCount: Number(post.viewCount || 0) + 1 }, author, canManage))
   } catch (err) {
     console.error('[getPostDetail]', err)
-    return { code: -4, msg: '获取帖子详情失败', error: err.message || err }
+    return fail('获取帖子详情失败', -4)
   }
 }

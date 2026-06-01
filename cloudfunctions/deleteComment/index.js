@@ -1,8 +1,7 @@
-const cloud = require('wx-server-sdk')
-
-cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
-
-const db = cloud.database()
+/**
+ * 云函数 - 删除评论
+ */
+const { ok, fail, db, cloud } = require('./shared')
 const _ = db.command
 
 exports.main = async (event = {}) => {
@@ -10,68 +9,50 @@ exports.main = async (event = {}) => {
     const { commentId } = event
     const { OPENID } = cloud.getWXContext()
 
-    if (!OPENID) return { code: -1, msg: '获取用户身份失败' }
-    if (!commentId) return { code: -2, msg: '缺少 commentId' }
+    if (!OPENID) return fail('获取用户身份失败', -1)
+    if (!commentId) return fail('缺少 commentId', -2)
 
-    // Get current user
     const userRes = await db.collection('users').where({ openid: OPENID }).limit(1).get()
-    if (!userRes.data.length) return { code: -3, msg: '用户不存在，请先登录' }
+    if (!userRes.data.length) return fail('用户不存在，请先登录', -3)
     const user = userRes.data[0]
 
-    // Get the comment
     const commentRes = await db.collection('comments').doc(commentId).get()
     const comment = commentRes.data
-    if (!comment || comment.status === 'deleted') return { code: -4, msg: '评论不存在或已被删除' }
+    if (!comment || comment.status === 'deleted') return fail('评论不存在或已被删除', -4)
 
-    // Get the post to check post author
     const postRes = await db.collection('posts').doc(comment.postId).get()
     const post = postRes.data
-    if (!post) return { code: -5, msg: '帖子不存在' }
+    if (!post) return fail('帖子不存在', -5)
 
     const postAuthorId = post.authorId || post.userId || ''
-
-    // Permission check: only comment author or post author can delete
     const isCommentAuthor = comment.authorId === user._id
     const isPostAuthor = postAuthorId === user._id
 
     if (!isCommentAuthor && !isPostAuthor) {
-      return { code: -6, msg: '无权删除此评论' }
+      return fail('无权删除该评论', -6)
     }
 
-    // Soft delete the comment
     await db.collection('comments').doc(commentId).update({
       data: { status: 'deleted', updatedAt: db.serverDate() },
     })
 
-    // Also soft-delete all replies to this comment
     await db.collection('comments').where({
-      parentId: commentId,
-      status: 'normal',
+      parentId: commentId, status: 'normal',
     }).update({
       data: { status: 'deleted', updatedAt: db.serverDate() },
     }).catch(() => {})
 
-    // Recount the commentCount for this post
     const countRes = await db.collection('comments')
-      .where({ postId: comment.postId, status: 'normal' })
-      .count()
+      .where({ postId: comment.postId, status: 'normal' }).count()
     const newCount = countRes.total || 0
 
     await db.collection('posts').doc(comment.postId).update({
-      data: { commentCount: newCount, updatedAt: db.serverDate() },
+      data: { commentCount: newCount, comments: newCount, updatedAt: db.serverDate() },
     }).catch(() => {})
 
-    await db.collection('posts').doc(comment.postId).update({
-      data: { comments: newCount },
-    }).catch(() => {})
-
-    return {
-      code: 0,
-      msg: '评论已删除',
-      data: { commentCount: newCount },
-    }
+    return ok({ msg: '评论已删除', commentCount: newCount })
   } catch (err) {
     console.error('[deleteComment]', err)
-    return { code: -10, msg: '删除评论失败', error: err.message || err }
+    return fail('删除评论失败', -10)
   }
 }

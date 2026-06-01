@@ -236,7 +236,7 @@ export default function SkillProofDetailPage() {
             {proof.images.length ? (
               <View className='image-list'>
                 {proof.images.map((src) => (
-                  <Image className='proof-image' src={src} mode='aspectFill' key={src} />
+                  <Image className='proof-image' src={src} mode='aspectFill' key={src} lazyLoad />
                 ))}
               </View>
             ) : (

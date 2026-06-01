@@ -1,34 +1,31 @@
-// 云函数 - 获取活动列表
-const cloud = require('wx-server-sdk')
-cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
-const db = cloud.database()
+/**
+ * 云函数 - 获取活动列表
+ */
+const { ok, fail, paginate } = require('./shared')
 
-exports.main = async (event, context) => {
-  const { category, page = 0, pageSize = 20 } = event
-
+exports.main = async (event) => {
   try {
+    const { category, page: page0 = 0, pageSize = 20 } = event
+
     let query = {}
-    if (category && category !== '全部' && category !== '热门') {
+    if (category && category !== '全部' && category !== '综合') {
       query.category = category
     }
 
-    const result = await db.collection('activities')
-      .where(query)
-      .skip(page * pageSize)
-      .limit(pageSize)
-      .orderBy('createdAt', 'desc')
-      .get()
+    const result = await paginate('activities', query, {
+      page: Number(page0) + 1,  // paginate 使用 1-based 页码
+      pageSize: Number(pageSize),
+      orderBy: 'createdAt',
+    })
 
-    const total = await db.collection('activities').where(query).count()
+    const mapped = (result.data || []).map(a => ({ ...a, id: a._id }))
 
-    return {
-      code: 0,
-      data: result.data.map(a => ({ ...a, id: a._id })),
-      total: total.total,
-      hasMore: (page + 1) * pageSize < total.total,
-    }
+    return ok(mapped, {
+      total: result.total,
+      hasMore: result.hasMore,
+    })
   } catch (err) {
     console.error('[getActivities]', err)
-    return { code: -1, msg: '获取活动失败', error: err }
+    return fail('获取活动失败')
   }
 }

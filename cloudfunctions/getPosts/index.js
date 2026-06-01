@@ -2,7 +2,7 @@
  * 获取帖子列表 (v2)
  * 支持分页、关键词搜索、分类筛选
  */
-const { ok, fail, getOpenId, paginate, requireParams, validateLength, db, cloud } = require('../_shared/index')
+const { ok, fail, getOpenId, paginate, requireParams, validateLength, db, cloud } = require('./shared')
 
 function includes(value, keyword) {
   return String(value || '').toLowerCase().includes(keyword)

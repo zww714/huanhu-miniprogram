@@ -441,7 +441,7 @@ export default function Discover() {
 
   const renderCover = (item: FeedItem) => {
     if (isImageCover(item.coverImage)) {
-      return <Image className='feed-cover-img' src={item.coverImage || ''} mode='aspectFill' />
+      return <Image className='feed-cover-img' src={item.coverImage || ''} mode='aspectFill' lazyLoad />
     }
     const style = item.coverImage?.startsWith('linear-gradient') ? { background: item.coverImage } : undefined
     return (
@@ -495,7 +495,7 @@ export default function Discover() {
             <>
               <View className='feed-author' onClick={(event) => { event.stopPropagation(); openUser(item) }}>
                 <View className='feed-avatar' style={{ backgroundColor: getAvatarBg(item.authorName) }}>
-                  {isRenderableImage(item.authorAvatar) ? <Image className='feed-avatar-img' src={item.authorAvatar} mode='aspectFill' /> : <Text>{firstChar(item.authorName)}</Text>}
+                  {isRenderableImage(item.authorAvatar) ? <Image className='feed-avatar-img' src={item.authorAvatar} mode='aspectFill' lazyLoad /> : <Text>{firstChar(item.authorName)}</Text>}
                 </View>
                 <View className='feed-author-text'>
                   <View className='feed-author-name-row'>

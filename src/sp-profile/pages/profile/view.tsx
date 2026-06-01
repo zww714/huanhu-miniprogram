@@ -228,7 +228,7 @@ export default function ProfileView() {
           <View className='profile-main-row'>
             <View className='avatar-wrap'>
               {isRenderableImage(user.avatar) ? (
-                <Image className='avatar-img' src={user.avatar} mode='aspectFill' />
+                <Image className='avatar-img' src={user.avatar} mode='aspectFill' lazyLoad />
               ) : (
                 <View className='avatar-fallback'>
                   <Text>{firstChar(user.name)}</Text>

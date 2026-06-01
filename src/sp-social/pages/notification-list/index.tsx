@@ -37,7 +37,7 @@ function NoticeAvatar({ item, title }: { item: AppNotification; title: string })
   return (
     <View className='notice-avatar' style={{ backgroundColor: meta.bg }}>
       {item.fromUserAvatar ? (
-        <Image className='avatar-img' src={item.fromUserAvatar} mode='aspectFill' />
+        <Image className='avatar-img' src={item.fromUserAvatar} mode='aspectFill' lazyLoad />
       ) : (
         <Text style={{ color: meta.color }}>{item.type === 'system' ? meta.icon : (item.fromUserName || title).charAt(0)}</Text>
       )}
