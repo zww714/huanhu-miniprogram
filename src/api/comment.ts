@@ -1,7 +1,7 @@
 /**
  * API 评论模块
  */
-import { callCloudFunction, apiWarn, USE_CLOUD, delay } from './base'
+import { callCloudFunction, apiWarn, getUseCloud, delay } from './base'
 import { POST_COMMENTS, type Comment } from '../utils/mock'
 
 // ============ 时间格式化 ============
@@ -64,7 +64,7 @@ function normalizeCloudComment(cloudComment: any): Comment {
 
 // ============ 评论 CRUD ============
 export async function getComments(params: { postId: string }): Promise<Comment[]> {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('getComments', { postId: params.postId })
       const cloudComments = (res.data || []).map(normalizeCloudComment)
@@ -76,7 +76,7 @@ export async function getComments(params: { postId: string }): Promise<Comment[]
 }
 
 export async function addComment(params: { postId: string; content: string }): Promise<any> {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('addComment', { postId: params.postId, content: params.content })
       return res.data || res
@@ -88,7 +88,7 @@ export async function addComment(params: { postId: string; content: string }): P
 export async function replyComment(params: {
   postId: string; parentId: string; replyToUserId: string; content: string
 }): Promise<any> {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('replyComment', {
         postId: params.postId, parentId: params.parentId,
@@ -101,7 +101,7 @@ export async function replyComment(params: {
 }
 
 export async function deleteComment(params: { commentId: string }): Promise<any> {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try { return await callCloudFunction('deleteComment', { commentId: params.commentId }) }
     catch (e) { apiWarn('[API] deleteComment cloud failed', e); throw e }
   }

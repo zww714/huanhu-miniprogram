@@ -1,12 +1,12 @@
 /**
  * API 交互模块 — 点赞、收藏、交互状态
  */
-import { callCloudFunction, apiWarn, USE_CLOUD } from './base'
+import { callCloudFunction, apiWarn, getUseCloud } from './base'
 
 export async function toggleLike(params: {
   targetType?: string; targetId: string
 }): Promise<{ liked: boolean; likeCount: number }> {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('toggleLike', { targetType: params.targetType || 'post', targetId: params.targetId })
       return res.data || { liked: false, likeCount: 0 }
@@ -18,7 +18,7 @@ export async function toggleLike(params: {
 export async function toggleFavorite(params: {
   targetType?: string; targetId: string
 }): Promise<{ favorited: boolean; favoriteCount: number }> {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('toggleFavorite', { targetType: params.targetType || 'post', targetId: params.targetId })
       return res.data || { favorited: false, favoriteCount: 0 }
@@ -30,7 +30,7 @@ export async function toggleFavorite(params: {
 export async function getInteractionStatus(params: {
   targetType?: string; targetId: string
 }): Promise<{ liked: boolean; favorited: boolean; likeCount: number; favoriteCount: number }> {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('getInteractionStatus', { targetType: params.targetType || 'post', targetId: params.targetId })
       return res.data || { liked: false, favorited: false, likeCount: 0, favoriteCount: 0 }
@@ -40,7 +40,7 @@ export async function getInteractionStatus(params: {
 }
 
 export async function getMyFavorites(params?: { targetType?: string }): Promise<any[]> {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('getMyFavorites', { targetType: params?.targetType || 'post' })
       return res.data || []

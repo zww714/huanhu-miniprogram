@@ -2,7 +2,7 @@
  * API 聊天模块 — 对话列表、消息发送/接收
  */
 import {
-  initCloud, delay, apiWarn, USE_CLOUD,
+  initCloud, delay, apiWarn, getUseCloud,
   getAllCloudDocuments, addCloudDocument,
   CHAT_USER_KEY, LOCAL_MESSAGES_KEY, LOCAL_CONVERSATIONS_KEY,
 } from './base'
@@ -20,7 +20,7 @@ function getLocalChatUser() {
 }
 
 export async function getCurrentChatUser() {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const userData = await login()
       if (userData?._id) {
@@ -76,7 +76,7 @@ function normalizeChatMessage(message: any, currentUserId: string) {
 
 // ============ 对话列表 ============
 export async function getConversations() {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('getConversations')
       return res.data as Conversation[]
@@ -90,7 +90,7 @@ export async function getConversations() {
 export async function getChatMessages(params: { targetId: string }) {
   const currentUser = await getCurrentChatUser()
   const conversationId = buildConversationId(currentUser.id, params.targetId)
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const messages = await getAllCloudDocuments('messages', 100)
       const cloudMessages = messages
@@ -118,7 +118,7 @@ export async function sendChatMessage(params: {
     category: params.category || '聊天',
   }
 
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await addCloudDocument('messages', message)
       return normalizeChatMessage({ ...message, id: res._id, _id: res._id }, currentUser.id)
@@ -141,7 +141,7 @@ export async function getChatConversations() {
   const localData = wx.getStorageSync(LOCAL_CONVERSATIONS_KEY)
   const localConversations = Array.isArray(localData) ? localData : []
 
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const messages = await getAllCloudDocuments('messages', 200)
       const grouped: Record<string, any> = {}

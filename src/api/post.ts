@@ -2,7 +2,7 @@
  * API 帖子模块 — 帖子的 CRUD、数据规范化
  */
 import {
-  initCloud, callCloudFunction, delay, apiWarn, USE_CLOUD,
+  initCloud, callCloudFunction, delay, apiWarn, getUseCloud,
   getCloudCollection, uploadCloudFile,
 } from './base'
 import { MOCK_POSTS, MY_POSTS } from '../utils/mock'
@@ -51,7 +51,7 @@ function normalizePost(post: any) {
 
 // ============ 获取帖子列表 ============
 export async function getPosts(params?: { category?: string; page?: number; userId?: string; keyword?: string; tag?: string }) {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('getPosts', params)
       return (res.data || []).map(normalizePost) as Post[]
@@ -95,7 +95,7 @@ export async function createPost(params: {
     images: image ? [image] : [], seedTag: 'huanhu-initial-v1', source: 'publish',
   }
 
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('createPost', {
         title, content, summary: content.slice(0, 80), tags,
@@ -114,7 +114,7 @@ export async function createPost(params: {
 
 // ============ 我的帖子 ============
 export async function getMyPosts() {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('getMyPosts')
       return (res.data || []).map(normalizePost)
@@ -126,7 +126,7 @@ export async function getMyPosts() {
 }
 
 export async function getUserPosts(params: { userId: string }) {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('getUserPosts', params)
       return (res.data || []).map(normalizePost)
@@ -136,7 +136,7 @@ export async function getUserPosts(params: { userId: string }) {
 }
 
 export async function getPostDetail(params: { postId: string }) {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('getPostDetail', params)
       return normalizePost(res.data)
@@ -146,7 +146,7 @@ export async function getPostDetail(params: { postId: string }) {
 }
 
 export async function updatePost(params: { postId: string; post: Record<string, any> }) {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try { return await callCloudFunction('updatePost', params) }
     catch (e) { apiWarn('[API] updatePost cloud failed', e) }
   }
@@ -156,7 +156,7 @@ export async function updatePost(params: { postId: string; post: Record<string, 
 }
 
 export async function deletePost(params: { postId: string }) {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try { return await callCloudFunction('deletePost', params) }
     catch (e) { apiWarn('[API] deletePost cloud failed', e) }
   }

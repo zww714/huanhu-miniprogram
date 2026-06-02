@@ -1,7 +1,7 @@
 /**
  * API 活动模块
  */
-import { callCloudFunction, delay, apiWarn, USE_CLOUD, getCloudCollection, addCloudDocument } from './base'
+import { callCloudFunction, delay, apiWarn, getUseCloud, getCloudCollection, addCloudDocument } from './base'
 import { ACTIVITIES } from '../utils/mock'
 import type { Activity } from '../utils/mock'
 
@@ -25,7 +25,7 @@ export async function createActivity(params: {
     seedTag: 'huanhu-initial-v1', source: 'publish',
   }
 
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     const res = await addCloudDocument('activities', activity)
     return { ...activity, id: res._id, _id: res._id }
   }
@@ -33,7 +33,7 @@ export async function createActivity(params: {
 }
 
 export async function getActivities(params?: { category?: string; page?: number }) {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('getActivities', params)
       return res.data as Activity[]
@@ -55,7 +55,7 @@ export async function getActivities(params?: { category?: string; page?: number 
 }
 
 export async function registerActivity(params: { activityId: string; name?: string; phone?: string; note?: string }) {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('activity', { action: 'register', ...params })
       return res.data || { registered: true }
@@ -65,7 +65,7 @@ export async function registerActivity(params: { activityId: string; name?: stri
 }
 
 export async function getMyActivityRegistrations() {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('activity', { action: 'getMyRegistrations' })
       return res.data || []
@@ -75,7 +75,7 @@ export async function getMyActivityRegistrations() {
 }
 
 export async function cancelActivityRegistration(params: { registrationId?: string; activityId?: string }) {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('activity', { action: 'cancelRegistration', ...params })
       return res.data || { canceled: true }
@@ -85,7 +85,7 @@ export async function cancelActivityRegistration(params: { registrationId?: stri
 }
 
 export async function getActivityDetail(params: { activityId: string }) {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('activity', { action: 'getDetail', ...params })
       return res.data || null

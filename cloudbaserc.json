@@ -244,12 +244,6 @@
                           "handler":  "index.main"
                       },
                       {
-                          "name":  "bootstrapData",
-                          "timeout":  60,
-                          "runtime":  "Nodejs18.15",
-                          "handler":  "index.main"
-                      },
-                      {
                           "name":  "seed",
                           "timeout":  60,
                           "runtime":  "Nodejs18.15",

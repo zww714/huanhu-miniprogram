@@ -69,17 +69,17 @@
 
 ## 第 5 步：切换前端到云模式
 
-1. 打开 `src/utils/api.ts`
-2. 找到第 11 行：`const USE_CLOUD = false`
-3. 改为：`const USE_CLOUD = true`
-4. 找到第 21 行：`env: 'huanhu-prod'` ← 替换为你的云环境 ID
-5. 重新编译：`npm run build:weapp`
+当前默认即为云模式（`const USE_CLOUD = true`），无需额外操作。
 
-> 💡 也可以不改代码，在开发者工具控制台执行：
-> ```js
-> setCloudMode(true)
-> ```
-> 但页面刷新后会恢复，上线前请改代码
+### 运行时动态切换
+
+在开发者工具控制台执行：
+```js
+setCloudMode(false)  // 切换到 mock 数据（离线调试）
+setCloudMode(true)   // 切回云函数模式
+```
+
+> ⚠️ 页面刷新后会恢复默认值（true），上线前请确认云环境配置正确。
 
 ---
 

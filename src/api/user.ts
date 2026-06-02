@@ -2,7 +2,7 @@
  * API 用户模块 — 登录、注册、用户详情、关注
  */
 import {
-  initCloud, callCloudFunction, delay, apiWarn, USE_CLOUD,
+  initCloud, callCloudFunction, delay, apiWarn, getUseCloud,
   getCloudCollection, getCloudDocument, updateCloudDocument,
   LOGIN_USER_KEY, SMS_CODE_KEY
 } from './base'
@@ -11,7 +11,7 @@ import type { SkillUser } from '../utils/mock'
 
 // ============ 用户列表 ============
 export async function getUsers(params?: { category?: string; page?: number }) {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('getUsers', params)
       return res.data as SkillUser[]
@@ -28,14 +28,14 @@ export async function getUsers(params?: { category?: string; page?: number }) {
   }
   await delay()
   if (params?.category && params.category !== '全部' && params.category !== '热门') {
-    return SKILL_USERS.filter(u => u.can.some(s => s.name.includes(params!.category!)))
+    return SKILL_USERS.filter(u => (u.can || []).some(s => s.name.includes(params!.category!)))
   }
   return SKILL_USERS
 }
 
 // ============ 兴趣搭子 ============
 export async function getPartners(params?: { category?: string }) {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const users = await getUsers()
       let partners = users.map((user: any) => ({
@@ -60,7 +60,7 @@ export async function getPartners(params?: { category?: string }) {
 
 // ============ 登录 ============
 export async function login() {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('login')
       return res.currentUser || res.userData
@@ -71,7 +71,7 @@ export async function login() {
 }
 
 export async function getCurrentUser() {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('getCurrentUser')
       return res.currentUser || res.userData
@@ -130,7 +130,7 @@ export function getSavedLoginUser() { return wx.getStorageSync(LOGIN_USER_KEY) }
 
 // ============ 用户详情 ============
 export async function getUserDetail(params: { userId?: string; userName?: string }) {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('getUserDetail', params)
       return res.userData
@@ -145,7 +145,7 @@ export async function getMyProfile() { await delay(); return MY_PROFILE }
 
 // ============ 更新资料 ============
 export async function updateProfile(params: { field?: string; value?: any; profile?: Record<string, any> } | Record<string, any>) {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('updateProfile', params)
       return res.currentUser || res.userData || res
@@ -160,7 +160,7 @@ export async function updateProfile(params: { field?: string; value?: any; profi
 
 // ============ 关注系统 ============
 export async function followUser(params: { targetUserId: string }) {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('followUser', params)
       return res.data || { isFollowing: true, isMutual: false }
@@ -170,7 +170,7 @@ export async function followUser(params: { targetUserId: string }) {
 }
 
 export async function unfollowUser(params: { targetUserId: string }) {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('unfollowUser', params)
       return res.data || { isFollowing: false, isMutual: false }
@@ -180,7 +180,7 @@ export async function unfollowUser(params: { targetUserId: string }) {
 }
 
 export async function getFollowStatus(params: { targetUserId: string }) {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('getFollowStatus', params)
       return res.data
@@ -190,7 +190,7 @@ export async function getFollowStatus(params: { targetUserId: string }) {
 }
 
 export async function getFollowers(params: { userId?: string; page?: number; pageSize?: number }) {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('getFollowers', params)
       return { data: res.data || [], total: res.total || 0 }
@@ -200,7 +200,7 @@ export async function getFollowers(params: { userId?: string; page?: number; pag
 }
 
 export async function getFollowing(params: { userId?: string; page?: number; pageSize?: number; filter?: string }) {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('getFollowing', params)
       return { data: res.data || [], total: res.total || 0 }
@@ -210,7 +210,7 @@ export async function getFollowing(params: { userId?: string; page?: number; pag
 }
 
 export async function setSpecialFollow(params: { targetUserId: string; isSpecial: boolean }) {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('setSpecialFollow', params)
       return res.data || { isSpecial: params.isSpecial }
@@ -220,7 +220,7 @@ export async function setSpecialFollow(params: { targetUserId: string; isSpecial
 }
 
 export async function blockUser(params: { targetUserId: string; isBlocked?: boolean }) {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('blockUser', params)
       return res.data || { isBlocked: true, isFollowing: false }

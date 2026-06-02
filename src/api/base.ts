@@ -117,7 +117,17 @@ export function apiWarn(message: string, error: any) {
 }
 
 export function setCloudMode(enabled: boolean) {
-  ;(window as any).USE_CLOUD = enabled
+  ;(window as any).__HUANHU_USE_CLOUD = enabled
+}
+
+/**
+ * 运行时读取云端模式开关
+ * 默认 true（使用云函数），setCloudMode(false) 可动态切换至 mock
+ * 各 API 模块应使用此函数而非直接引用 setCloudMode
+ */
+export function getUseCloud(): boolean {
+  const v = (window as any).__HUANHU_USE_CLOUD
+  return v !== undefined ? v : true
 }
 
 // ============ 常量 ============
@@ -126,4 +136,3 @@ export const SMS_CODE_KEY = 'huanhuSmsCode'
 export const LOCAL_MESSAGES_KEY = 'huanhuChatMessages'
 export const LOCAL_CONVERSATIONS_KEY = 'huanhuLocalConversations'
 export const CHAT_USER_KEY = 'huanhuChatCurrentUser'
-export const USE_CLOUD = true

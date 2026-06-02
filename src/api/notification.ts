@@ -1,10 +1,10 @@
 /**
  * API 通知模块
  */
-import { callCloudFunction, apiWarn, USE_CLOUD } from './base'
+import { callCloudFunction, apiWarn, getUseCloud } from './base'
 
 export async function getNotificationUnreadCounts() {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('notification', { action: 'getUnreadCounts' })
       return res.data || { likes: 0, follows: 0, comments: 0, system: 0 }
@@ -16,7 +16,7 @@ export async function getNotificationUnreadCounts() {
 export async function getNotifications(params: {
   type?: string; filter?: string; page?: number; pageSize?: number
 }) {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('notification', { action: 'getNotifications', ...params })
       return { data: res.data || [], total: res.total || 0 }
@@ -26,7 +26,7 @@ export async function getNotifications(params: {
 }
 
 export async function markNotificationsRead(params: { ids?: string[]; type?: string; all?: boolean }) {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('notification', { action: 'markRead', ...params })
       return res.data || { marked: true }
@@ -36,7 +36,7 @@ export async function markNotificationsRead(params: { ids?: string[]; type?: str
 }
 
 export async function deleteNotification(params: { id: string }) {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('notification', { action: 'delete', ...params })
       return res.data || { deleted: true }

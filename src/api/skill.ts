@@ -1,12 +1,12 @@
 /**
  * API 技能模块 — 技能 CRUD、学习愿望、评价、兴趣搭子
  */
-import { callCloudFunction, delay, apiWarn, USE_CLOUD, getCloudDocument, updateCloudDocument } from './base'
+import { callCloudFunction, delay, apiWarn, getUseCloud, getCloudDocument, updateCloudDocument } from './base'
 import { MY_SKILLS, MY_LEARN_WANTS, MY_INTERESTS, MY_REVIEWS } from '../utils/mock'
 
 // ============ 技能 CRUD ============
 export async function getMySkills() {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('getMySkills')
       return res.data || []
@@ -17,7 +17,7 @@ export async function getMySkills() {
 }
 
 export async function getUserSkills(params: { userId: string }) {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('getUserSkills', params)
       return res.data || []
@@ -27,7 +27,7 @@ export async function getUserSkills(params: { userId: string }) {
 }
 
 export async function getSkillDetail(params: { skillId: string; userId?: string }) {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('getSkillDetail', params)
       return res.data
@@ -37,7 +37,7 @@ export async function getSkillDetail(params: { skillId: string; userId?: string 
 }
 
 export async function createSkill(params: Record<string, any>) {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('createSkill', params)
       return res.data
@@ -51,7 +51,7 @@ export async function createSkill(params: Record<string, any>) {
 }
 
 export async function updateSkill(params: { skillId: string; skill: Record<string, any> }) {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('updateSkill', params)
       return res.data
@@ -69,7 +69,7 @@ export async function updateSkill(params: { skillId: string; skill: Record<strin
 }
 
 export async function deleteSkill(params: { skillId: string }) {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try { return await callCloudFunction('deleteSkill', params) }
     catch (e) { apiWarn('[API] deleteSkill failed', e) }
   }
@@ -86,7 +86,7 @@ export async function publishSkillNeed(params: { type: 'can' | 'want'; name: str
   const desc = params.desc?.trim() || ''
   if (!name) throw new Error('技能名称不能为空')
 
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     const user = await getCloudDocument('users', userId)
     const can = Array.isArray(user.can) ? user.can : []
     const skills = Array.isArray(user.skills) ? user.skills : []
@@ -124,7 +124,7 @@ export async function publishPartnerProfile(params: { bio: string; interests: st
   if (!interests.length) throw new Error('请至少填写一个兴趣爱好')
   const lookingFor = `${interests[0]}搭子`
 
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     const user = await getCloudDocument('users', userId)
     const oldInterests = Array.isArray(user.interests) ? user.interests : []
     const nextInterests = Array.from(new Set([...oldInterests, ...interests]))

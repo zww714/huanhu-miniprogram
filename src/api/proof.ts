@@ -1,10 +1,10 @@
 /**
  * API 证明材料模块
  */
-import { callCloudFunction, apiWarn, USE_CLOUD } from './base'
+import { callCloudFunction, apiWarn, getUseCloud } from './base'
 
 export async function getSkillProofs(params: { skillId: string; userId?: string }) {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('skillProof', { action: 'getBySkill', ...params })
       return res.data || []
@@ -14,7 +14,7 @@ export async function getSkillProofs(params: { skillId: string; userId?: string 
 }
 
 export async function getSkillProofDetail(params: { proofId: string }) {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('skillProof', { action: 'getDetail', ...params })
       return res.data || null
@@ -24,7 +24,7 @@ export async function getSkillProofDetail(params: { proofId: string }) {
 }
 
 export async function getSkillProofCount(params: { skillId: string }) {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('skillProof', { action: 'getProofCount', ...params })
       return res.data?.count || 0
@@ -37,7 +37,7 @@ export async function addSkillProof(params: {
   skillId: string; title: string; type: string; description?: string;
   images?: string[]; links?: any[]; detail?: any; tags?: string[]
 }) {
-  if (USE_CLOUD) {
+  if (getUseCloud()) {
     try {
       const res = await callCloudFunction('skillProof', { action: 'add', ...params })
       return res.data || null
