@@ -96,6 +96,8 @@ export async function updateCloudDocument(collectionName: string, id: string, da
 }
 
 // ============ 工具函数 ============
+export const IS_PRODUCTION = process.env.NODE_ENV === 'production'
+
 export function delay(ms = 200) {
   return new Promise(r => setTimeout(r, ms))
 }
@@ -114,6 +116,9 @@ export function isExpectedCloudFallback(error: any) {
 export function apiWarn(message: string, error: any) {
   if (isExpectedCloudFallback(error)) return
   console.warn(message, error)
+  if (IS_PRODUCTION) {
+    throw error instanceof Error ? error : new Error(message)
+  }
 }
 
 export function setCloudMode(enabled: boolean) {
@@ -122,10 +127,10 @@ export function setCloudMode(enabled: boolean) {
 
 /**
  * 运行时读取云端模式开关
- * 默认 true（使用云函数），setCloudMode(false) 可动态切换至 mock
- * 各 API 模块应使用此函数而非直接引用 setCloudMode
+ * 生产环境强制使用云函数，开发环境可通过 setCloudMode(false) 切换至 mock
  */
 export function getUseCloud(): boolean {
+  if (IS_PRODUCTION) return true
   const v = (window as any).__HUANHU_USE_CLOUD
   return v !== undefined ? v : true
 }

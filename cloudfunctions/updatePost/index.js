@@ -44,6 +44,25 @@ exports.main = async (event = {}) => {
 
     const data = cleanUpdate(event)
     if (!Object.keys(data).length) return fail('没有可更新的字段', -5)
+
+    // 内容安全审核
+    try {
+      const textToCheck = [data.title, data.content].filter(Boolean).join('\n')
+      if (textToCheck) {
+        const checkRes = await cloud.openapi.security.msgSecCheck({
+          openid: OPENID,
+          scene: 2,
+          version: 2,
+          content: textToCheck,
+        })
+        if (checkRes.result && checkRes.result.suggest !== 'pass') {
+          return fail('内容含有违规信息，请修改后重试', -7)
+        }
+      }
+    } catch (e) {
+      console.warn('[updatePost] msgSecCheck failed, allowing update', e)
+    }
+
     data.updatedAt = db.serverDate()
 
     await db.collection('posts').doc(postId).update({ data })

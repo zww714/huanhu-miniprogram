@@ -42,6 +42,24 @@ exports.main = async (event = {}) => {
     const data = cleanSkill(event)
     if (!data.name) return fail('请输入技能名称', -3)
 
+    // 内容安全审核
+    try {
+      const textToCheck = [data.name, data.intro].filter(Boolean).join('\n')
+      if (textToCheck) {
+        const checkRes = await cloud.openapi.security.msgSecCheck({
+          openid: OPENID,
+          scene: 2,
+          version: 2,
+          content: textToCheck,
+        })
+        if (checkRes.result && checkRes.result.suggest !== 'pass') {
+          return fail('内容含有违规信息，请修改后重试', -5)
+        }
+      }
+    } catch (e) {
+      console.warn('[createSkill] msgSecCheck failed, allowing skill', e)
+    }
+
     const userId = userRes.data[0]._id
     const added = await db.collection('skills').add({
       data: {

@@ -28,6 +28,21 @@ exports.main = async (event = {}) => {
 
     const cleanContent = String(content).trim()
 
+    // 内容安全审核
+    try {
+      const checkRes = await cloud.openapi.security.msgSecCheck({
+        openid: OPENID,
+        scene: 2,
+        version: 2,
+        content: cleanContent,
+      })
+      if (checkRes.result && checkRes.result.suggest !== 'pass') {
+        return fail('评论含有违规信息，请修改后重试', -7)
+      }
+    } catch (e) {
+      console.warn('[addComment] msgSecCheck failed, allowing comment', e)
+    }
+
     const addRes = await db.collection('comments').add({
       data: {
         postId,

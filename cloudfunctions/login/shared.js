@@ -23,16 +23,10 @@ function fail(msg = '操作失败', code = -1) {
 /**
  * 安全获取 openid
  */
-function getOpenId(event, context) {
-  try {
-    const openid = context && context.CLIENT_CONTEXT
-      ? context.CLIENT_CONTEXT.openid
-      : (event.userInfo && event.userInfo.openId)
-    if (!openid) throw new Error('未获取到用户身份')
-    return openid
-  } catch (e) {
-    return event.mockOpenId || 'mock_openid'
-  }
+function getOpenId() {
+  const { OPENID } = cloud.getWXContext()
+  if (!OPENID) throw new Error('未获取到用户身份')
+  return OPENID
 }
 
 /**

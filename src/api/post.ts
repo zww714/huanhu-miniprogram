@@ -82,7 +82,7 @@ export async function createPost(params: {
   if (!title || !content) throw new Error('标题和内容不能为空')
 
   let image = params.image || ''
-  if (USE_CLOUD && image && !image.startsWith('cloud://') && !image.startsWith('http')) {
+  if (getUseCloud() && image && !image.startsWith('cloud://') && !image.startsWith('http')) {
     try { image = await uploadCloudFile(image) } catch (e) { apiWarn('[API] upload post image failed', e); image = '' }
   }
 

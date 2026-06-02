@@ -57,6 +57,21 @@ exports.main = async (event = {}) => {
     const rootId = parentComment.rootId || parentId
     const cleanContent = String(content).trim()
 
+    // 内容安全审核
+    try {
+      const checkRes = await cloud.openapi.security.msgSecCheck({
+        openid: OPENID,
+        scene: 2,
+        version: 2,
+        content: cleanContent,
+      })
+      if (checkRes.result && checkRes.result.suggest !== 'pass') {
+        return fail('回复含有违规信息，请修改后重试', -9)
+      }
+    } catch (e) {
+      console.warn('[replyComment] msgSecCheck failed, allowing reply', e)
+    }
+
     const addRes = await db.collection('comments').add({
       data: {
         postId, authorId: user._id, openid: OPENID,

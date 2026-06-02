@@ -2,8 +2,8 @@
  * API 聊天模块 — 对话列表、消息发送/接收
  */
 import {
-  initCloud, delay, apiWarn, getUseCloud,
-  getAllCloudDocuments, addCloudDocument,
+  callCloudFunction, delay, apiWarn, getUseCloud,
+  addCloudDocument,
   CHAT_USER_KEY, LOCAL_MESSAGES_KEY, LOCAL_CONVERSATIONS_KEY,
 } from './base'
 import { login } from './user'
@@ -92,12 +92,9 @@ export async function getChatMessages(params: { targetId: string }) {
   const conversationId = buildConversationId(currentUser.id, params.targetId)
   if (getUseCloud()) {
     try {
-      const messages = await getAllCloudDocuments('messages', 100)
-      const cloudMessages = messages
-        .filter((m) => m.conversationId === conversationId)
-        .map((m) => normalizeChatMessage(m, currentUser.id))
-        .sort((a, b) => a.createdAtMs - b.createdAtMs)
-      if (cloudMessages.length) return cloudMessages
+      const res = await callCloudFunction('getMessages', { conversationId, limit: 50 })
+      const messages = (res.data || []).map((m: any) => normalizeChatMessage(m, currentUser.id))
+      if (messages.length) return messages
     } catch (e) { apiWarn('[API] getChatMessages cloud failed', e) }
   }
   const store = getLocalMessageStore()
@@ -143,30 +140,15 @@ export async function getChatConversations() {
 
   if (getUseCloud()) {
     try {
-      const messages = await getAllCloudDocuments('messages', 200)
-      const grouped: Record<string, any> = {}
-      messages
-        .filter((m) => Array.isArray(m.participants) && m.participants.includes(currentUser.id))
-        .forEach((m) => {
-          const otherId = m.participants.find((id: string) => id !== currentUser.id) || m.targetId
-          const otherName = m.senderId === currentUser.id ? m.targetName : m.senderName
-          const curr = grouped[otherId]
-          if (!curr || Number(m.createdAtMs || 0) > Number(curr.createdAtMs || 0)) {
-            grouped[otherId] = {
-              id: otherId, name: otherName || '同学',
-              lastMessage: m.text || '', timestamp: m.time || formatChatTime(m.createdAtMs),
-              unread: m.senderId === currentUser.id ? 0 : 1,
-              category: m.category || '聊天', createdAtMs: Number(m.createdAtMs || 0),
-            }
-          }
-        })
-      const cloudConversations = Object.values(grouped)
-        .sort((a: any, b: any) => Number(b.createdAtMs || 0) - Number(a.createdAtMs || 0))
-      const cloudIds = new Set(cloudConversations.map((item: any) => item.id))
-      return [
-        ...cloudConversations,
-        ...localConversations.filter((item: any) => !cloudIds.has(item.id)),
-      ]
+      const res = await callCloudFunction('getConversations')
+      const cloudConversations = res.data || []
+      if (cloudConversations.length) {
+        const cloudIds = new Set(cloudConversations.map((item: any) => item.id))
+        return [
+          ...cloudConversations,
+          ...localConversations.filter((item: any) => !cloudIds.has(item.id)),
+        ]
+      }
     } catch (e) { apiWarn('[API] getChatConversations cloud failed', e) }
   }
   return localConversations

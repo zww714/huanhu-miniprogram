@@ -4,7 +4,7 @@
 import {
   initCloud, callCloudFunction, delay, apiWarn, getUseCloud,
   getCloudCollection, getCloudDocument, updateCloudDocument,
-  LOGIN_USER_KEY, SMS_CODE_KEY
+  LOGIN_USER_KEY
 } from './base'
 import { SKILL_USERS, PARTNER_USERS, USER_DETAILS, USER_DETAIL_PROFILE, MY_PROFILE } from '../utils/mock'
 import type { SkillUser } from '../utils/mock'
@@ -87,35 +87,7 @@ export async function saveWechatProfile(params: { nickName?: string; avatarUrl?:
     name: params.nickName || user?.name || '微信用户',
     avatar: params.avatarUrl || user?.avatar || '',
   }
-  if (USE_CLOUD && user?._id) {
-    await updateCloudDocument('users', user._id, nextProfile)
-    const updated = await getCloudDocument('users', user._id)
-    wx.setStorageSync(LOGIN_USER_KEY, updated)
-    return updated
-  }
-  const localUser = { ...(user || {}), ...nextProfile }
-  wx.setStorageSync(LOGIN_USER_KEY, localUser)
-  return localUser
-}
-
-export async function sendSmsCode(phone: string) {
-  const cleanPhone = phone.trim()
-  if (!/^1\d{10}$/.test(cleanPhone)) throw new Error('请输入正确的手机号')
-  const code = String(Math.floor(100000 + Math.random() * 900000))
-  wx.setStorageSync(SMS_CODE_KEY, { phone: cleanPhone, code, expiresAt: Date.now() + 5 * 60 * 1000 })
-  return { code, expiresIn: 300 }
-}
-
-export async function phoneCodeLogin(params: { phone: string; code: string }) {
-  const saved = wx.getStorageSync(SMS_CODE_KEY)
-  const phone = params.phone.trim()
-  const code = params.code.trim()
-  if (!saved || saved.phone !== phone || saved.code !== code || Date.now() > saved.expiresAt) {
-    throw new Error('验证码错误或已过期')
-  }
-  const user = await login()
-  const nextProfile = { phone, phoneVerified: true, name: user?.name || '用户' }
-  if (USE_CLOUD && user?._id) {
+  if (getUseCloud() && user?._id) {
     await updateCloudDocument('users', user._id, nextProfile)
     const updated = await getCloudDocument('users', user._id)
     wx.setStorageSync(LOGIN_USER_KEY, updated)

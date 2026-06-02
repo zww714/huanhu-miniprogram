@@ -42,6 +42,21 @@ exports.main = async (event = {}) => {
     const post = cleanPost(event)
     if (!post.title || !post.content) return fail('标题和内容不能为空', -3)
 
+    // 内容安全审核
+    try {
+      const checkRes = await cloud.openapi.security.msgSecCheck({
+        openid: OPENID,
+        scene: 2,
+        version: 2,
+        content: `${post.title}\n${post.content}`,
+      })
+      if (checkRes.result && checkRes.result.suggest !== 'pass') {
+        return fail('内容含有违规信息，请修改后重试', -5)
+      }
+    } catch (e) {
+      console.warn('[createPost] msgSecCheck failed, allowing post', e)
+    }
+
     const user = userRes.data[0]
     const addRes = await db.collection('posts').add({
       data: {
