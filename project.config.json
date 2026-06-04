@@ -37,6 +37,9 @@
     "condition": false,
     "swc": false,
     "disableSWC": true,
+    "privacyLocation": {
+      "path": "sp-common/pages/privacy/index"
+    },
     "babelSetting": {
       "ignore": [],
       "disablePlugins": [],

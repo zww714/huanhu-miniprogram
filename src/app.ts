@@ -4,7 +4,7 @@ import { updateMessageTabUnread } from './utils/notifications'
 import './app.scss'
 
 const APP_CONFIG = {
-  CLOUD_ENV: 'cloud1-d3geudxpp50aa1802',
+  CLOUD_ENV: 'huanhu-d7gvz7pe18171aad3',
   LOGIN_KEY: 'huanhuLoginUser',
   TOKEN_KEY: 'token',
   PRIVACY_AGREED_KEY: 'huanhuPrivacyAgreed',
