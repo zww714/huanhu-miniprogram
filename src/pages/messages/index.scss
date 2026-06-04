@@ -290,6 +290,31 @@ page {
   height: 36rpx;
 }
 
+.message-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80rpx 0;
+  gap: 20rpx;
+}
+
+.message-empty-icon {
+  font-size: 80rpx;
+  line-height: 1;
+}
+
+.message-empty-title {
+  color: #94A3B8;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.message-empty-desc {
+  color: #B0BEC5;
+  font-size: 26rpx;
+}
+
 .total-unread-shadow {
   display: none;
 }

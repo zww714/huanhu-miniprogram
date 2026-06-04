@@ -165,6 +165,13 @@ export default function Messages() {
       </View>
 
       <View className='message-list-card'>
+        {conversations.length === 0 && totalUnread === 0 ? (
+          <View className='message-empty'>
+            <Text className='message-empty-icon'>💬</Text>
+            <Text className='message-empty-title'>暂无消息</Text>
+            <Text className='message-empty-desc'>去发现页找人聊聊吧</Text>
+          </View>
+        ) : null}
         {conversations.map((conv) => {
           const unread = getConversationUnread(conv)
           return (
