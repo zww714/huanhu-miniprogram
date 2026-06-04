@@ -7,6 +7,7 @@ const APP_CONFIG = {
   CLOUD_ENV: 'cloud1-d3geudxpp50aa1802',
   LOGIN_KEY: 'huanhuLoginUser',
   TOKEN_KEY: 'token',
+  PRIVACY_AGREED_KEY: 'huanhuPrivacyAgreed',
 }
 
 let cloudReady = false
@@ -42,9 +43,39 @@ function setupErrorHandler() {
   })
 }
 
+function setupPrivacyAuth() {
+  // 处理微信隐私授权回调（2023年版本起微信要求）
+  wx.onNeedPrivacyAuthorization?.((resolve) => {
+    // 检查是否已经同意过
+    const agreed = Taro.getStorageSync(APP_CONFIG.PRIVACY_AGREED_KEY)
+    if (agreed) {
+      resolve({ buttonId: 'agree', event: 'agree' })
+      return
+    }
+
+    // 显示隐私授权弹窗
+    wx.showModal({
+      title: '隐私授权',
+      content: '我们需要获取你的微信昵称和头像，用于创建和展示个人资料。请阅读并同意隐私协议。',
+      confirmText: '同意',
+      cancelText: '拒绝',
+      success: (res) => {
+        if (res.confirm) {
+          Taro.setStorageSync(APP_CONFIG.PRIVACY_AGREED_KEY, true)
+          resolve({ buttonId: 'agree', event: 'agree' })
+        } else {
+          // 拒绝后弹说明
+          wx.showToast({ title: '拒绝授权将无法获取头像昵称', icon: 'none', duration: 3000 })
+        }
+      },
+    })
+  })
+}
+
 function App({ children }: PropsWithChildren) {
   useLaunch(() => {
     ensureCloud()
+    setupPrivacyAuth()
     checkLogin()
     refreshBadge()
     setupErrorHandler()

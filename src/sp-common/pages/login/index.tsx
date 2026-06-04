@@ -31,7 +31,9 @@ export default function LoginPage() {
     }, 500)
   }
 
-  const handleWechatLogin = async () => {
+  const goToPage = (url: string) => { Taro.navigateTo({ url }) }
+
+const handleWechatLogin = async () => {
     if (submitting) return
     setSubmitting(true)
     try {
@@ -95,9 +97,18 @@ export default function LoginPage() {
         </Button>
       </View>
 
-      <Text style={{ display: 'block', marginTop: '16px', fontSize: '12px', color: '#94A3B8', lineHeight: '18px', textAlign: 'center' }}>
-        登录即表示同意使用微信身份创建账号。
-      </Text>
+      <View style={{ marginTop: '16px', textAlign: 'center' }}>
+        <Text style={{ fontSize: '12px', color: '#94A3B8', lineHeight: '18px' }}>
+          登录即表示同意{' '}
+          <Text style={{ color: '#2563EB', textDecoration: 'underline' }} onClick={() => goToPage('/sp-common/pages/agreement/index')}>
+            用户协议
+          </Text>
+          {' '}和{' '}
+          <Text style={{ color: '#2563EB', textDecoration: 'underline' }} onClick={() => goToPage('/sp-common/pages/privacy/index')}>
+            隐私协议
+          </Text>
+        </Text>
+      </View>
     </View>
   )
 }

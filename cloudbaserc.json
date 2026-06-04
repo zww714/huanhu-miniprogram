@@ -4,49 +4,49 @@
     "functionRoot":  "cloudfunctions",
     "functions":  [
                       {
-                          "name":  "login",
+                          "name":  "activity",
                           "timeout":  15,
                           "runtime":  "Nodejs18.15",
                           "handler":  "index.main"
                       },
                       {
-                          "name":  "getCurrentUser",
+                          "name":  "addComment",
                           "timeout":  15,
                           "runtime":  "Nodejs18.15",
                           "handler":  "index.main"
                       },
                       {
-                          "name":  "updateProfile",
+                          "name":  "blockUser",
                           "timeout":  15,
                           "runtime":  "Nodejs18.15",
                           "handler":  "index.main"
                       },
                       {
-                          "name":  "getUsers",
+                          "name":  "createPost",
                           "timeout":  15,
                           "runtime":  "Nodejs18.15",
                           "handler":  "index.main"
                       },
                       {
-                          "name":  "getUsersV2",
+                          "name":  "createSkill",
                           "timeout":  15,
                           "runtime":  "Nodejs18.15",
                           "handler":  "index.main"
                       },
                       {
-                          "name":  "getUserDetail",
+                          "name":  "deleteComment",
                           "timeout":  15,
                           "runtime":  "Nodejs18.15",
                           "handler":  "index.main"
                       },
                       {
-                          "name":  "getUserPosts",
+                          "name":  "deletePost",
                           "timeout":  15,
                           "runtime":  "Nodejs18.15",
                           "handler":  "index.main"
                       },
                       {
-                          "name":  "getUserSkills",
+                          "name":  "deleteSkill",
                           "timeout":  15,
                           "runtime":  "Nodejs18.15",
                           "handler":  "index.main"
@@ -58,7 +58,25 @@
                           "handler":  "index.main"
                       },
                       {
-                          "name":  "unfollowUser",
+                          "name":  "getActivities",
+                          "timeout":  15,
+                          "runtime":  "Nodejs18.15",
+                          "handler":  "index.main"
+                      },
+                      {
+                          "name":  "getComments",
+                          "timeout":  15,
+                          "runtime":  "Nodejs18.15",
+                          "handler":  "index.main"
+                      },
+                      {
+                          "name":  "getConversations",
+                          "timeout":  15,
+                          "runtime":  "Nodejs18.15",
+                          "handler":  "index.main"
+                      },
+                      {
+                          "name":  "getCurrentUser",
                           "timeout":  15,
                           "runtime":  "Nodejs18.15",
                           "handler":  "index.main"
@@ -82,91 +100,13 @@
                           "handler":  "index.main"
                       },
                       {
-                          "name":  "setSpecialFollow",
-                          "timeout":  15,
-                          "runtime":  "Nodejs18.15",
-                          "handler":  "index.main"
-                      },
-                      {
-                          "name":  "blockUser",
-                          "timeout":  15,
-                          "runtime":  "Nodejs18.15",
-                          "handler":  "index.main"
-                      },
-                      {
-                          "name":  "getPosts",
-                          "timeout":  15,
-                          "runtime":  "Nodejs18.15",
-                          "handler":  "index.main"
-                      },
-                      {
-                          "name":  "getPostDetail",
-                          "timeout":  15,
-                          "runtime":  "Nodejs18.15",
-                          "handler":  "index.main"
-                      },
-                      {
-                          "name":  "createPost",
-                          "timeout":  15,
-                          "runtime":  "Nodejs18.15",
-                          "handler":  "index.main"
-                      },
-                      {
-                          "name":  "updatePost",
-                          "timeout":  15,
-                          "runtime":  "Nodejs18.15",
-                          "handler":  "index.main"
-                      },
-                      {
-                          "name":  "deletePost",
-                          "timeout":  15,
-                          "runtime":  "Nodejs18.15",
-                          "handler":  "index.main"
-                      },
-                      {
-                          "name":  "getMyPosts",
-                          "timeout":  15,
-                          "runtime":  "Nodejs18.15",
-                          "handler":  "index.main"
-                      },
-                      {
-                          "name":  "getComments",
-                          "timeout":  15,
-                          "runtime":  "Nodejs18.15",
-                          "handler":  "index.main"
-                      },
-                      {
-                          "name":  "addComment",
-                          "timeout":  15,
-                          "runtime":  "Nodejs18.15",
-                          "handler":  "index.main"
-                      },
-                      {
-                          "name":  "replyComment",
-                          "timeout":  15,
-                          "runtime":  "Nodejs18.15",
-                          "handler":  "index.main"
-                      },
-                      {
-                          "name":  "deleteComment",
-                          "timeout":  15,
-                          "runtime":  "Nodejs18.15",
-                          "handler":  "index.main"
-                      },
-                      {
-                          "name":  "toggleLike",
-                          "timeout":  15,
-                          "runtime":  "Nodejs18.15",
-                          "handler":  "index.main"
-                      },
-                      {
-                          "name":  "toggleFavorite",
-                          "timeout":  15,
-                          "runtime":  "Nodejs18.15",
-                          "handler":  "index.main"
-                      },
-                      {
                           "name":  "getInteractionStatus",
+                          "timeout":  15,
+                          "runtime":  "Nodejs18.15",
+                          "handler":  "index.main"
+                      },
+                      {
+                          "name":  "getMessages",
                           "timeout":  15,
                           "runtime":  "Nodejs18.15",
                           "handler":  "index.main"
@@ -178,31 +118,7 @@
                           "handler":  "index.main"
                       },
                       {
-                          "name":  "getActivities",
-                          "timeout":  15,
-                          "runtime":  "Nodejs18.15",
-                          "handler":  "index.main"
-                      },
-                      {
-                          "name":  "activity",
-                          "timeout":  15,
-                          "runtime":  "Nodejs18.15",
-                          "handler":  "index.main"
-                      },
-                      {
-                          "name":  "getConversations",
-                          "timeout":  15,
-                          "runtime":  "Nodejs18.15",
-                          "handler":  "index.main"
-                      },
-                      {
-                          "name":  "notification",
-                          "timeout":  15,
-                          "runtime":  "Nodejs18.15",
-                          "handler":  "index.main"
-                      },
-                      {
-                          "name":  "createSkill",
+                          "name":  "getMyPosts",
                           "timeout":  15,
                           "runtime":  "Nodejs18.15",
                           "handler":  "index.main"
@@ -214,25 +130,49 @@
                           "handler":  "index.main"
                       },
                       {
+                          "name":  "getPostDetail",
+                          "timeout":  15,
+                          "runtime":  "Nodejs18.15",
+                          "handler":  "index.main"
+                      },
+                      {
+                          "name":  "getPosts",
+                          "timeout":  15,
+                          "runtime":  "Nodejs18.15",
+                          "handler":  "index.main"
+                      },
+                      {
                           "name":  "getSkillDetail",
                           "timeout":  15,
                           "runtime":  "Nodejs18.15",
                           "handler":  "index.main"
                       },
                       {
-                          "name":  "updateSkill",
+                          "name":  "getUserDetail",
                           "timeout":  15,
                           "runtime":  "Nodejs18.15",
                           "handler":  "index.main"
                       },
                       {
-                          "name":  "deleteSkill",
+                          "name":  "getUserPosts",
                           "timeout":  15,
                           "runtime":  "Nodejs18.15",
                           "handler":  "index.main"
                       },
                       {
-                          "name":  "skillProof",
+                          "name":  "getUsers",
+                          "timeout":  15,
+                          "runtime":  "Nodejs18.15",
+                          "handler":  "index.main"
+                      },
+                      {
+                          "name":  "getUserSkills",
+                          "timeout":  15,
+                          "runtime":  "Nodejs18.15",
+                          "handler":  "index.main"
+                      },
+                      {
+                          "name":  "getUsersV2",
                           "timeout":  15,
                           "runtime":  "Nodejs18.15",
                           "handler":  "index.main"
@@ -244,8 +184,74 @@
                           "handler":  "index.main"
                       },
                       {
+                          "name":  "login",
+                          "timeout":  15,
+                          "runtime":  "Nodejs18.15",
+                          "handler":  "index.main"
+                      },
+                      {
+                          "name":  "notification",
+                          "timeout":  15,
+                          "runtime":  "Nodejs18.15",
+                          "handler":  "index.main"
+                      },
+                      {
+                          "name":  "replyComment",
+                          "timeout":  15,
+                          "runtime":  "Nodejs18.15",
+                          "handler":  "index.main"
+                      },
+                      {
                           "name":  "seed",
                           "timeout":  60,
+                          "runtime":  "Nodejs18.15",
+                          "handler":  "index.main"
+                      },
+                      {
+                          "name":  "setSpecialFollow",
+                          "timeout":  15,
+                          "runtime":  "Nodejs18.15",
+                          "handler":  "index.main"
+                      },
+                      {
+                          "name":  "skillProof",
+                          "timeout":  15,
+                          "runtime":  "Nodejs18.15",
+                          "handler":  "index.main"
+                      },
+                      {
+                          "name":  "toggleFavorite",
+                          "timeout":  15,
+                          "runtime":  "Nodejs18.15",
+                          "handler":  "index.main"
+                      },
+                      {
+                          "name":  "toggleLike",
+                          "timeout":  15,
+                          "runtime":  "Nodejs18.15",
+                          "handler":  "index.main"
+                      },
+                      {
+                          "name":  "unfollowUser",
+                          "timeout":  15,
+                          "runtime":  "Nodejs18.15",
+                          "handler":  "index.main"
+                      },
+                      {
+                          "name":  "updatePost",
+                          "timeout":  15,
+                          "runtime":  "Nodejs18.15",
+                          "handler":  "index.main"
+                      },
+                      {
+                          "name":  "updateProfile",
+                          "timeout":  15,
+                          "runtime":  "Nodejs18.15",
+                          "handler":  "index.main"
+                      },
+                      {
+                          "name":  "updateSkill",
+                          "timeout":  15,
                           "runtime":  "Nodejs18.15",
                           "handler":  "index.main"
                       }
