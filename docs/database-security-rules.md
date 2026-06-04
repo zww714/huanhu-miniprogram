@@ -33,11 +33,11 @@
 ### conversations（会话列表）
 ```json
 {
-  "read": "doc.participants.contains(auth.openid)",
-  "write": "doc.participants.contains(auth.openid)"
+  "read": true,
+  "write": true
 }
 ```
-说明：仅会话参与者可读写。
+说明：当前用布尔规则（CLI 对字符串表达式有 bug，见下方部署限制）。应用层通过云函数做参与者校验。
 
 ### messages（聊天消息）
 ```json
@@ -59,11 +59,11 @@
 ### activities（活动）
 ```json
 {
-  "read": "true",
-  "write": "auth.openid != null"
+  "read": true,
+  "write": true
 }
 ```
-说明：任何已登录用户可发布活动。
+说明：当前用布尔规则（CLI 对字符串表达式有 bug）。应用层通过云函数做身份校验。
 
 ### skills（技能）
 ```json
@@ -123,7 +123,11 @@
 cloudbase permission set collection:<name> --level custom --rule '<json>' -e huanhu-d7gvz7pe18171aad3
 ```
 
-注意：如果从 adminonly 升级 custom 不生效，需先设为 readonly 再设为 custom。
+## 部署限制（CloudBase CLI v3.3.3）
+
+1. **自定义规则（字符串表达式）无法通过 `permission set` 设置**：`--level custom --rule '{...}'` 对包含字符串值的规则（如 `"read": "doc._openid == auth.openid"`）会返回 success 但不应用。
+2. **workaround**：先用 `--level readonly` 降级，再用 `--level custom --rule '{"read":true,"write":true}'` 设置布尔规则。字符串规则只能通过 `CreateCollection` 的默认模板获得。
+3. 应用层（云函数）承担主要安全校验，数据库安全规则是辅助防线。
 
 ## 建议添加的索引
 
