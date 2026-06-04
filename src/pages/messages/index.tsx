@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Image, Text, View } from '@tarojs/components'
-import { CONVERSATIONS, type NotificationType } from '../../utils/mock'
+import { type NotificationType } from '../../utils/mock'
 import { getChatConversations, getNotificationUnreadCounts } from '../../api'
 import { getUnreadCounts as localGetUnreadCounts, markAllNotificationsRead, updateMessageTabUnread } from '../../utils/notifications'
 import ErrorBoundary from '../../components/common/ErrorBoundary'
@@ -44,30 +44,16 @@ function isRenderableImage(src?: string) {
   return !!src && !src.startsWith('linear-gradient') && !src.includes('/assets/avatar.png')
 }
 
-function normalizeBaseConversations() {
-  return CONVERSATIONS
-    .filter((item) => item.name !== '系统通知' && item.category !== '系统通知')
-    .map((item) => ({
-      ...item,
-      id: String(item.id),
-      unread: Number(item.unread || 0),
-      unreadCount: Number(item.unreadCount ?? item.unread ?? 0),
-    }))
-}
-
 function formatBadge(count: number) {
   if (count <= 0) return ''
   return count > 99 ? '99+' : String(count)
 }
 
 export default function Messages() {
-  const [conversations, setConversations] = useState<Conversation[]>(normalizeBaseConversations())
+  const [conversations, setConversations] = useState<Conversation[]>([])
   const [unreadCounts, setUnreadCounts] = useState(localGetUnreadCounts())
 
   useDidShow(() => {
-    const baseConversations = normalizeBaseConversations()
-    setConversations(baseConversations)
-
     getNotificationUnreadCounts().then((cloudCounts) => {
       setUnreadCounts(cloudCounts)
       updateMessageTabUnread()
@@ -79,21 +65,16 @@ export default function Messages() {
       try {
         const cloudConversations = await getChatConversations()
         if (!Array.isArray(cloudConversations) || cloudConversations.length === 0) {
-          const chatUnread = baseConversations.reduce((sum, item) => sum + getConversationUnread(item), 0)
-          updateMessageTabUnread(chatUnread)
+          setConversations([])
+          updateMessageTabUnread(0)
           return
         }
-        const cloudIds = new Set(cloudConversations.map((item: Conversation) => item.id))
-        const nextConversations = [
-          ...cloudConversations,
-          ...baseConversations.filter((item) => !cloudIds.has(item.id)),
-        ]
-        setConversations(nextConversations)
-        const chatUnread = nextConversations.reduce((sum, item) => sum + getConversationUnread(item), 0)
+        setConversations(cloudConversations)
+        const chatUnread = cloudConversations.reduce((sum: number, item: Conversation) => sum + getConversationUnread(item), 0)
         updateMessageTabUnread(chatUnread)
       } catch (e) {
-        const chatUnread = baseConversations.reduce((sum, item) => sum + getConversationUnread(item), 0)
-        updateMessageTabUnread(chatUnread)
+        setConversations([])
+        updateMessageTabUnread(0)
       }
     }
 
