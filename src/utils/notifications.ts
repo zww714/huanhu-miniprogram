@@ -1,7 +1,6 @@
 import Taro from '@tarojs/taro'
 import {
   BLOCKED_NOTIFICATION_TYPES_KEY,
-  NOTIFICATIONS,
   NOTIFICATIONS_STORAGE_KEY,
   type AppNotification,
   type NotificationType,
@@ -34,8 +33,7 @@ export function getNotifications(): AppNotification[] {
     const hasLegacyCommentTarget = saved.some((item) => item.type === 'comments' && item.targetType !== 'post')
     if (!hasLegacyCommentTarget) return saved
   }
-  Taro.setStorageSync(NOTIFICATIONS_STORAGE_KEY, NOTIFICATIONS)
-  return NOTIFICATIONS
+  return []
 }
 
 export function saveNotifications(notifications: AppNotification[]) {
