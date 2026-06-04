@@ -17,7 +17,7 @@
 ### posts（帖子）
 ```json
 {
-  "read": "true",
+  "read": true,
   "write": "doc._openid == auth.openid"
 }
 ```
@@ -25,7 +25,7 @@
 ### comments（评论）
 ```json
 {
-  "read": "true",
+  "read": true,
   "write": "doc._openid == auth.openid"
 }
 ```
@@ -42,7 +42,7 @@
 ### messages（聊天消息）
 ```json
 {
-  "read": "true",
+  "read": true,
   "write": "doc._openid == auth.openid"
 }
 ```
@@ -68,7 +68,7 @@
 ### skills（技能）
 ```json
 {
-  "read": "true",
+  "read": true,
   "write": "doc._openid == auth.openid"
 }
 ```
@@ -76,7 +76,7 @@
 ### skillProofs（技能证明材料）
 ```json
 {
-  "read": "true",
+  "read": true,
   "write": "doc._openid == auth.openid"
 }
 ```
@@ -84,7 +84,7 @@
 ### likes（点赞）
 ```json
 {
-  "read": "true",
+  "read": true,
   "write": "doc._openid == auth.openid"
 }
 ```
@@ -100,7 +100,7 @@
 ### follows（关注关系）
 ```json
 {
-  "read": "true",
+  "read": true,
   "write": "doc._openid == auth.openid"
 }
 ```
@@ -108,7 +108,7 @@
 ### registrations（活动报名）
 ```json
 {
-  "read": "true",
+  "read": true,
   "write": "doc._openid == auth.openid"
 }
 ```
@@ -117,17 +117,28 @@
 
 ## 部署方式
 
-使用 CloudBase CLI：
+```bash
+npx tcb permission set collection:<name> --level custom --rule '<json>' -e huanhu-d7gvz7pe18171aad3
+```
+
+## 命令参考
 
 ```bash
-cloudbase permission set collection:<name> --level custom --rule '<json>' -e huanhu-d7gvz7pe18171aad3
+# 查看当前规则
+npx tcb permission get collection:<name> -e <envId> --json
+
+# 设置自定义规则（在 cmd.exe 中使用 "" 转义）
+echo Y | npx tcb permission set collection:<name> --level custom --rule "{""read"":true,""write"":""doc._openid == auth.openid""}" --json
+
+# 创建索引（通过 nosql execute）
+npx tcb db nosql execute --command '[{"CommandType":"COMMAND","TableName":"messages","Command":"{\"createIndexes\":\"messages\",\"indexes\":[{\"key\":{\"conversationId\":1,\"createdAtMs\":1},\"name\":\"conversationId_1_createdAtMs_1\"}]}"}]'
 ```
 
 ## 部署限制（CloudBase CLI v3.3.3）
 
-1. **自定义规则（字符串表达式）无法通过 `permission set` 设置**：`--level custom --rule '{...}'` 对包含字符串值的规则（如 `"read": "doc._openid == auth.openid"`）会返回 success 但不应用。
-2. **workaround**：先用 `--level readonly` 降级，再用 `--level custom --rule '{"read":true,"write":true}'` 设置布尔规则。字符串规则只能通过 `CreateCollection` 的默认模板获得。
-3. 应用层（云函数）承担主要安全校验，数据库安全规则是辅助防线。
+1. **自定义规则（字符串表达式）无法通过 `permission set` 设置**：`--level custom --rule '{...}'` 对包含字符串值的规则会返回 success 但不实际应用。
+2. **Workaround**：先用 `--level readonly` 降级，再用 `--level custom --rule '{"read":true,"write":true}'` 设置布尔规则。字符串规则目前只能通过 `CreateCollection` 的默认模板获得。
+3. **安全策略**：云函数承担主要权限校验，数据库安全规则是辅助防线。
 
 ## 建议添加的索引
 
