@@ -169,7 +169,7 @@ export default function Messages() {
           <View className='message-empty'>
             <Text className='message-empty-icon'>💬</Text>
             <Text className='message-empty-title'>暂无消息</Text>
-            <Text className='message-empty-desc'>去发现页找人聊聊吧</Text>
+            <Text className='message-empty-desc'>和好友聊天后，消息会在这里显示</Text>
           </View>
         ) : null}
         {conversations.map((conv) => {
