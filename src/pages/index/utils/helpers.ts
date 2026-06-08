@@ -35,7 +35,7 @@ export function normalizeSkill(item: string | SkillItem): SkillItem {
 }
 
 export function userSkills(user: SkillUser) {
-  const raw = user.canTeach?.length ? user.canTeach : user.can?.length ? user.can : user.skills || []
+  const raw = user?.canTeach?.length ? user.canTeach : user?.can?.length ? user.can : user?.skills || []
   return raw
     .map(normalizeSkill)
     .filter((skill) => !!skill?.name)
@@ -46,38 +46,38 @@ export function userSkills(user: SkillUser) {
 }
 
 export function userWants(user: SkillUser) {
-  return (user.wantToLearn?.length ? user.wantToLearn : user.want?.length ? user.want : user.learnWants || [])
+  return (user?.wantToLearn?.length ? user.wantToLearn : user?.want?.length ? user.want : user?.learnWants || [])
     .filter(Boolean)
     .map(String)
 }
 
 export function userInterestLabels(user: SkillUser) {
-  return Array.from(new Set([...(user.interests || []), ...(user.tags || [])].filter(Boolean).map(String)))
+  return Array.from(new Set([...(user?.interests || []), ...(user?.tags || [])].filter(Boolean).map(String)))
 }
 
 export function getUserName(user: SkillUser) {
-  return user.name || '同学'
+  return user?.name || '同学'
 }
 
 export function getUserCampus(user: SkillUser, index = 0) {
-  return user.campus || ['紫金港校区', '玉泉校区', '西溪校区', '华家池校区', '之江校区'][index % 5]
+  return user?.campus || ['紫金港校区', '玉泉校区', '西溪校区', '华家池校区', '之江校区'][index % 5]
 }
 
 export function getUserCollege(user: SkillUser) {
-  if (user.college && user.college !== '浙江大学') return user.college
-  if (lower(user.major).includes('计算机')) return '计算机科学与技术学院'
-  if (lower(user.major).includes('外语') || lower(user.major).includes('英语')) return '外国语学院'
-  if (lower(user.major).includes('材料')) return '材料学院'
-  if (lower(user.major).includes('电')) return '电气工程学院'
-  return user.college || '计算机科学与技术学院'
+  if (user?.college && user.college !== '浙江大学') return user.college
+  if (lower(user?.major).includes('计算机')) return '计算机科学与技术学院'
+  if (lower(user?.major).includes('外语') || lower(user?.major).includes('英语')) return '外国语学院'
+  if (lower(user?.major).includes('材料')) return '材料学院'
+  if (lower(user?.major).includes('电')) return '电气工程学院'
+  return user?.college || '计算机科学与技术学院'
 }
 
 export function getUserIntro(user: SkillUser) {
-  return user.intro || user.bio || user.lookingFor || '喜欢拆解技术，擅长用清晰步骤解决问题。'
+  return user?.intro || user?.bio || user?.lookingFor || '喜欢拆解技术，擅长用清晰步骤解决问题。'
 }
 
 export function getMatchRate(user: SkillUser, index = 0) {
-  return Number(user.matchRate || user.match || 0)
+  return Number(user?.matchRate || user?.match || 0)
 }
 
 export function getCompletedCount(user: SkillUser, index = 0) {

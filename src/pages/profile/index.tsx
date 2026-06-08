@@ -3,7 +3,8 @@ import Taro, { useDidShow } from '@tarojs/taro'
 import { useState } from 'react'
 import ErrorBoundary from '../../components/common/ErrorBoundary'
 import './index.scss'
-import { getUserStats, updateProfile } from '../../api'
+import { updateProfile } from '../../api'
+import { getUserStats } from '../../api/stats'
 import { getGenderSymbol, getGenderTone } from '../../utils/gender'
 
 import {

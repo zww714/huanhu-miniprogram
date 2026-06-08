@@ -4,10 +4,10 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   followUser as apiFollowUser,
   getFollowStatus,
-  getUserStats,
   getUserDetail,
   unfollowUser as apiUnfollowUser,
 } from '../../../api'
+import { getUserStats } from '../../../api/stats'
 import { CURRENT_USER } from '../../../utils/mock'
 import {
   getPublicPosts,

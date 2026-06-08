@@ -5,12 +5,11 @@ import ErrorBoundary from '../../components/common/ErrorBoundary'
 import FloatingPostButton from '../../components/common/FloatingPostButton'
 import SearchBar from '../../components/common/SearchBar'
 import {
-  getActivities,
-  getActivityStats,
   getPosts,
-  getPostStats,
   toggleFavorite as apiToggleFavorite,
 } from '../../api'
+import { getActivities } from '../../api/activity'
+import { getActivityStats, getPostStats } from '../../api/stats'
 import { type Activity } from '../../utils/mock'
 import { openUnifiedUserProfile } from '../../utils/publicProfiles'
 import { getGenderSymbol, getGenderTone } from '../../utils/gender'

@@ -5,7 +5,8 @@ import {
   CURRENT_USER,
   type Comment,
 } from '../../../utils/mock'
-import { addComment, deleteComment as apiDeleteComment, deletePost, getComments, getPostDetail, getPosts, replyComment, updatePost, toggleLike, toggleFavorite, getInteractionStatus, getPostStats } from '../../../api'
+import { addComment, deleteComment as apiDeleteComment, deletePost, getComments, getPostDetail, getPosts, replyComment, updatePost, toggleLike, toggleFavorite, getInteractionStatus } from '../../../api'
+import { getPostStats } from '../../../api/stats'
 import { openUnifiedUserProfile } from '../../../utils/publicProfiles'
 import { recordBrowse } from '../../../utils/history'
 import { getGenderSymbol, getGenderTone } from '../../../utils/gender'
