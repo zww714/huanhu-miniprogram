@@ -12,10 +12,10 @@ import {
 import './index.scss'
 
 const FALLBACK_POSTS = [
-  { id: 'autumn', title: '浙大之秋：银杏大道的光影', summary: '午后的阳光洒在银杏叶上，整条路都变成了金色。随手一拍就是壁纸...', tags: ['摄影', '校园风景'], likeCount: 156, commentCount: 32, viewCount: '1.2k', createdAt: '2天前', cover: '秋' },
-  { id: 'camera', title: '我的富士XT30使用体验', summary: '轻便复古的机身，胶片模拟直出真的很有味道。分享几个我常用的设置...', tags: ['摄影', '器材分享'], likeCount: 101, commentCount: 28, viewCount: '892', createdAt: '5天前', cover: '相' },
-  { id: 'design-note', title: '产品设计流程笔记分享', summary: '从用户调研到原型草图，再到打磨细节，记录一次完整的产品设计过程。', tags: ['产品设计', '方法分享'], likeCount: 203, commentCount: 41, viewCount: '1.5k', createdAt: '1周前', cover: '设' },
-  { id: 'campus-life', title: '校园生活碎片', summary: '图书馆自习、社团活动、和朋友的晚饭时光。平凡日子里的小确幸。', tags: ['校园生活', '日常记录'], likeCount: 88, commentCount: 19, viewCount: '765', createdAt: '2周前', cover: '校' },
+  { id: 'autumn', title: '浙大之秋：银杏大道的光影', summary: '午后的阳光洒在银杏叶上，整条路都变成了金色。随手一拍就是壁纸...', tags: ['摄影', '校园风景'], likeCount: 0, commentCount: 0, viewCount: '0', createdAt: '2天前', cover: '秋' },
+  { id: 'camera', title: '我的富士XT30使用体验', summary: '轻便复古的机身，胶片模拟直出真的很有味道。分享几个我常用的设置...', tags: ['摄影', '器材分享'], likeCount: 0, commentCount: 0, viewCount: '0', createdAt: '5天前', cover: '相' },
+  { id: 'design-note', title: '产品设计流程笔记分享', summary: '从用户调研到原型草图，再到打磨细节，记录一次完整的产品设计过程。', tags: ['产品设计', '方法分享'], likeCount: 0, commentCount: 0, viewCount: '0', createdAt: '1周前', cover: '设' },
+  { id: 'campus-life', title: '校园生活碎片', summary: '图书馆自习、社团活动、和朋友的晚饭时光。平凡日子里的小确幸。', tags: ['校园生活', '日常记录'], likeCount: 0, commentCount: 0, viewCount: '0', createdAt: '2周前', cover: '校' },
 ]
 
 function normalizePost(post: any, index: number, userId: string, userName: string): PublicPost & { viewCount?: string; cover?: string } {
@@ -48,7 +48,7 @@ export default function UserPosts() {
   const user = useMemo(() => getPublicUser(userId), [userId])
   const posts = useMemo(() => {
     const source = remotePosts.length ? remotePosts : getPublicPosts(user.id)
-    return (source.length ? source : FALLBACK_POSTS).map((post, index) => normalizePost(post, index, user.id, user.name))
+    return source.map((post, index) => normalizePost(post, index, user.id, user.name))
   }, [remotePosts, user])
 
   useEffect(() => {
@@ -102,7 +102,7 @@ export default function UserPosts() {
               </View>
               <View className='post-divider' />
               <View className='post-meta'>
-                <Text>◎ {(post as any).viewCount || '1.2k'}</Text>
+                <Text>◎ {(post as any).viewCount || '0'}</Text>
                 <Text>☰ {post.commentCount}</Text>
                 <Text>♡ {post.likeCount}</Text>
                 <Text>{post.createdAt}</Text>

@@ -188,8 +188,8 @@ export default function ProfileView() {
   const posts = remotePosts.length ? remotePosts : getPublicPosts(user.id)
   const postPreview = posts[0]
   const metaLine = [user.school, user.college, user.grade, user.campus].filter(Boolean).join(' · ')
-  const ratingFallback = Number(remoteUser?.rating ?? 4.8)
-  const ratingSummary = getRatingSummary(user.id, (Number.isFinite(ratingFallback) ? ratingFallback : 4.8) + ratingVersion * 0)
+  const ratingFallback = Number(remoteUser?.rating ?? 0)
+  const ratingSummary = getRatingSummary(user.id, (Number.isFinite(ratingFallback) ? ratingFallback : 0) + ratingVersion * 0)
   const myRating = getMyRatingForUser(user.id)
   const rating = ratingSummary.average.toFixed(1)
 

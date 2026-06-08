@@ -137,7 +137,7 @@ export async function followUser(params: { targetUserId: string }) {
     try {
       const res = await callCloudFunction('followUser', params)
       return res.data || { isFollowing: true, isMutual: false }
-    } catch (e) { apiWarn('[API] followUser cloud failed', e) }
+    } catch (e) { apiWarn('[API] followUser cloud failed', e); throw e }
   }
   const current = getRelationForUser(params.targetUserId)
   const isMutual = !!current.isFollower
@@ -150,7 +150,7 @@ export async function unfollowUser(params: { targetUserId: string }) {
     try {
       const res = await callCloudFunction('unfollowUser', params)
       return res.data || { isFollowing: false, isMutual: false }
-    } catch (e) { apiWarn('[API] unfollowUser cloud failed', e) }
+    } catch (e) { apiWarn('[API] unfollowUser cloud failed', e); throw e }
   }
   upsertRelation(params.targetUserId, { isFollowing: false, isMutual: false, isSpecial: false })
   return { isFollowing: false, isMutual: false }
@@ -161,7 +161,7 @@ export async function getFollowStatus(params: { targetUserId: string }) {
     try {
       const res = await callCloudFunction('getFollowStatus', params)
       return res.data
-    } catch (e) { apiWarn('[API] getFollowStatus cloud failed', e) }
+    } catch (e) { apiWarn('[API] getFollowStatus cloud failed', e); throw e }
   }
   return getRelationForUser(params.targetUserId)
 }
@@ -191,7 +191,7 @@ export async function setSpecialFollow(params: { targetUserId: string; isSpecial
     try {
       const res = await callCloudFunction('setSpecialFollow', params)
       return res.data || { isSpecial: params.isSpecial }
-    } catch (e) { apiWarn('[API] setSpecialFollow cloud failed', e) }
+    } catch (e) { apiWarn('[API] setSpecialFollow cloud failed', e); throw e }
   }
   upsertRelation(params.targetUserId, { isSpecial: params.isSpecial, isFollowing: true })
   return { isSpecial: params.isSpecial }
@@ -202,7 +202,7 @@ export async function blockUser(params: { targetUserId: string; isBlocked?: bool
     try {
       const res = await callCloudFunction('blockUser', params)
       return res.data || { isBlocked: true, isFollowing: false }
-    } catch (e) { apiWarn('[API] blockUser cloud failed', e) }
+    } catch (e) { apiWarn('[API] blockUser cloud failed', e); throw e }
   }
   upsertRelation(params.targetUserId, { isBlocked: true, isFollowing: false, isMutual: false, isSpecial: false })
   return { isBlocked: true, isFollowing: false }

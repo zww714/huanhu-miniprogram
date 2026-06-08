@@ -83,7 +83,7 @@ export const ACTIVITIES: Activity[] = [
   {
     id: 'a1', title: '周末相约紫金港 · 校园摄影采风',
     time: '5月10日 14:00', location: '紫金港校区 月牙楼',
-    campus: '紫金港', participants: 12, participantCount: 12, maxParticipants: 30, tags: ['摄影', '户外'], category: '兴趣',
+    campus: '紫金港', participants: 0, participantCount: 0, maxParticipants: 30, tags: ['摄影', '户外'], category: '兴趣',
     description: '面向摄影新手和爱好者的校园采风活动，可以一起交流构图、调色和器材。',
     cover: 'linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%)',
     organizer: '摄影协会', status: '报名中',
@@ -91,7 +91,7 @@ export const ACTIVITIES: Activity[] = [
   {
     id: 'a2', title: 'AI工具分享会 · 用AI提升科研效率',
     time: '5月12日 19:00', location: '紫金港校区 北教',
-    campus: '紫金港', participants: 28, participantCount: 28, maxParticipants: 50, tags: ['AI', '科研'], category: '技能交换',
+    campus: '紫金港', participants: 0, participantCount: 0, maxParticipants: 50, tags: ['AI', '科研'], category: '技能交换',
     description: '分享文献整理、Prompt 模板、代码辅助和论文写作中的 AI 工具使用方法。',
     cover: 'linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%)',
     organizer: 'AI研习社', status: '报名中',
@@ -99,7 +99,7 @@ export const ACTIVITIES: Activity[] = [
   {
     id: 'a3', title: '周末志愿行 · 社区服务公益活动',
     time: '5月14日 08:30', location: '西湖区 翠苑社区',
-    campus: '西溪', participants: 9, participantCount: 9, maxParticipants: 20, tags: ['志愿', '公益'], category: '志愿',
+    campus: '西溪', participants: 0, participantCount: 0, maxParticipants: 20, tags: ['志愿', '公益'], category: '志愿',
     description: '社区公益服务活动，适合想参与志愿服务、认识同学的同学报名。',
     cover: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
     organizer: '青年志愿者协会', status: '报名中',
@@ -107,7 +107,7 @@ export const ACTIVITIES: Activity[] = [
   {
     id: 'a4', title: '求职分享 · 大厂面试经验交流',
     time: '5月15日 18:30', location: '玉泉校区 曹光彪楼',
-    campus: '玉泉', participants: 45, participantCount: 45, maxParticipants: 80, tags: ['求职', '面试'], category: '其他',
+    campus: '玉泉', participants: 0, participantCount: 0, maxParticipants: 80, tags: ['求职', '面试'], category: '其他',
     description: '邀请有实习和秋招经验的同学分享简历准备、项目复盘和面试节奏。',
     cover: 'linear-gradient(135deg, #F59E0B 0%, #EF4444 100%)',
     organizer: '职业发展中心', status: '报名中',
@@ -115,7 +115,7 @@ export const ACTIVITIES: Activity[] = [
   {
     id: 'a5', title: '英语角 · 跨文化交流下午茶',
     time: '5月17日 15:00', location: '紫金港校区 咖啡吧',
-    campus: '紫金港', participants: 18, participantCount: 18, maxParticipants: 25, tags: ['英语', '交流'], category: '兴趣',
+    campus: '紫金港', participants: 0, participantCount: 0, maxParticipants: 25, tags: ['英语', '交流'], category: '兴趣',
     description: '轻松英语交流局，适合练口语、认识国际同学和准备留学申请的同学。',
     cover: 'linear-gradient(135deg, #EC4899 0%, #F472B6 100%)',
     organizer: '英语协会', status: '报名中',
@@ -123,7 +123,7 @@ export const ACTIVITIES: Activity[] = [
   {
     id: 'a6', title: 'Python技能交换 · 从入门到项目实战',
     time: '5月20日 14:00', location: '紫金港校区 机房',
-    campus: '紫金港', participants: 15, participantCount: 15, maxParticipants: 30, tags: ['编程', 'Python'], category: '技能交换',
+    campus: '紫金港', participants: 0, participantCount: 0, maxParticipants: 30, tags: ['编程', 'Python'], category: '技能交换',
     description: '从脚本、数据处理到简单 Web 项目，适合想快速建立 Python 实战感的同学。',
     cover: 'linear-gradient(135deg, #2563EB 0%, #06B6D4 100%)',
     organizer: '计算机学院学生会', status: '报名中',
@@ -187,7 +187,7 @@ export const SKILL_USERS: SkillUser[] = [
   {
     id: 1, name: '陈同学', avatar: '', gender: 'male',
     college: '物理学院', major: '物理学', grade: '博士在读', campus: '紫金港', type: '博士生',
-    verified: true, match: 92, matchRate: 92,
+    verified: true, match: 0, matchRate: 0,
     bio: '擅长用AI和编程工具帮助同学快速上手科研与项目实践。',
     can: [{ name: 'AI工具', level: 5 }, { name: 'Python', level: 4 }, { name: '数据分析', level: 3 }, { name: '论文写作', level: 3 }],
     canTeach: [{ name: 'AI工具', level: 5 }, { name: 'Python', level: 4 }, { name: '数据分析', level: 3 }, { name: '论文写作', level: 3 }],
@@ -196,7 +196,7 @@ export const SKILL_USERS: SkillUser[] = [
   {
     id: 2, name: '小熊软糖', avatar: '', gender: 'female',
     college: '计算机学院', major: '计算机科学', grade: '研一', campus: '玉泉', type: '研究生',
-    verified: true, match: 89, matchRate: 89,
+    verified: true, match: 0, matchRate: 0,
     bio: '擅长英语学习方法与翻译技巧，帮助提升语言应用能力。',
     can: [{ name: '英语', level: 5 }, { name: '写作', level: 4 }, { name: '翻译', level: 3 }],
     canTeach: [{ name: '英语', level: 5 }, { name: '写作', level: 4 }, { name: '翻译', level: 3 }],
@@ -205,7 +205,7 @@ export const SKILL_USERS: SkillUser[] = [
   {
     id: 3, name: '橘子汽水', avatar: '', gender: 'female',
     college: '电气学院', major: '电气工程', grade: '大三', campus: '紫金港', type: '本科生',
-    verified: true, match: 87, matchRate: 87,
+    verified: true, match: 0, matchRate: 0,
     bio: '擅长嵌入式开发与硬件调试，喜欢动手解决实际问题。',
     can: [{ name: 'MATLAB', level: 5 }, { name: 'AI工具', level: 3 }, { name: '嵌入式开发', level: 2 }],
     canTeach: [{ name: 'MATLAB', level: 5 }, { name: 'AI工具', level: 3 }, { name: '嵌入式开发', level: 2 }],
@@ -232,7 +232,7 @@ export const MOCK_POSTS: Post[] = [
     tags: ['Python', '数据分析'],
     authorId: '10086', userId: '10086',
     author: { id: '10086', userId: '10086', name: '张三', avatar: '', college: '计算机学院', grade: '研一' },
-    likes: 128, comments: 32, likeCount: 128, commentCount: 32, collectCount: 18, viewCount: 386, createdAt: '2026-05-10T10:00:00+08:00', visibility: 'public',
+    likes: 0, comments: 0, likeCount: 0, commentCount: 0, collectCount: 0, viewCount: 0, createdAt: '2026-05-10T10:00:00+08:00', visibility: 'public',
   },
   {
     id: '2', title: '浙大的春天太美了，求摄影搭子',
@@ -241,7 +241,7 @@ export const MOCK_POSTS: Post[] = [
     tags: ['摄影', '兴趣搭子'],
     authorId: 'u_photo', userId: 'u_photo',
     author: { id: 'u_photo', userId: 'u_photo', name: '光影捕手', college: '艺术学院', grade: '大二' },
-    likes: 256, comments: 45, likeCount: 256, commentCount: 45, collectCount: 36, viewCount: 820, createdAt: '2026-05-09T14:20:00+08:00', visibility: 'public',
+    likes: 0, comments: 0, likeCount: 0, commentCount: 0, collectCount: 0, viewCount: 0, createdAt: '2026-05-09T14:20:00+08:00', visibility: 'public',
   },
   {
     id: '3', title: '考研数学复习经验分享',
@@ -250,7 +250,7 @@ export const MOCK_POSTS: Post[] = [
     tags: ['考研', '数学'],
     authorId: 'u_math', userId: 'u_math',
     author: { id: 'u_math', userId: 'u_math', name: '上岸锦鲤', college: '数学学院', grade: '研一' },
-    likes: 512, comments: 89, likeCount: 512, commentCount: 89, collectCount: 74, viewCount: 1280, createdAt: '2026-05-08T09:30:00+08:00', visibility: 'public',
+    likes: 0, comments: 0, likeCount: 0, commentCount: 0, collectCount: 0, viewCount: 0, createdAt: '2026-05-08T09:30:00+08:00', visibility: 'public',
   },
   {
     id: '4', title: 'AI 工具如何辅助论文写作流程',
@@ -260,7 +260,7 @@ export const MOCK_POSTS: Post[] = [
     tags: ['AI', '论文写作'],
     authorId: '10086', userId: '10086',
     author: { id: '10086', userId: '10086', name: '张三', avatar: '', college: '计算机学院', grade: '研一' },
-    likes: 67, comments: 23, likeCount: 67, commentCount: 23, collectCount: 11, viewCount: 214, createdAt: '2026-05-05T20:10:00+08:00', visibility: 'public',
+    likes: 0, comments: 0, likeCount: 0, commentCount: 0, collectCount: 0, viewCount: 0, createdAt: '2026-05-05T20:10:00+08:00', visibility: 'public',
   },
   {
     id: '5',
@@ -274,12 +274,12 @@ export const MOCK_POSTS: Post[] = [
     authorId: 'u_career',
     userId: 'u_career',
     author: { id: 'u_career', userId: 'u_career', name: '实习记录员', avatar: '', college: '软件学院', grade: '大三' },
-    likes: 142,
-    comments: 28,
-    likeCount: 142,
-    commentCount: 28,
-    collectCount: 46,
-    viewCount: 540,
+    likes: 0,
+    comments: 0,
+    likeCount: 0,
+    commentCount: 0,
+    collectCount: 0,
+    viewCount: 0,
     createdAt: '2026-05-12T16:30:00+08:00',
     visibility: 'public',
   },
@@ -295,12 +295,12 @@ export const MOCK_POSTS: Post[] = [
     authorId: 'u_offer',
     userId: 'u_offer',
     author: { id: 'u_offer', userId: 'u_offer', name: '上岸笔记', avatar: '', college: '竺可桢学院', grade: '大四' },
-    likes: 231,
-    comments: 41,
-    likeCount: 231,
-    commentCount: 41,
-    collectCount: 88,
-    viewCount: 930,
+    likes: 0,
+    comments: 0,
+    likeCount: 0,
+    commentCount: 0,
+    collectCount: 0,
+    viewCount: 0,
     createdAt: '2026-05-11T09:20:00+08:00',
     visibility: 'public',
   },
@@ -316,12 +316,12 @@ export const MOCK_POSTS: Post[] = [
     authorId: 'u_boardgame',
     userId: 'u_boardgame',
     author: { id: 'u_boardgame', userId: 'u_boardgame', name: '桌游召集人', avatar: '', college: '管理学院', grade: '研二' },
-    likes: 76,
-    comments: 19,
-    likeCount: 76,
-    commentCount: 19,
-    collectCount: 13,
-    viewCount: 210,
+    likes: 0,
+    comments: 0,
+    likeCount: 0,
+    commentCount: 0,
+    collectCount: 0,
+    viewCount: 0,
     createdAt: '2026-05-12T20:00:00+08:00',
     visibility: 'public',
   },
@@ -337,12 +337,12 @@ export const MOCK_POSTS: Post[] = [
     authorId: 'u_frontend',
     userId: 'u_frontend',
     author: { id: 'u_frontend', userId: 'u_frontend', name: '前端小结', avatar: '', college: '计算机学院', grade: '大三' },
-    likes: 184,
-    comments: 35,
-    likeCount: 184,
-    commentCount: 35,
-    collectCount: 57,
-    viewCount: 680,
+    likes: 0,
+    comments: 0,
+    likeCount: 0,
+    commentCount: 0,
+    collectCount: 0,
+    viewCount: 0,
     createdAt: '2026-05-10T18:45:00+08:00',
     visibility: 'public',
   },
@@ -355,11 +355,11 @@ export const USER_DETAILS: Record<string, any> = {
     college: '计算机学院', grade: '研一', verified: true,
     bio: '热爱编程和数据分析，擅长Python和机器学习。正在做NLP相关课题，欢迎交流！',
     tags: ['💎 编程', '📊 数据分析', '🐍 Python'],
-    stats: { posts: 14, likes: 238, following: 30, followers: 89 },
+    stats: { posts: 0, likes: 0, following: 0, followers: 0 },
     recentPosts: [
-      { id: 'u1p1', title: 'NLP课程笔记：Transformer原理详解', cover: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', likes: 34, comments: 8, time: '3天前' },
-      { id: 'u1p2', title: '推荐几个好用的科研效率工具', cover: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', likes: 56, comments: 12, time: '1周前' },
-      { id: 'u1p3', title: '校园数据竞赛经验分享', cover: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', likes: 28, comments: 5, time: '2周前' },
+      { id: 'u1p1', title: 'NLP课程笔记：Transformer原理详解', cover: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', likes: 0, comments: 0, time: '3天前' },
+      { id: 'u1p2', title: '推荐几个好用的科研效率工具', cover: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', likes: 0, comments: 0, time: '1周前' },
+      { id: 'u1p3', title: '校园数据竞赛经验分享', cover: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', likes: 0, comments: 0, time: '2周前' },
     ]
   },
   '光影捕手': {
@@ -367,10 +367,10 @@ export const USER_DETAILS: Record<string, any> = {
     college: '艺术学院', grade: '大二', verified: false,
     bio: '摄影爱好者，周末喜欢扫街。相机永远随身带，记录校园的每一刻美好瞬间。',
     tags: ['📷 摄影', '🎨 设计', '🎬 后期'],
-    stats: { posts: 32, likes: 567, following: 45, followers: 120 },
+    stats: { posts: 0, likes: 0, following: 0, followers: 0 },
     recentPosts: [
-      { id: 'u2p1', title: '浙大樱花季摄影攻略', cover: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)', likes: 128, comments: 32, time: '5天前' },
-      { id: 'u2p2', title: '手机摄影调色教程', cover: 'linear-gradient(135deg, #fccb90 0%, #d57eeb 100%)', likes: 89, comments: 18, time: '2周前' },
+      { id: 'u2p1', title: '浙大樱花季摄影攻略', cover: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)', likes: 0, comments: 0, time: '5天前' },
+      { id: 'u2p2', title: '手机摄影调色教程', cover: 'linear-gradient(135deg, #fccb90 0%, #d57eeb 100%)', likes: 0, comments: 0, time: '2周前' },
     ]
   },
   '上岸锦鲤': {
@@ -378,10 +378,10 @@ export const USER_DETAILS: Record<string, any> = {
     college: '数学学院', grade: '研一', verified: true,
     bio: '考研数学140+，擅长高等数学和线性代数。乐于分享备考经验，帮助学弟学妹上岸！',
     tags: ['📚 考研', '🧮 数学', '🎯 辅导'],
-    stats: { posts: 8, likes: 612, following: 20, followers: 200 },
+    stats: { posts: 0, likes: 0, following: 0, followers: 0 },
     recentPosts: [
-      { id: 'u3p1', title: '考研数学一140分复习规划', cover: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', likes: 256, comments: 67, time: '3天前' },
-      { id: 'u3p2', title: '高数易错题合集（上）', cover: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)', likes: 189, comments: 45, time: '1周前' },
+      { id: 'u3p1', title: '考研数学一140分复习规划', cover: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', likes: 0, comments: 0, time: '3天前' },
+      { id: 'u3p2', title: '高数易错题合集（上）', cover: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)', likes: 0, comments: 0, time: '1周前' },
     ]
   },
   '论文苦手': {
@@ -389,9 +389,9 @@ export const USER_DETAILS: Record<string, any> = {
     college: '人文学院', grade: '大三', verified: false,
     bio: '正在为毕业论文发愁中…研究明清文学方向。喜欢阅读和写作，偶尔写写随笔。',
     tags: ['📝 文学', '✍️ 写作', '📄 论文'],
-    stats: { posts: 6, likes: 67, following: 35, followers: 23 },
+    stats: { posts: 0, likes: 0, following: 0, followers: 0 },
     recentPosts: [
-      { id: 'u4p1', title: '论文写作避坑指南', cover: 'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)', likes: 23, comments: 7, time: '4天前' },
+      { id: 'u4p1', title: '论文写作避坑指南', cover: 'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)', likes: 0, comments: 0, time: '4天前' },
     ]
   },
   '研机达人': {
@@ -399,7 +399,7 @@ export const USER_DETAILS: Record<string, any> = {
     college: '计算机学院', grade: '研一', verified: true,
     bio: '关注 AI 工作流、科研效率和数据分析，喜欢把复杂流程整理成可复用模板。',
     tags: ['AI工具', '科研效率', '数据分析'],
-    stats: { posts: 9, likes: 186, following: 28, followers: 74 },
+    stats: { posts: 0, likes: 0, following: 0, followers: 0 },
     recentPosts: [],
   },
   '代码小白': {
@@ -407,7 +407,7 @@ export const USER_DETAILS: Record<string, any> = {
     college: '软件学院', grade: '大二', verified: false,
     bio: '正在系统学习前端和 Python，希望找到一起刷项目的同学。',
     tags: ['编程入门', 'Python', '前端'],
-    stats: { posts: 5, likes: 48, following: 18, followers: 16 },
+    stats: { posts: 0, likes: 0, following: 0, followers: 0 },
     recentPosts: [],
   },
   '材料人': {
@@ -415,7 +415,7 @@ export const USER_DETAILS: Record<string, any> = {
     college: '材料学院', grade: '研二', verified: true,
     bio: '材料方向研究生，常用 AI 辅助文献整理和实验记录。',
     tags: ['材料科学', '论文写作', 'Prompt'],
-    stats: { posts: 7, likes: 92, following: 24, followers: 41 },
+    stats: { posts: 0, likes: 0, following: 0, followers: 0 },
     recentPosts: [],
   },
   '王同学': {
@@ -423,7 +423,7 @@ export const USER_DETAILS: Record<string, any> = {
     college: '管理学院', grade: '大三', verified: false,
     bio: '正在学习数据分析，喜欢清晰直接的技能互助。',
     tags: ['数据分析', '课程作业'],
-    stats: { posts: 2, likes: 18, following: 12, followers: 8 },
+    stats: { posts: 0, likes: 0, following: 0, followers: 0 },
     recentPosts: [],
   },
   '李学姐': {
@@ -431,7 +431,7 @@ export const USER_DETAILS: Record<string, any> = {
     college: '传媒学院', grade: '研一', verified: true,
     bio: '关注 AI 写作、内容整理和学习效率工具。',
     tags: ['AI工具', '论文写作'],
-    stats: { posts: 4, likes: 66, following: 20, followers: 35 },
+    stats: { posts: 0, likes: 0, following: 0, followers: 0 },
     recentPosts: [],
   },
   '羽毛球搭子': {
@@ -439,7 +439,7 @@ export const USER_DETAILS: Record<string, any> = {
     college: '竺可桢学院', grade: '大一', verified: false,
     bio: '周末常约运动，希望认识更多同频同学。',
     tags: ['羽毛球', '活动搭子'],
-    stats: { posts: 3, likes: 27, following: 17, followers: 11 },
+    stats: { posts: 0, likes: 0, following: 0, followers: 0 },
     recentPosts: [],
   },
 }
@@ -502,13 +502,13 @@ export const POST_DETAIL = {
     '4. 代码开发：快速生成实验代码框架',
   ],
   images: [],
-  likes: 256, comments: 48, bookmarked: false, liked: false,
+  likes: 0, comments: 0, bookmarked: false, liked: false,
 }
 
 export const COMMENTS: Comment[] = [
-  { id: 'c1', author: { name: '科研小达人' }, content: '非常实用的分享！请问可以推荐一些具体的 workflow 吗？', time: '1小时前', likes: 12 },
-  { id: 'c2', author: { name: '代码小白' }, content: '我也在用，确实能节省很多时间', time: '45分钟前', likes: 8 },
-  { id: 'c3', author: { name: '材料人' }, content: '有没有专门做材料科学方向的 prompt 推荐？', time: '30分钟前', likes: 5 },
+  { id: 'c1', author: { name: '科研小达人' }, content: '非常实用的分享！请问可以推荐一些具体的 workflow 吗？', time: '1小时前', likes: 0 },
+  { id: 'c2', author: { name: '代码小白' }, content: '我也在用，确实能节省很多时间', time: '45分钟前', likes: 0 },
+  { id: 'c3', author: { name: '材料人' }, content: '有没有专门做材料科学方向的 prompt 推荐？', time: '30分钟前', likes: 0 },
 ]
 
 export const POST_COMMENTS: Comment[] = [
@@ -522,8 +522,8 @@ export const POST_COMMENTS: Comment[] = [
     content: '非常实用的分享！请问可以推荐一些具体的 workflow 吗？',
     time: '1小时前',
     createdAt: '1小时前',
-    likes: 12,
-    likeCount: 12,
+    likes: 0,
+    likeCount: 0,
     liked: false,
     replies: [
       {
@@ -549,8 +549,8 @@ export const POST_COMMENTS: Comment[] = [
     content: '我也在用，确实能节省很多时间。',
     time: '45分钟前',
     createdAt: '45分钟前',
-    likes: 8,
-    likeCount: 8,
+    likes: 0,
+    likeCount: 0,
     liked: false,
     replies: [],
   },
@@ -564,8 +564,8 @@ export const POST_COMMENTS: Comment[] = [
     content: '有没有专门做材料科学方向的 prompt 推荐？',
     time: '30分钟前',
     createdAt: '30分钟前',
-    likes: 5,
-    likeCount: 5,
+    likes: 0,
+    likeCount: 0,
     liked: false,
     replies: [],
   },
@@ -578,19 +578,19 @@ export const USER_SKILLS = [
 ]
 
 export const USER_POSTS = [
-  { id: 'u1', title: 'Python数据分析入门指南', likes: 45, comments: 12 },
-  { id: 'u2', title: '研究生必备科研工具推荐', likes: 89, comments: 23 },
+  { id: 'u1', title: 'Python数据分析入门指南', likes: 0, comments: 0 },
+  { id: 'u2', title: '研究生必备科研工具推荐', likes: 0, comments: 0 },
 ]
 
 // ========== PARTNER USERS ==========
 export const PARTNER_USERS = [
-  { id: 1, name: '陈思思', avatar: '', gender: 'female', college: '生命科学学院', major: '数据科学', grade: '大二', campus: '紫金港', type: '本科生', bio: '喜欢周末去西湖边骑行，找一起骑行的伙伴！', lookingFor: '骑行搭子', match: 90, matchRate: 90, verified: true, tags: ['运动'], interests: ['骑行', '运动'], wantToLearn: ['摄影'] },
-  { id: 2, name: '赵子轩', avatar: '', gender: 'male', college: '计算机学院', major: '计算机科学', grade: '大三', campus: '玉泉', type: '本科生', bio: '刚入坑桌游，想找人一起玩狼人杀和阿瓦隆。', lookingFor: '桌游搭子', match: 87, matchRate: 87, verified: false, tags: ['游戏'], interests: ['桌游', '游戏'], wantToLearn: ['产品设计'] },
-  { id: 3, name: '林晓晓', avatar: '', college: '外国语学院', major: '英语', grade: '研一', campus: '西溪', type: '研究生', bio: '摄影爱好者，周末喜欢扫街，找摄影小伙伴互拍。', lookingFor: '摄影搭子', match: 83, matchRate: 83, verified: true, tags: ['摄影'], interests: ['摄影', '修图', '徒步', '桌游'], wantToLearn: ['AI工具'] },
-  { id: 4, name: '周明远', avatar: '', college: '数学科学学院', major: '数据科学', grade: '研一', campus: '紫金港', type: '研究生', bio: '考研党，每天图书馆打卡，找一起学习监督的研友！', lookingFor: '学习搭子', match: 92, matchRate: 92, verified: true, tags: ['学习'], interests: ['学习', '自习'], wantToLearn: ['Python'] },
-  { id: 5, name: '吴悦然', avatar: '', college: '外国语学院', major: '英语', grade: '大一', campus: '西溪', type: '本科生', bio: '民谣吉他爱好者，想组校园乐队，找主唱和鼓手！', lookingFor: '乐队搭子', match: 78, matchRate: 78, verified: false, tags: ['音乐'], interests: ['音乐', '吉他'], wantToLearn: ['摄影'] },
-  { id: 6, name: '孙浩宇', avatar: '', college: '材料学院', major: '材料科学', grade: '研二', campus: '玉泉', type: '研究生', bio: '周末喜欢爬山露营，已经走过杭州十条徒步路线啦', lookingFor: '旅行搭子', match: 85, matchRate: 85, verified: true, tags: ['旅行'], interests: ['旅行', '徒步'], wantToLearn: ['数据分析'] },
-  { id: 7, name: '郑雅文', avatar: '', college: '管理学院', major: '数据科学', grade: '大四', campus: '紫金港', type: '本科生', bio: '烘焙达人，会做各种蛋糕甜点，想找人一起探店。', lookingFor: '美食搭子', match: 81, matchRate: 81, verified: false, tags: ['其他'], interests: ['美食', '探店'], wantToLearn: ['产品设计'] },
+  { id: 1, name: '陈思思', avatar: '', gender: 'female', college: '生命科学学院', major: '数据科学', grade: '大二', campus: '紫金港', type: '本科生', bio: '喜欢周末去西湖边骑行，找一起骑行的伙伴！', lookingFor: '骑行搭子', match: 0, matchRate: 0, verified: true, tags: ['运动'], interests: ['骑行', '运动'], wantToLearn: ['摄影'] },
+  { id: 2, name: '赵子轩', avatar: '', gender: 'male', college: '计算机学院', major: '计算机科学', grade: '大三', campus: '玉泉', type: '本科生', bio: '刚入坑桌游，想找人一起玩狼人杀和阿瓦隆。', lookingFor: '桌游搭子', match: 0, matchRate: 0, verified: false, tags: ['游戏'], interests: ['桌游', '游戏'], wantToLearn: ['产品设计'] },
+  { id: 3, name: '林晓晓', avatar: '', college: '外国语学院', major: '英语', grade: '研一', campus: '西溪', type: '研究生', bio: '摄影爱好者，周末喜欢扫街，找摄影小伙伴互拍。', lookingFor: '摄影搭子', match: 0, matchRate: 0, verified: true, tags: ['摄影'], interests: ['摄影', '修图', '徒步', '桌游'], wantToLearn: ['AI工具'] },
+  { id: 4, name: '周明远', avatar: '', college: '数学科学学院', major: '数据科学', grade: '研一', campus: '紫金港', type: '研究生', bio: '考研党，每天图书馆打卡，找一起学习监督的研友！', lookingFor: '学习搭子', match: 0, matchRate: 0, verified: true, tags: ['学习'], interests: ['学习', '自习'], wantToLearn: ['Python'] },
+  { id: 5, name: '吴悦然', avatar: '', college: '外国语学院', major: '英语', grade: '大一', campus: '西溪', type: '本科生', bio: '民谣吉他爱好者，想组校园乐队，找主唱和鼓手！', lookingFor: '乐队搭子', match: 0, matchRate: 0, verified: false, tags: ['音乐'], interests: ['音乐', '吉他'], wantToLearn: ['摄影'] },
+  { id: 6, name: '孙浩宇', avatar: '', college: '材料学院', major: '材料科学', grade: '研二', campus: '玉泉', type: '研究生', bio: '周末喜欢爬山露营，已经走过杭州十条徒步路线啦', lookingFor: '旅行搭子', match: 0, matchRate: 0, verified: true, tags: ['旅行'], interests: ['旅行', '徒步'], wantToLearn: ['数据分析'] },
+  { id: 7, name: '郑雅文', avatar: '', college: '管理学院', major: '数据科学', grade: '大四', campus: '紫金港', type: '本科生', bio: '烘焙达人，会做各种蛋糕甜点，想找人一起探店。', lookingFor: '美食搭子', match: 0, matchRate: 0, verified: false, tags: ['其他'], interests: ['美食', '探店'], wantToLearn: ['产品设计'] },
 ]
 
 // ========== CONTACTS ==========
@@ -1138,7 +1138,7 @@ export const MY_PROFILE = {
   gender: 'male' as 'male' | 'female' | 'private',
   campus: '紫金港',
   bio: '擅长 Python 和数据分析，想找摄影搭子',
-  stats: { skills: 5, posts: 12, followers: 86, following: 42 },
+  stats: { skills: 5, posts: 0, followers: 0, following: 0 },
 }
 
 // ========== 认证技能（需官方验证） ==========
@@ -1230,8 +1230,8 @@ export const MY_POSTS = [
     title: '如何用 Python 高效完成数据分析？',
     excerpt: '整理了我在课程作业和科研数据处理中常用的分析流程，适合刚开始接触 pandas 的同学。',
     tags: ['Python', '数据分析'],
-    likes: 128,
-    comments: 32,
+    likes: 0,
+    comments: 0,
     authorId: '10086',
     visibility: 'public',
     time: '2天前',
@@ -1241,8 +1241,8 @@ export const MY_POSTS = [
     title: 'AI 工具如何辅助论文写作流程',
     excerpt: '从文献整理、提纲生成到初稿润色，分享一套适合课程论文和组会汇报的 AI 使用方式。',
     tags: ['AI', '论文写作'],
-    likes: 67,
-    comments: 23,
+    likes: 0,
+    comments: 0,
     authorId: '10086',
     visibility: 'public',
     time: '1周前',
@@ -1264,7 +1264,7 @@ export const INTEREST_DETAILS: Record<string, {
       { id: 'research-2', name: '材料人', desc: '想找同学一起讨论材料方向选题。', tags: ['组会', '选题'] },
     ],
     posts: [
-      { id: '4', title: 'AI 工具如何辅助论文写作流程', excerpt: '从文献整理到初稿润色的一套流程。', tags: ['AI', '论文写作'], likes: 67, comments: 23 },
+      { id: '4', title: 'AI 工具如何辅助论文写作流程', excerpt: '从文献整理到初稿润色的一套流程。', tags: ['AI', '论文写作'], likes: 0, comments: 0 },
     ],
     activities: [
       { id: 'interest-research-a1', title: '文献阅读方法交流', time: '周五 19:00', location: '紫金港图书馆', tags: ['科研', '文献'] },
@@ -1277,7 +1277,7 @@ export const INTEREST_DETAILS: Record<string, {
       { id: 'ai-1', name: 'Prompt 练习生', desc: '正在整理课程学习和论文写作 Prompt。', tags: ['Prompt', '效率工具'] },
     ],
     posts: [
-      { id: '4', title: 'AI 工具如何辅助论文写作流程', excerpt: '适合课程论文和组会汇报的 AI 使用方式。', tags: ['AI', '论文写作'], likes: 67, comments: 23 },
+      { id: '4', title: 'AI 工具如何辅助论文写作流程', excerpt: '适合课程论文和组会汇报的 AI 使用方式。', tags: ['AI', '论文写作'], likes: 0, comments: 0 },
     ],
     activities: [
       { id: 'interest-ai-a1', title: 'AI 工具分享会', time: '周三 19:00', location: '北教 203', tags: ['AI', '科研效率'] },
@@ -1302,7 +1302,7 @@ export const INTEREST_DETAILS: Record<string, {
       { id: 'photo-2', name: '胶片同学', desc: '正在学习胶片和色彩风格。', tags: ['胶片', '扫街'] },
     ],
     posts: [
-      { id: '2', title: '浙大的春天太美了，求摄影搭子', excerpt: '想找喜欢摄影的同学一起扫校园。', tags: ['摄影', '搭子'], likes: 256, comments: 45 },
+      { id: '2', title: '浙大的春天太美了，求摄影搭子', excerpt: '想找喜欢摄影的同学一起扫校园。', tags: ['摄影', '搭子'], likes: 0, comments: 0 },
     ],
     activities: [
       { id: 'interest-photo-a1', title: '紫金港校园摄影采风', time: '周日 15:00', location: '月牙楼集合', tags: ['摄影', '校园'] },
@@ -1378,7 +1378,7 @@ export const MY_REVIEWS: UserReview[] = [
     reviewerId: 'u_review_4',
     reviewerName: '羽毛球搭子',
     reviewerAvatar: '',
-    rating: 4.8,
+    rating: 0,
     tags: ['准时', '友好'],
     content: '活动组织得很顺利，时间地点沟通清楚，体验很好。',
     relatedType: 'activity',
@@ -1398,7 +1398,7 @@ export const USER_DETAIL_PROFILE = {
   college: '物理学院',
   grade: '博士在读',
   bio: '擅长用 AI 和编程工具帮助同学快速上手科研与项目实践',
-  stats: { skills: 5, posts: 12, followers: 86, following: 42 },
+  stats: { skills: 5, posts: 0, followers: 0, following: 0 },
   is_following: false,
   can_message: true,
   skills: [
@@ -1411,10 +1411,10 @@ export const USER_DETAIL_PROFILE = {
   learn_wants: ['摄影', '产品设计', '羽毛球'],
   interests: ['科研', 'AI', '徒步', '摄影', '桌游'],
   posts: [
-    { id: 'up1', title: 'NLP课程笔记：Transformer原理详解', type: '课程笔记', time: '3天前', likes: 34, comments: 8 },
-    { id: 'up2', title: '推荐几个好用的科研效率工具', type: '工具推荐', time: '1周前', likes: 62, comments: 15 },
-    { id: 'up3', title: '研一新生怎么建立文献阅读体系', type: '经验分享', time: '2周前', likes: 48, comments: 12 },
-    { id: 'up4', title: '我常用的Python数据分析模板', type: '经验分享', time: '3周前', likes: 55, comments: 10 },
+    { id: 'up1', title: 'NLP课程笔记：Transformer原理详解', type: '课程笔记', time: '3天前', likes: 0, comments: 0 },
+    { id: 'up2', title: '推荐几个好用的科研效率工具', type: '工具推荐', time: '1周前', likes: 0, comments: 0 },
+    { id: 'up3', title: '研一新生怎么建立文献阅读体系', type: '经验分享', time: '2周前', likes: 0, comments: 0 },
+    { id: 'up4', title: '我常用的Python数据分析模板', type: '经验分享', time: '3周前', likes: 0, comments: 0 },
   ],
   reviews: [
     { id: 'ur1', reviewer: '王同学', reviewerAvatar: '', rating: 5, tags: ['准时', '讲得清楚'], content: '帮我理清了 Python 数据分析的思路', skill: 'Python', time: '3天前' },

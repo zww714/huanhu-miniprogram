@@ -3,12 +3,9 @@ import Taro, { useLoad, useShareAppMessage } from '@tarojs/taro'
 import { Button, Image, Input, ScrollView, Text, View } from '@tarojs/components'
 import {
   CURRENT_USER,
-  MOCK_POSTS,
-  MY_POSTS,
-  POST_COMMENTS,
   type Comment,
 } from '../../../utils/mock'
-import { addComment, deleteComment as apiDeleteComment, deletePost, getComments, getPostDetail, getPosts, replyComment, updatePost, toggleLike, toggleFavorite, getInteractionStatus } from '../../../api'
+import { addComment, deleteComment as apiDeleteComment, deletePost, getComments, getPostDetail, getPosts, replyComment, updatePost, toggleLike, toggleFavorite, getInteractionStatus, getPostStats } from '../../../api'
 import { openUnifiedUserProfile } from '../../../utils/publicProfiles'
 import { recordBrowse } from '../../../utils/history'
 import { getGenderSymbol, getGenderTone } from '../../../utils/gender'
@@ -124,7 +121,7 @@ export default function PostDetail() {
   const [likeCount, setLikeCount] = useState(0)
   const [favoriteCount, setFavoriteCount] = useState(0)
   const [visibility, setVisibility] = useState<'public' | 'private'>('public')
-  const [comments, setComments] = useState<Comment[]>(POST_COMMENTS)
+  const [comments, setComments] = useState<Comment[]>([])
   const [commentText, setCommentText] = useState('')
   const [replyTarget, setReplyTarget] = useState<ReplyTarget | null>(null)
 
@@ -146,9 +143,7 @@ export default function PostDetail() {
 
     const localFound = pending && (pending.id === id || pending._id === id)
       ? pending
-      : MOCK_POSTS.find((item) => item.id === id)
-        || localPosts.find((item: Post) => getRecordId(item) === id)
-        || MY_POSTS.find((item) => item.id === id)
+      : localPosts.find((item: Post) => getRecordId(item) === id)
 
     if (localFound) applyPost(localFound)
 
@@ -193,6 +188,16 @@ export default function PostDetail() {
           }
         })
         .catch(() => undefined)
+
+      getPostStats(id)
+        .then((stats) => {
+          setLikeCount(stats.likeCount ?? 0)
+          setFavoriteCount(stats.favoriteCount ?? 0)
+        })
+        .catch(() => {
+          setLikeCount(0)
+          setFavoriteCount(0)
+        })
     }
   })
 

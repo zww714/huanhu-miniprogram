@@ -47,7 +47,7 @@ export async function createActivity(params: {
   return { ...activity, id: `local_${Date.now()}` }
 }
 
-export async function getActivities(params?: { category?: string; page?: number }) {
+export async function getActivities(params?: { category?: string; page?: number; keyword?: string }) {
   if (getUseCloud()) {
     try {
       const res = await callCloudFunction('getActivities', params)

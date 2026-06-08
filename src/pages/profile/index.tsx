@@ -3,17 +3,14 @@ import Taro, { useDidShow } from '@tarojs/taro'
 import { useState } from 'react'
 import ErrorBoundary from '../../components/common/ErrorBoundary'
 import './index.scss'
-import { updateProfile } from '../../api'
+import { getUserStats, updateProfile } from '../../api'
 import { getGenderSymbol, getGenderTone } from '../../utils/gender'
 
 import {
   AVATAR_STORAGE_KEY,
   MY_PROFILE,
-  MY_SKILLS,
   MY_LEARN_WANTS,
   MY_INTERESTS,
-  MY_REVIEWS,
-  MY_POSTS,
   SYSTEM_AVATARS,
 } from '../../utils/mock'
 
@@ -43,17 +40,17 @@ const CHEN_PROFILE = {
   wantToLearn: ['摄影', '产品设计', '羽毛球'],
   learnWants: ['摄影', '产品设计', '羽毛球'],
   interests: ['科研', 'AI', '徒步', '摄影'],
-  skillCount: 5,
-  postCount: 12,
-  followerCount: 86,
-  followingCount: 42,
-  rating: 4.8,
+  skillCount: 0,
+  postCount: 0,
+  followerCount: 0,
+  followingCount: 0,
+  rating: 0,
   stats: {
     ...(MY_PROFILE.stats || {}),
-    skills: 5,
-    posts: 12,
-    followers: 86,
-    following: 42,
+    skills: 0,
+    posts: 0,
+    followers: 0,
+    following: 0,
   },
 }
 
@@ -78,8 +75,8 @@ export default function Profile() {
   const initialProfile = getDisplayProfile()
   const [avatarUrl, setAvatarUrl] = useState(initialProfile.avatar || '')
   const [profileData, setProfileData] = useState<any>(initialProfile)
-  const [mySkills, setMySkills] = useState<any[]>(MY_SKILLS)
-  const [myPosts, setMyPosts] = useState<any[]>(MY_POSTS)
+  const [mySkills, setMySkills] = useState<any[]>([])
+  const [myPosts, setMyPosts] = useState<any[]>([])
 
   const toast = (msg: string) => Taro.showToast({ title: msg, icon: 'none' })
   const go = (url: string) => Taro.navigateTo({
@@ -166,10 +163,7 @@ export default function Profile() {
 
   const p = profileData
   const systemAvatar = SYSTEM_AVATARS.find((item) => item.id === avatarUrl)
-  const reviewAverage = MY_REVIEWS.length
-    ? (MY_REVIEWS.reduce((sum, review) => sum + review.rating, 0) / MY_REVIEWS.length).toFixed(1)
-    : '4.8'
-  const profileRating = String(p.rating || reviewAverage || '4.8')
+  const profileRating = String(p.rating || 0)
   const userId = p.user_id || p.id || p._id || CHEN_PROFILE.user_id
   const stats = p.stats || {}
   const statValues = {
@@ -189,6 +183,31 @@ export default function Profile() {
     const nextProfile = getDisplayProfile()
     setProfileData(nextProfile)
     setAvatarUrl(nextProfile.avatar || '')
+    const nextUserId = nextProfile.user_id || nextProfile.id || nextProfile._id || CHEN_PROFILE.user_id
+    getUserStats(String(nextUserId)).then((realStats) => {
+      const normalizedStats = {
+        skills: realStats.skillCount ?? 0,
+        posts: realStats.postCount ?? 0,
+        followers: realStats.followerCount ?? 0,
+        following: realStats.followingCount ?? 0,
+      }
+      setMySkills(Array.from({ length: normalizedStats.skills }))
+      setMyPosts(Array.from({ length: normalizedStats.posts }))
+      setProfileData((current: any) => ({
+        ...current,
+        skillCount: normalizedStats.skills,
+        postCount: normalizedStats.posts,
+        followerCount: normalizedStats.followers,
+        followingCount: normalizedStats.following,
+        stats: {
+          ...(current.stats || {}),
+          ...normalizedStats,
+        },
+        rating: 0,
+      }))
+    }).catch((e) => {
+      console.warn('[Profile] load user stats failed', e)
+    })
   })
 
   return (

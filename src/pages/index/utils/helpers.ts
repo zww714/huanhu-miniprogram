@@ -77,11 +77,11 @@ export function getUserIntro(user: SkillUser) {
 }
 
 export function getMatchRate(user: SkillUser, index = 0) {
-  return Number(user.matchRate || user.match || [92, 88, 90][index % 3])
+  return Number(user.matchRate || user.match || 0)
 }
 
 export function getCompletedCount(user: SkillUser, index = 0) {
-  return Number(user.completedCount || user.exchangeCount || [23, 16, 12][index % 3])
+  return Number(user.completedCount || user.exchangeCount || 0)
 }
 
 export function getActivityCampus(activity: Activity) {

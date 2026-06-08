@@ -24,47 +24,7 @@ export type RatingSummary = {
 
 const RATING_STORAGE_KEY = 'huanhuRatings'
 
-const SEED_RATINGS: RatingRecord[] = [
-  {
-    id: 'seed-rating-1',
-    targetUserId: CURRENT_USER.id,
-    targetUserName: CURRENT_USER.name,
-    raterUserId: 'u1',
-    raterUserName: '科研小达人',
-    rating: 5,
-    tags: ['沟通顺畅', '很有帮助'],
-    content: 'Python 思路讲得很清楚，给的资料也很实用。',
-    relatedType: 'skill',
-    createdAt: '2天前',
-    updatedAt: '2天前',
-  },
-  {
-    id: 'seed-rating-2',
-    targetUserId: CURRENT_USER.id,
-    targetUserName: CURRENT_USER.name,
-    raterUserId: 'u_photo',
-    raterUserName: '光影捕手',
-    rating: 4.8,
-    tags: ['准时靠谱', '体验不错'],
-    content: '交流很顺畅，后续还想继续约项目复盘。',
-    relatedType: 'profile',
-    createdAt: '5天前',
-    updatedAt: '5天前',
-  },
-  {
-    id: 'seed-rating-3',
-    targetUserId: '10086',
-    targetUserName: '陈同学',
-    raterUserId: 'u_math',
-    raterUserName: '上岸锦鲤',
-    rating: 4.6,
-    tags: ['技能扎实'],
-    content: '数据分析建议很具体，适合入门同学。',
-    relatedType: 'post',
-    createdAt: '1周前',
-    updatedAt: '1周前',
-  },
-]
+const SEED_RATINGS: RatingRecord[] = []
 
 function readRatings(): RatingRecord[] {
   const saved = Taro.getStorageSync(RATING_STORAGE_KEY)
@@ -85,7 +45,7 @@ export function getMyRatingForUser(userId: string) {
   return readRatings().find((item) => item.targetUserId === userId && item.raterUserId === CURRENT_USER.id)
 }
 
-export function getRatingSummary(userId: string, fallbackAverage = 4.8): RatingSummary {
+export function getRatingSummary(userId: string, fallbackAverage = 0): RatingSummary {
   const records = getRatingsForUser(userId)
   const distribution: RatingSummary['distribution'] = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
 

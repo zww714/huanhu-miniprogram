@@ -4,13 +4,13 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   followUser as apiFollowUser,
   getFollowStatus,
+  getUserStats,
   getUserDetail,
   unfollowUser as apiUnfollowUser,
 } from '../../../api'
 import { CURRENT_USER } from '../../../utils/mock'
 import {
   getPublicPosts,
-  getPublicSkills,
   getPublicUser,
   getRelationForUser,
   normalizePublicUserId,
@@ -45,6 +45,7 @@ function isRenderableImage(src?: string) {
 }
 
 function calcMatchDegree(user: PublicUser, skills: any[]) {
+  if (!(user as any).hasRealSkillData) return 0
   const wants = Array.isArray(user.wantToLearn) ? user.wantToLearn : []
   const verifiedSkillCount = skills.filter((skill) => Number(skill.proofCount || 0) > 0).length
   return Math.min(100, verifiedSkillCount * 30 + skills.length * 15 + wants.length * 5)
@@ -53,6 +54,7 @@ function calcMatchDegree(user: PublicUser, skills: any[]) {
 export default function ProfileView() {
   const [routeUser, setRouteUser] = useState({ id: '', name: '' })
   const [remoteUser, setRemoteUser] = useState<any>(null)
+  const [realStats, setRealStats] = useState({ followerCount: 0, followingCount: 0, postCount: 0, skillCount: 0 })
   const [followState, setFollowState] = useState<FollowState>(DEFAULT_FOLLOW)
   const [followLoading, setFollowLoading] = useState(false)
 
@@ -88,6 +90,18 @@ export default function ProfileView() {
       })
       .catch(() => setFollowState(getRelationForUser(userId)))
 
+    getUserStats(userId)
+      .then((stats) => {
+        if (!alive) return
+        setRealStats({
+          followerCount: stats.followerCount ?? 0,
+          followingCount: stats.followingCount ?? 0,
+          postCount: stats.postCount ?? 0,
+          skillCount: stats.skillCount ?? 0,
+        })
+      })
+      .catch(() => undefined)
+
     return () => { alive = false }
   }, [userId])
 
@@ -107,17 +121,18 @@ export default function ProfileView() {
       grade: remoteUser.grade || fallback.grade,
       campus: remoteUser.campus || fallback.campus,
       intro: remoteUser.intro || remoteUser.bio || fallback.intro,
-      canTeach: remoteUser.canTeach || remoteUser.skills || getPublicSkills(fallback.id),
+      canTeach: remoteUser.canTeach || remoteUser.skills || [],
       wantToLearn: remoteUser.wantToLearn || remoteUser.learnWants || remoteUser.want || fallback.wantToLearn,
-      followerCount: remoteUser.followerCount ?? remoteUser.stats?.followers ?? fallback.followerCount,
-      followingCount: remoteUser.followingCount ?? remoteUser.stats?.following ?? fallback.followingCount,
+      followerCount: realStats.followerCount,
+      followingCount: realStats.followingCount,
       gender: remoteUser.gender || (fallback as any).gender,
+      hasRealSkillData: Array.isArray(remoteUser.canTeach) || Array.isArray(remoteUser.skills),
     }
-  }, [remoteUser, routeUser.name, userId])
+  }, [realStats.followerCount, realStats.followingCount, remoteUser, routeUser.name, userId])
 
   const isSelf = user.id === CURRENT_USER.id || user.name === CURRENT_USER.name
   const metaLine = [user.school, user.college, user.grade, user.campus].filter(Boolean).join(' · ')
-  const skills = Array.isArray(user.canTeach) ? user.canTeach : getPublicSkills(user.id)
+  const skills = Array.isArray(user.canTeach) ? user.canTeach : []
   const posts = getPublicPosts(user.id)
   const wants = Array.isArray(user.wantToLearn) ? user.wantToLearn : []
   const verifiedSkills = skills.filter((skill: any) => Number(skill.proofCount || 0) > 0)
@@ -250,8 +265,8 @@ export default function ProfileView() {
 
         <View className='stats-card'>
           {[
-            { label: '技能', value: skills.length, icon: '</>', key: 'skills' as const },
-            { label: '发布', value: posts.length, icon: '+', key: 'posts' as const },
+            { label: '技能', value: realStats.skillCount, icon: '</>', key: 'skills' as const },
+            { label: '发布', value: realStats.postCount, icon: '+', key: 'posts' as const },
             { label: '粉丝', value: user.followerCount || 0, icon: '●', key: 'followers' as const },
             { label: '关注', value: user.followingCount || 0, icon: '●', key: 'following' as const },
           ].map((item, index) => (

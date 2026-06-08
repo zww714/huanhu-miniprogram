@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
-import { CURRENT_USER, MOCK_POSTS, MY_POSTS } from '../../../utils/mock'
 import { deletePost, getMyPosts, updatePost } from '../../../api'
 import './index.scss'
 
@@ -21,34 +20,7 @@ type ManagedPost = {
 const STORAGE_KEY = 'myManagedPosts'
 
 function getSeedPosts(): ManagedPost[] {
-  const fromPosts = MOCK_POSTS
-    .filter((post) => (post.authorId || post.userId || post.author?.id) === CURRENT_USER.id)
-    .map((post) => ({
-      id: post.id,
-      title: post.title,
-      excerpt: post.excerpt,
-      tags: post.tags || [],
-      likes: post.likeCount ?? post.likes ?? 0,
-      comments: post.commentCount ?? post.comments ?? 0,
-      createdAt: post.createdAt,
-      authorId: post.authorId || post.userId,
-      visibility: post.visibility || 'public',
-    }))
-
-  const fromMine = MY_POSTS.map((post) => ({
-    id: post.id,
-    title: post.title,
-    excerpt: post.excerpt,
-    tags: post.tags || [],
-    likes: post.likes,
-    comments: post.comments,
-    time: post.time,
-    authorId: post.authorId,
-    visibility: post.visibility as ManagedPost['visibility'],
-  }))
-
-  const merged = [...fromPosts, ...fromMine]
-  return merged.filter((post, index) => merged.findIndex((item) => item.id === post.id) === index)
+  return []
 }
 
 function readPosts() {

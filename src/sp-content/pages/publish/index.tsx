@@ -2,7 +2,6 @@ import { useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { Image, Input, ScrollView, Text, Textarea, View } from '@tarojs/components'
 import { createActivity, createPost, getPostDetail, publishPartnerProfile, publishSkillNeed, updatePost } from '../../../api'
-import { MOCK_POSTS, MY_POSTS } from '../../../utils/mock'
 import './index.scss'
 
 type PublishMode = 'skill' | 'partner' | 'activity' | 'post'
@@ -59,9 +58,7 @@ export default function Publish() {
       const postId = String(options?.postId || '')
       const editedPosts = Taro.getStorageSync('editedPosts') || {}
       const localPosts = Taro.getStorageSync('localMinePosts') || []
-      const found = MOCK_POSTS.find((item) => item.id === postId)
-        || localPosts.find((item: any) => item.id === postId || item._id === postId)
-        || MY_POSTS.find((item) => item.id === postId)
+      const found = localPosts.find((item: any) => item.id === postId || item._id === postId)
       const post = found ? { ...found, ...(editedPosts[postId] || {}) } : null
       setMode('post')
       setIsEditMode(true)

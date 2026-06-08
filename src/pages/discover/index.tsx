@@ -4,8 +4,14 @@ import { Image, ScrollView, Text, View } from '@tarojs/components'
 import ErrorBoundary from '../../components/common/ErrorBoundary'
 import FloatingPostButton from '../../components/common/FloatingPostButton'
 import SearchBar from '../../components/common/SearchBar'
-import { getPosts, toggleFavorite as apiToggleFavorite } from '../../api'
-import { ACTIVITIES, MOCK_POSTS, type Activity } from '../../utils/mock'
+import {
+  getActivities,
+  getActivityStats,
+  getPosts,
+  getPostStats,
+  toggleFavorite as apiToggleFavorite,
+} from '../../api'
+import { type Activity } from '../../utils/mock'
 import { openUnifiedUserProfile } from '../../utils/publicProfiles'
 import { getGenderSymbol, getGenderTone } from '../../utils/gender'
 import './index.scss'
@@ -339,6 +345,9 @@ export default function Discover() {
   const [activeCat, setActiveCat] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
   const [posts, setPosts] = useState<Post[]>([])
+  const [activities, setActivities] = useState<Activity[]>([])
+  const [postStats, setPostStats] = useState<Record<string, { likeCount: number; commentCount: number; favoriteCount: number }>>({})
+  const [activityStats, setActivityStats] = useState<Record<string, number>>({})
   const [loading, setLoading] = useState(true)
   const [topicPopupOpen, setTopicPopupOpen] = useState(false)
   const [likedItems, setLikedItems] = useState<Record<string, boolean>>({})
@@ -361,11 +370,16 @@ export default function Discover() {
     try {
       const selected = CATEGORIES[activeCat]
       const requestCategory = selected === '推荐' ? '全部' : selected === '兼职' ? '工作' : selected
-      const data = await getPosts({ page: 0, category: requestCategory, keyword: searchQuery.trim() })
-      setPosts(mergePendingPost(data?.length ? data : MOCK_POSTS))
+      const [postData, activityData] = await Promise.all([
+        getPosts({ page: 0, category: requestCategory, keyword: searchQuery.trim() }),
+        getActivities({ page: 0, category: selected === '鎺ㄨ崘' ? undefined : selected, keyword: searchQuery.trim() }),
+      ])
+      setPosts(mergePendingPost(postData || []))
+      setActivities(activityData || [])
     } catch (e) {
       console.warn('[Discover] load posts failed', e)
-      setPosts(mergePendingPost(MOCK_POSTS))
+      setPosts(mergePendingPost([]))
+      setActivities([])
     } finally {
       setLoading(false)
     }
@@ -386,25 +400,67 @@ export default function Discover() {
   const keyword = searchQuery.trim()
   const feedItems = useMemo(() => {
     const postItems = posts.map(normalizePost)
-    const activityItems = ACTIVITIES.slice(0, 4).map(normalizeActivity)
+    const activityItems = activities.map(normalizeActivity)
     return [...postItems, ...activityItems].filter((item) => {
       const category = CATEGORIES[activeCat]
       return itemMatchesCategory(item, category) && itemMatchesKeyword(item, keyword)
     })
-  }, [activeCat, keyword, posts])
+  }, [activeCat, activities, keyword, posts])
+
+  useEffect(() => {
+    const ids = posts.map(getPostId).filter(Boolean)
+    if (!ids.length) {
+      setPostStats({})
+      return
+    }
+    let cancelled = false
+    Promise.all(ids.map(async (id) => {
+      const stats = await getPostStats(id)
+      return [id, {
+        likeCount: stats.likeCount ?? 0,
+        commentCount: stats.commentCount ?? 0,
+        favoriteCount: stats.favoriteCount ?? 0,
+      }] as const
+    })).then((entries) => {
+      if (!cancelled) setPostStats(Object.fromEntries(entries))
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [posts])
+
+  useEffect(() => {
+    const ids = activities.map((activity) => activity.id || activity._id || '').filter(Boolean)
+    if (!ids.length) {
+      setActivityStats({})
+      return
+    }
+    let cancelled = false
+    Promise.all(ids.map(async (id) => {
+      const stats = await getActivityStats(id)
+      return [id, stats.registrationCount ?? 0] as const
+    })).then((entries) => {
+      if (!cancelled) setActivityStats(Object.fromEntries(entries))
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [activities])
 
   const openPost = (item: FeedItem) => {
     Taro.navigateTo({ url: `/sp-content/pages/post-detail/index?postId=${encodeURIComponent(item.id)}&from=discover` })
   }
 
   const openActivityRegister = (activity: Activity) => {
+    const activityId = activity.id || activity._id || ''
+    const registrationCount = activityStats[activityId] ?? 0
     const query = [
       `id=${encodeURIComponent(activity.id || '')}`,
       `title=${encodeURIComponent(activity.title || '')}`,
       `organizer=${encodeURIComponent(activity.organizer || '')}`,
       `time=${encodeURIComponent(activity.time || '')}`,
       `location=${encodeURIComponent(activity.location || '')}`,
-      `participants=${encodeURIComponent(String(activity.participants || activity.participantCount || 0))}`,
+      `participants=${encodeURIComponent(String(registrationCount))}`,
       `maxParticipants=${encodeURIComponent(String(activity.maxParticipants || ''))}`,
     ].join('&')
     Taro.navigateTo({ url: `/sp-content/pages/activity-register/index?${query}` })
@@ -464,6 +520,11 @@ export default function Discover() {
   const renderFeedCard = (item: FeedItem) => {
     const liked = !!likedItems[item.id]
     const favorited = !!favoritedItems[item.id]
+    const realPostStats = postStats[item.id] || { likeCount: 0, commentCount: 0, favoriteCount: 0 }
+    const registrationCount = activityStats[item.id] ?? 0
+    const likeCount = realPostStats.likeCount + (liked ? 1 : 0)
+    const commentCount = realPostStats.commentCount
+    const favoriteCount = realPostStats.favoriteCount + (favorited ? 1 : 0)
     return (
       <View className='feed-card' key={`${item.type}_${item.id}`} onClick={() => openFeedItem(item)}>
         <View className='feed-main'>
@@ -489,7 +550,7 @@ export default function Discover() {
         <View className='feed-footer'>
           {item.type === 'activity' ? (
             <>
-              <Text className='activity-count'>{item.participantCount || 0} 人报名</Text>
+              <Text className='activity-count'>{registrationCount} 人报名</Text>
               <View
                 className='register-btn'
                 onClick={(event) => {
@@ -523,14 +584,14 @@ export default function Discover() {
                   className={liked ? 'feed-action feed-action--active' : 'feed-action'}
                   onClick={(event) => { event.stopPropagation(); toggleLike(item.id) }}
                 >
-                  ♥ {item.likeCount + (liked ? 1 : 0)}
+                  ♥ {likeCount}
                 </Text>
-                <Text className='feed-action'>💬 {item.commentCount}</Text>
+                <Text className='feed-action'>💬 {commentCount}</Text>
                 <Text
                   className={favorited ? 'feed-action feed-action--active' : 'feed-action'}
                   onClick={(event) => { event.stopPropagation(); toggleFavorite(item.id) }}
                 >
-                  ☆ {item.favoriteCount + (favorited ? 1 : 0)}
+                  ☆ {favoriteCount}
                 </Text>
               </View>
             </>

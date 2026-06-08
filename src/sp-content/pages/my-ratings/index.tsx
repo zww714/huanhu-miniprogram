@@ -20,7 +20,7 @@ export default function MyRatings() {
 
   useDidShow(() => setVersion((current) => current + 1))
 
-  const summary = useMemo(() => getRatingSummary(target.userId, 4.8), [target.userId, version])
+  const summary = useMemo(() => getRatingSummary(target.userId, 0), [target.userId, version])
   const maxCount = Math.max(1, ...Object.values(summary.distribution))
 
   return (

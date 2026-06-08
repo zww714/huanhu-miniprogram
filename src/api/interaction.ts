@@ -2,7 +2,6 @@
  * Interaction API: likes, favorites and local fallback state.
  */
 import { callCloudFunction, apiWarn, getUseCloud } from './base'
-import { MOCK_POSTS } from '../utils/mock'
 
 const FAVORITES_KEY = 'localFavorites'
 
@@ -16,15 +15,14 @@ function writeLocalFavorites(items: any[]) {
 }
 
 function normalizeFavorite(targetId: string, targetType = 'post') {
-  const post = MOCK_POSTS.find((item: any) => String(item.id || item._id || item.title) === String(targetId))
   const fallbackAuthor = {
-    id: post?.authorId || post?.userId || '',
-    _id: post?.authorId || post?.userId || '',
-    name: post?.authorName || post?.author?.name || '同学',
-    avatar: post?.author?.avatar || '',
-    college: post?.author?.college || '浙江大学',
-    grade: post?.author?.grade || '在读',
-    verified: !!post?.author?.verified,
+    id: '',
+    _id: '',
+    name: '同学',
+    avatar: '',
+    college: '浙江大学',
+    grade: '在读',
+    verified: false,
   }
 
   return {
@@ -34,22 +32,12 @@ function normalizeFavorite(targetId: string, targetType = 'post') {
     targetId,
     postId: targetId,
     createdAt: new Date().toISOString(),
-    post: post ? {
-      ...post,
-      id: post.id || post._id || targetId,
-      _id: post._id || post.id || targetId,
-      excerpt: post.excerpt || post.summary || post.content || '',
-      authorId: post.authorId || post.userId || fallbackAuthor.id,
-      author: post.author || fallbackAuthor,
-    } : {
+    post: {
       id: targetId,
       _id: targetId,
       title: '收藏内容',
       excerpt: '',
       tags: [],
-      likeCount: 0,
-      commentCount: 0,
-      favoriteCount: 1,
       authorId: '',
       author: fallbackAuthor,
     },
@@ -75,7 +63,7 @@ export async function toggleFavorite(params: {
     try {
       const res = await callCloudFunction('toggleFavorite', { targetType: params.targetType || 'post', targetId: params.targetId })
       return res.data || { favorited: false, favoriteCount: 0 }
-    } catch (e) { apiWarn('[API] toggleFavorite failed', e) }
+    } catch (e) { apiWarn('[API] toggleFavorite failed', e); throw e }
   }
 
   const targetType = params.targetType || 'post'
@@ -95,7 +83,7 @@ export async function getInteractionStatus(params: {
     try {
       const res = await callCloudFunction('getInteractionStatus', { targetType: params.targetType || 'post', targetId: params.targetId })
       return res.data || { liked: false, favorited: false, likeCount: 0, favoriteCount: 0 }
-    } catch (e) { apiWarn('[API] getInteractionStatus failed', e) }
+    } catch (e) { apiWarn('[API] getInteractionStatus failed', e); throw e }
   }
 
   const targetType = params.targetType || 'post'
@@ -110,7 +98,7 @@ export async function getMyFavorites(params?: { targetType?: string }): Promise<
       const res = await callCloudFunction('getMyFavorites', { targetType: params?.targetType || 'post' })
       const data = res.data || []
       if (Array.isArray(data) && data.length) return data
-    } catch (e) { apiWarn('[API] getMyFavorites failed', e) }
+    } catch (e) { apiWarn('[API] getMyFavorites failed', e); throw e }
   }
 
   const targetType = params?.targetType || 'post'

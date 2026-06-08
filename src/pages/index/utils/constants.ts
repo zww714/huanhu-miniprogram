@@ -54,7 +54,7 @@ export const HOT_TOPICS = [
     id: 'library-seat',
     badge: '热',
     title: '浙大图书馆自习位拼友（可固定）',
-    stats: '126 讨论 · 89 收藏',
+    stats: '0 讨论 · 0 收藏',
     detail: '寻找固定自习搭子，主要集中在紫金港图书馆和西区教学楼，适合备考、论文和课程复习同学。',
     user: { id: 'u_frontend', name: '前端小结', avatar: '', college: '计算机学院', grade: '大三' },
   },
