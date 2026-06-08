@@ -4,6 +4,30 @@
   padding: 24rpx;
 }
 
+.history-comment-entry {
+  margin-bottom: 20rpx;
+  padding: 24rpx;
+  border-radius: 20rpx;
+  background: #FFFFFF;
+  border: 1rpx solid #E2E8F0;
+}
+
+.history-comment-title {
+  display: block;
+  color: #1E293B;
+  font-size: 30rpx;
+  line-height: 38rpx;
+  font-weight: 700;
+}
+
+.history-comment-desc {
+  display: block;
+  margin-top: 6rpx;
+  color: #64748B;
+  font-size: 24rpx;
+  line-height: 32rpx;
+}
+
 .history-header {
   display: flex;
   justify-content: space-between;

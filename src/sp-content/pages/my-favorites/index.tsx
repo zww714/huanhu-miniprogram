@@ -1,34 +1,36 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Taro from '@tarojs/taro'
 import { Image, Text, View } from '@tarojs/components'
-import { MOCK_POSTS } from '../../../utils/mock'
 import { getMyFavorites } from '../../../api'
 import { openUnifiedUserProfile } from '../../../utils/publicProfiles'
 import './index.scss'
 
 type FavoriteItem = {
-  _id: string
-  id: string
+  _id?: string
+  id?: string
   postId: string
-  createdAt: any
+  targetId?: string
+  createdAt?: any
   post: {
-    _id: string
-    id: string
+    _id?: string
+    id?: string
     title: string
-    excerpt: string
+    excerpt?: string
+    summary?: string
     cover?: string
-    tags: string[]
-    likeCount: number
-    commentCount: number
-    favoriteCount: number
-    authorId: string
-    author: {
-      _id: string
-      name: string
-      avatar: string
-      college: string
-      grade: string
-      verified: boolean
+    tags?: string[]
+    likeCount?: number
+    commentCount?: number
+    favoriteCount?: number
+    authorId?: string
+    author?: {
+      _id?: string
+      id?: string
+      name?: string
+      avatar?: string
+      college?: string
+      grade?: string
+      verified?: boolean
     }
   }
 }
@@ -55,54 +57,8 @@ export default function MyFavorites() {
 
   useEffect(() => {
     getMyFavorites()
-      .then((data) => {
-        if (Array.isArray(data) && data.length) {
-          setFavorites(data)
-        } else {
-          // Cloud returned empty or failed — use mock fallback
-          const mock = MOCK_POSTS.slice(1, 4).map((post: any) => ({
-            id: post.id,
-            postId: post.id,
-            createdAt: '',
-            post: {
-              ...post,
-              authorId: post.authorId || '',
-              author: post.author || {
-                id: '',
-                _id: '',
-                name: '同学',
-                avatar: '',
-                college: '浙江大学',
-                grade: '在读',
-                verified: false,
-              },
-            },
-          }))
-          setFavorites(mock)
-        }
-      })
-      .catch(() => {
-        // Fallback to mock
-        const mock = MOCK_POSTS.slice(1, 4).map((post: any) => ({
-          id: post.id,
-          postId: post.id,
-          createdAt: '',
-          post: {
-            ...post,
-            authorId: post.authorId || '',
-            author: post.author || {
-              id: '',
-              _id: '',
-              name: '同学',
-              avatar: '',
-              college: '浙江大学',
-              grade: '在读',
-              verified: false,
-            },
-          },
-        }))
-        setFavorites(mock)
-      })
+      .then((data) => setFavorites(Array.isArray(data) ? data : []))
+      .catch(() => setFavorites([]))
       .finally(() => setLoading(false))
   }, [])
 
@@ -122,7 +78,7 @@ export default function MyFavorites() {
     return (
       <View className='fav-empty'>
         <Text className='fav-empty-text'>你还没有收藏内容</Text>
-        <Text className='fav-empty-desc'>去发现页看看有趣的帖子吧</Text>
+        <Text className='fav-empty-desc'>在发现页收藏后，会同步显示在这里</Text>
       </View>
     )
   }
@@ -131,12 +87,14 @@ export default function MyFavorites() {
     <View className='fav-page'>
       {favorites.map((item) => {
         const post = item.post
+        const postId = item.postId || item.targetId || post.id || post._id || ''
+        const authorId = post.authorId || post.author?.id || post.author?._id || ''
         return (
-          <View key={item.id || item.postId} className='fav-card' onClick={() => goPostDetail(item.postId)}>
+          <View key={item.id || item._id || postId} className='fav-card' onClick={() => goPostDetail(postId)}>
             <View className='fav-author-row'>
-              <View className='fav-avatar' onClick={(e) => { e.stopPropagation(); openUnifiedUserProfile(post.authorId, post.author?.name) }}>
+              <View className='fav-avatar' onClick={(e) => { e.stopPropagation(); openUnifiedUserProfile(authorId, post.author?.name) }}>
                 {isRenderableImage(post.author?.avatar) ? (
-                  <Image src={post.author.avatar} mode='aspectFill' className='fav-avatar-img' lazyLoad />
+                  <Image src={post.author?.avatar || ''} mode='aspectFill' className='fav-avatar-img' lazyLoad />
                 ) : (
                   <Text className='fav-avatar-text'>{(post.author?.name || '同').charAt(0)}</Text>
                 )}
@@ -151,9 +109,9 @@ export default function MyFavorites() {
             </View>
 
             <Text className='fav-title'>{post.title}</Text>
-            <Text className='fav-excerpt'>{post.excerpt}</Text>
+            <Text className='fav-excerpt'>{post.excerpt || post.summary || ''}</Text>
 
-            {post.tags?.length > 0 && (
+            {!!post.tags?.length && (
               <View className='fav-tags'>
                 {post.tags.slice(0, 3).map((tag: string) => (
                   <Text key={tag} className='fav-tag'>{tag}</Text>
@@ -162,9 +120,9 @@ export default function MyFavorites() {
             )}
 
             <View className='fav-stats'>
-              <Text>♥ {post.likeCount ?? 0}</Text>
-              <Text>💬 {post.commentCount ?? 0}</Text>
-              <Text>☆ {post.favoriteCount ?? 0}</Text>
+              <Text>赞 {post.likeCount ?? 0}</Text>
+              <Text>评论 {post.commentCount ?? 0}</Text>
+              <Text>收藏 {post.favoriteCount ?? 0}</Text>
             </View>
           </View>
         )
@@ -172,4 +130,3 @@ export default function MyFavorites() {
     </View>
   )
 }
-

@@ -1,9 +1,24 @@
 /**
- * API 活动模块
+ * Activity API.
  */
 import { callCloudFunction, delay, apiWarn, getUseCloud, getCloudCollection, addCloudDocument } from './base'
 import { ACTIVITIES } from '../utils/mock'
 import type { Activity } from '../utils/mock'
+
+const LOCAL_REGISTRATIONS_KEY = 'localActivityRegistrations'
+
+function readLocalRegistrations(): any[] {
+  const cached = wx.getStorageSync(LOCAL_REGISTRATIONS_KEY)
+  return Array.isArray(cached) ? cached : []
+}
+
+function writeLocalRegistrations(items: any[]) {
+  wx.setStorageSync(LOCAL_REGISTRATIONS_KEY, items)
+}
+
+function findActivity(activityId: string) {
+  return ACTIVITIES.find((activity: any) => String(activity.id || activity._id || activity.title) === String(activityId))
+}
 
 export async function createActivity(params: {
   title: string; organizer: string; time: string; location: string;
@@ -54,24 +69,48 @@ export async function getActivities(params?: { category?: string; page?: number 
   return activities
 }
 
-export async function registerActivity(params: { activityId: string; name?: string; phone?: string; note?: string }) {
+export async function registerActivity(params: {
+  activityId: string
+  name?: string
+  phone?: string
+  note?: string
+  activity?: Partial<Activity>
+}) {
   if (getUseCloud()) {
     try {
       const res = await callCloudFunction('activity', { action: 'register', ...params })
       return res.data || { registered: true }
     } catch (e) { apiWarn('[API] registerActivity failed', e) }
   }
-  return { registered: true }
+
+  const activity = {
+    ...(findActivity(params.activityId) || {}),
+    ...(params.activity || {}),
+    id: params.activityId,
+  }
+  const registration = {
+    id: `local_registration_${params.activityId}`,
+    activityId: params.activityId,
+    activity,
+    name: params.name || '',
+    phone: params.phone || '',
+    note: params.note || '',
+    createdAt: new Date().toISOString(),
+  }
+  const current = readLocalRegistrations()
+  writeLocalRegistrations([registration, ...current.filter((item) => String(item.activityId) !== String(params.activityId))])
+  return { registered: true, registration }
 }
 
 export async function getMyActivityRegistrations() {
   if (getUseCloud()) {
     try {
       const res = await callCloudFunction('activity', { action: 'getMyRegistrations' })
-      return res.data || []
+      const data = res.data || []
+      if (Array.isArray(data) && data.length) return data
     } catch (e) { apiWarn('[API] getMyActivityRegistrations failed', e) }
   }
-  return []
+  return readLocalRegistrations()
 }
 
 export async function cancelActivityRegistration(params: { registrationId?: string; activityId?: string }) {
@@ -81,6 +120,11 @@ export async function cancelActivityRegistration(params: { registrationId?: stri
       return res.data || { canceled: true }
     } catch (e) { apiWarn('[API] cancelActivityRegistration failed', e) }
   }
+  const next = readLocalRegistrations().filter((item) => (
+    String(item.id) !== String(params.registrationId || '') &&
+    String(item.activityId) !== String(params.activityId || '')
+  ))
+  writeLocalRegistrations(next)
   return { canceled: true }
 }
 
@@ -91,5 +135,5 @@ export async function getActivityDetail(params: { activityId: string }) {
       return res.data || null
     } catch (e) { apiWarn('[API] getActivityDetail failed', e) }
   }
-  return null
+  return findActivity(params.activityId) || null
 }

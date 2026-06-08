@@ -2,37 +2,37 @@ import { useState } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
 import { getMyActivityRegistrations, cancelActivityRegistration } from '../../../api'
-import { ACTIVITIES } from '../../../utils/mock'
 import './index.scss'
 
-const fallbackRegistrations = ACTIVITIES.slice(0, 2).map((activity, index) => ({
-  id: `mock_registration_${activity.id || index}`,
-  activityId: activity.id || `mock_activity_${index}`,
-  activity,
-}))
-
 export default function MyActivities() {
-  const [registrations, setRegistrations] = useState<any[]>(fallbackRegistrations)
-  const [loading, setLoading] = useState(false)
+  const [registrations, setRegistrations] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
   useDidShow(() => {
-    setLoading(false)
-    setRegistrations(fallbackRegistrations)
+    setLoading(true)
     getMyActivityRegistrations()
-      .then((data) => {
-        if (Array.isArray(data) && data.length) setRegistrations(data)
-      })
+      .then((data) => setRegistrations(Array.isArray(data) ? data : []))
       .catch((e) => {
         console.warn('[MyActivities] failed', e)
-        setRegistrations(fallbackRegistrations)
+        setRegistrations([])
       })
       .finally(() => setLoading(false))
   })
 
   const goActivity = (item: any) => {
-    Taro.navigateTo({
-      url: `/sp-content/pages/activity-register/index?id=${encodeURIComponent(item.activityId)}&title=${encodeURIComponent(item.activity?.title || '')}&time=${encodeURIComponent(item.activity?.time || '')}&location=${encodeURIComponent(item.activity?.location || '')}`,
-    })
+    const query = [
+      `mode=detail`,
+      `registrationId=${encodeURIComponent(item.id || item._id || '')}`,
+      `id=${encodeURIComponent(item.activityId || item.activity?.id || '')}`,
+      `title=${encodeURIComponent(item.activity?.title || '')}`,
+      `organizer=${encodeURIComponent(item.activity?.organizer || '')}`,
+      `time=${encodeURIComponent(item.activity?.time || '')}`,
+      `location=${encodeURIComponent(item.activity?.location || '')}`,
+      `name=${encodeURIComponent(item.name || item.form?.name || '')}`,
+      `phone=${encodeURIComponent(item.phone || item.form?.phone || '')}`,
+      `note=${encodeURIComponent(item.note || item.form?.note || '')}`,
+    ].join('&')
+    Taro.navigateTo({ url: `/sp-content/pages/activity-register/index?${query}` })
   }
 
   const cancelRegistration = (item: any) => {
@@ -66,12 +66,7 @@ export default function MyActivities() {
   return (
     <View style={{ minHeight: '100vh', backgroundColor: '#F8FAFC', padding: '12px' }}>
       <View style={{ padding: '8px 4px 12px' }}>
-        <Text style={{ fontSize: '18px', fontWeight: '700', color: '#1E293B' }}>
-          我的报名
-        </Text>
-        <Text style={{ fontSize: '13px', color: '#64748B', marginTop: '4px' }}>
-          共 {registrations.length} 个活动
-        </Text>
+        <Text style={{ fontSize: '18px', fontWeight: '700', color: '#1E293B' }}>我的报名</Text>
       </View>
 
       {!registrations.length && (
@@ -106,9 +101,6 @@ export default function MyActivities() {
           <Text style={{ fontSize: '13px', color: '#64748B', lineHeight: '20px' }}>
             地点：{item.activity?.location || ''}
           </Text>
-          <Text style={{ fontSize: '12px', color: '#94A3B8', marginTop: '8px' }}>
-            已报名 {item.activity?.participantCount || 0}/{item.activity?.maxParticipants || '∞'}
-          </Text>
           <View style={{
             display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '10px',
           }}>
@@ -130,4 +122,3 @@ export default function MyActivities() {
     </View>
   )
 }
-

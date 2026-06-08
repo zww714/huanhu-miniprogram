@@ -4,7 +4,7 @@ import { Image, ScrollView, Text, View } from '@tarojs/components'
 import ErrorBoundary from '../../components/common/ErrorBoundary'
 import FloatingPostButton from '../../components/common/FloatingPostButton'
 import SearchBar from '../../components/common/SearchBar'
-import { getPosts } from '../../api'
+import { getPosts, toggleFavorite as apiToggleFavorite } from '../../api'
 import { ACTIVITIES, MOCK_POSTS, type Activity } from '../../utils/mock'
 import { openUnifiedUserProfile } from '../../utils/publicProfiles'
 import { getGenderSymbol, getGenderTone } from '../../utils/gender'
@@ -435,8 +435,17 @@ export default function Discover() {
     setLikedItems((current) => ({ ...current, [id]: !current[id] }))
   }
 
-  const toggleFavorite = (id: string) => {
-    setFavoritedItems((current) => ({ ...current, [id]: !current[id] }))
+  const toggleFavorite = async (id: string) => {
+    const currentValue = !!favoritedItems[id]
+    setFavoritedItems((current) => ({ ...current, [id]: !currentValue }))
+    try {
+      const res = await apiToggleFavorite({ targetType: 'post', targetId: id })
+      setFavoritedItems((current) => ({ ...current, [id]: !!res.favorited }))
+      Taro.showToast({ title: res.favorited ? '已收藏' : '已取消收藏', icon: 'success' })
+    } catch (e) {
+      setFavoritedItems((current) => ({ ...current, [id]: currentValue }))
+      Taro.showToast({ title: '收藏失败', icon: 'none' })
+    }
   }
 
   const renderCover = (item: FeedItem) => {

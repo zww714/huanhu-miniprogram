@@ -8,6 +8,7 @@ import {
 } from './base'
 import { SKILL_USERS, PARTNER_USERS, USER_DETAILS, USER_DETAIL_PROFILE, MY_PROFILE } from '../utils/mock'
 import type { SkillUser } from '../utils/mock'
+import { getRelationForUser, upsertRelation } from '../utils/publicProfiles'
 
 // ============ 用户列表 ============
 export async function getUsers(params?: { category?: string; page?: number }) {
@@ -138,7 +139,10 @@ export async function followUser(params: { targetUserId: string }) {
       return res.data || { isFollowing: true, isMutual: false }
     } catch (e) { apiWarn('[API] followUser cloud failed', e) }
   }
-  return { isFollowing: true, isMutual: false }
+  const current = getRelationForUser(params.targetUserId)
+  const isMutual = !!current.isFollower
+  upsertRelation(params.targetUserId, { isFollowing: true, isMutual })
+  return { isFollowing: true, isMutual }
 }
 
 export async function unfollowUser(params: { targetUserId: string }) {
@@ -148,6 +152,7 @@ export async function unfollowUser(params: { targetUserId: string }) {
       return res.data || { isFollowing: false, isMutual: false }
     } catch (e) { apiWarn('[API] unfollowUser cloud failed', e) }
   }
+  upsertRelation(params.targetUserId, { isFollowing: false, isMutual: false, isSpecial: false })
   return { isFollowing: false, isMutual: false }
 }
 
@@ -158,7 +163,7 @@ export async function getFollowStatus(params: { targetUserId: string }) {
       return res.data
     } catch (e) { apiWarn('[API] getFollowStatus cloud failed', e) }
   }
-  return { isFollowing: false, isFollower: false, isMutual: false, isSpecial: false, isBlocked: false, blockedByTarget: false }
+  return getRelationForUser(params.targetUserId)
 }
 
 export async function getFollowers(params: { userId?: string; page?: number; pageSize?: number }) {
@@ -188,6 +193,7 @@ export async function setSpecialFollow(params: { targetUserId: string; isSpecial
       return res.data || { isSpecial: params.isSpecial }
     } catch (e) { apiWarn('[API] setSpecialFollow cloud failed', e) }
   }
+  upsertRelation(params.targetUserId, { isSpecial: params.isSpecial, isFollowing: true })
   return { isSpecial: params.isSpecial }
 }
 
@@ -198,5 +204,6 @@ export async function blockUser(params: { targetUserId: string; isBlocked?: bool
       return res.data || { isBlocked: true, isFollowing: false }
     } catch (e) { apiWarn('[API] blockUser cloud failed', e) }
   }
+  upsertRelation(params.targetUserId, { isBlocked: true, isFollowing: false, isMutual: false, isSpecial: false })
   return { isBlocked: true, isFollowing: false }
 }

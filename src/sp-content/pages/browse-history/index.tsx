@@ -11,9 +11,9 @@ const typeLabels: Record<BrowseItem['type'], string> = {
 }
 
 const typeIcons: Record<BrowseItem['type'], string> = {
-  post: '📄',
-  skill: '⚡',
-  user: '👤',
+  post: '文',
+  skill: '技',
+  user: '人',
 }
 
 function formatTime(ts: number) {
@@ -54,13 +54,18 @@ export default function BrowseHistory() {
     const urls: Record<BrowseItem['type'], string> = {
       post: `/sp-content/pages/post-detail/index?postId=${encodeURIComponent(item.id)}`,
       skill: `/sp-content/pages/skill-detail/index?skillId=${encodeURIComponent(item.id)}`,
-      user: `/sp-content/pages/user-detail/index?userId=${encodeURIComponent(item.id)}&name=${encodeURIComponent(item.title)}`,
+      user: `/sp-profile/pages/profile/view?userId=${encodeURIComponent(item.id)}&name=${encodeURIComponent(item.title)}`,
     }
     Taro.navigateTo({ url: urls[item.type] })
   }
 
   return (
     <View className='history-page'>
+      <View className='history-comment-entry' onClick={() => Taro.navigateTo({ url: '/sp-social/pages/message-comments/index' })}>
+        <Text className='history-comment-title'>我的评论</Text>
+        <Text className='history-comment-desc'>查看我发出和收到的评论</Text>
+      </View>
+
       {items.length > 0 && (
         <View className='history-header'>
           <Text className='history-count'>共 {items.length} 条记录</Text>
@@ -70,7 +75,7 @@ export default function BrowseHistory() {
 
       {!items.length && (
         <View className='history-empty'>
-          <Text className='empty-icon'>◷</Text>
+          <Text className='empty-icon'>○</Text>
           <Text className='empty-text'>暂无浏览记录</Text>
         </View>
       )}
@@ -93,6 +98,3 @@ export default function BrowseHistory() {
     </View>
   )
 }
-
-
-

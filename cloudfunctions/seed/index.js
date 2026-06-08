@@ -285,7 +285,8 @@ exports.main = async (event, context) => {
     const { OPENID } = cloud.getWXContext()
     if (!OPENID) return { success: false, message: '无访问权限' }
     // 禁止自动执行，必须传 secret 参数
-    if (!event.secret || event.secret !== 'huanhu-admin-seed') {
+    const expectedSecret = process.env.SEED_SECRET
+    if (!expectedSecret || !event.secret || event.secret !== expectedSecret) {
       return { success: false, message: '需提供正确的 secret 参数' }
     }
 

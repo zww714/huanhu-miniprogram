@@ -2,93 +2,112 @@ import { useMemo, useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { Image, Text, View } from '@tarojs/components'
 import SearchBar from '../../../components/common/SearchBar'
-import { getPosts } from '../../../api'
-import { MOCK_POSTS } from '../../../utils/mock'
+import { getActivities, getPosts, getUsers } from '../../../api'
+import { ACTIVITIES, MOCK_POSTS, SKILL_USERS } from '../../../utils/mock'
 import { openUnifiedUserProfile } from '../../../utils/publicProfiles'
 import { getGenderSymbol, getGenderTone } from '../../../utils/gender'
 import './index.scss'
 
-const HOT_RECOMMENDS = ['Python 入门', '科研经验', '摄影搭子', '论文降重', 'AI工具', '校园活动']
+const HOT_RECOMMENDS = ['Python 入门', '科研经验', '摄影搭子', '论文写作', 'AI工具', '校园活动']
 
-type SearchPost = {
-  id?: string
-  _id?: string
+type ResultType = 'user' | 'skill' | 'post' | 'activity'
+
+type SearchResult = {
+  id: string
+  type: ResultType
   title: string
-  excerpt?: string
-  summary?: string
-  content?: string
+  desc: string
+  tags: string[]
   cover?: string
-  images?: string[]
-  tags?: string[]
-  mainCategory?: string
-  category?: string
   authorId?: string
-  userId?: string
   authorName?: string
-  author?: {
-    id?: string
-    userId?: string
-    name?: string
-    avatar?: string
-    college?: string
-    grade?: string
-    gender?: string
+  authorGender?: string
+  authorCollege?: string
+  source: any
+}
+
+function idOf(item: any) {
+  return String(item.id || item._id || item.userId || item.title || item.name || '')
+}
+
+function includesKeyword(values: unknown[], keyword: string) {
+  if (!keyword) return true
+  const lower = keyword.toLowerCase()
+  return values.filter(Boolean).some((value) => String(value).toLowerCase().includes(lower))
+}
+
+function skillsOf(user: any) {
+  return (user.canTeach || user.can || user.skills || []).map((skill: any) => typeof skill === 'string' ? skill : skill.name).filter(Boolean)
+}
+
+function wantsOf(user: any) {
+  return (user.wantToLearn || user.want || user.learnWants || []).filter(Boolean)
+}
+
+function normalizeUser(user: any): SearchResult {
+  const skills = skillsOf(user)
+  return {
+    id: idOf(user),
+    type: skills.length ? 'skill' : 'user',
+    title: user.name || '同学',
+    desc: user.intro || user.bio || user.lookingFor || 'TA还没有填写简介',
+    tags: [...skills, ...wantsOf(user)].slice(0, 4),
+    cover: user.avatar,
+    authorId: idOf(user),
+    authorName: user.name || '同学',
+    authorGender: user.gender,
+    authorCollege: user.college || user.school || '浙江大学',
+    source: user,
   }
-  likeCount?: number
-  commentCount?: number
-  favoriteCount?: number
-  likes?: number
-  comments?: number
-  createdAt?: string
 }
 
-function getPostId(post: SearchPost) {
-  return String(post.id || post._id || post.title || '')
+function normalizePost(post: any): SearchResult {
+  const author = post.author || {}
+  return {
+    id: idOf(post),
+    type: 'post',
+    title: post.title,
+    desc: post.summary || post.excerpt || post.content || '',
+    tags: post.tags || [],
+    cover: post.images?.[0] || post.cover,
+    authorId: post.authorId || post.userId || author.id || author.userId,
+    authorName: post.authorName || author.name || '同学',
+    authorGender: author.gender,
+    authorCollege: author.college || '浙江大学',
+    source: post,
+  }
 }
 
-function getAuthorId(post: SearchPost) {
-  return String(post.authorId || post.userId || post.author?.userId || post.author?.id || '')
-}
-
-function getAuthorName(post: SearchPost) {
-  return post.authorName || post.author?.name || '同学'
-}
-
-function getDesc(post: SearchPost) {
-  return post.summary || post.excerpt || post.content || '暂无内容'
-}
-
-function getCover(post: SearchPost) {
-  return post.images?.[0] || post.cover || ''
+function normalizeActivity(activity: any): SearchResult {
+  return {
+    id: idOf(activity),
+    type: 'activity',
+    title: activity.title,
+    desc: activity.description || `${activity.time || ''} ${activity.location || ''}`.trim(),
+    tags: activity.tags || [],
+    cover: activity.cover,
+    authorName: activity.organizer || '校园活动',
+    authorCollege: activity.location || '',
+    source: activity,
+  }
 }
 
 function isImage(value?: string) {
   return !!value && !value.startsWith('linear-gradient')
 }
 
-function matches(post: SearchPost, keyword: string) {
-  if (!keyword) return true
-  const pool = [
-    post.title,
-    getDesc(post),
-    post.mainCategory,
-    post.category,
-    getAuthorName(post),
-    ...(post.tags || []),
-  ].join(' ').toLowerCase()
-  return pool.includes(keyword.toLowerCase())
-}
-
-function formatTime(value?: string) {
-  if (!value) return '刚刚'
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-  return `${date.getMonth() + 1}-${date.getDate()}`
+function typeLabel(type: ResultType) {
+  if (type === 'user') return '用户'
+  if (type === 'skill') return '技能'
+  if (type === 'activity') return '活动'
+  return '帖子'
 }
 
 export default function SearchResults() {
   const [keyword, setKeyword] = useState('')
-  const [posts, setPosts] = useState<SearchPost[]>([])
+  const [posts, setPosts] = useState<any[]>([])
+  const [users, setUsers] = useState<any[]>([])
+  const [activities, setActivities] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useLoad(async (options) => {
@@ -96,17 +115,39 @@ export default function SearchResults() {
     setKeyword(nextKeyword)
     setLoading(true)
     try {
-      const data = await getPosts({ page: 0, keyword: nextKeyword })
-      setPosts(data?.length ? data : MOCK_POSTS)
+      const [postData, userData, activityData] = await Promise.all([
+        getPosts({ page: 0, keyword: nextKeyword }),
+        getUsers({ page: 0 }),
+        getActivities({ page: 0 }),
+      ])
+      setPosts(postData?.length ? postData : MOCK_POSTS)
+      setUsers(userData?.length ? userData : SKILL_USERS)
+      setActivities(activityData?.length ? activityData : ACTIVITIES)
     } catch (error) {
-      console.warn('[SearchResults] load posts failed', error)
+      console.warn('[SearchResults] load failed', error)
       setPosts(MOCK_POSTS)
+      setUsers(SKILL_USERS)
+      setActivities(ACTIVITIES)
     } finally {
       setLoading(false)
     }
   })
 
-  const visiblePosts = useMemo(() => posts.filter((post) => matches(post, keyword.trim())), [keyword, posts])
+  const visibleResults = useMemo(() => {
+    const all = [
+      ...users.map(normalizeUser),
+      ...posts.map(normalizePost),
+      ...activities.map(normalizeActivity),
+    ]
+    const text = keyword.trim()
+    return all.filter((item) => includesKeyword([
+      item.title,
+      item.desc,
+      item.authorName,
+      item.authorCollege,
+      ...item.tags,
+    ], text))
+  }, [activities, keyword, posts, users])
 
   const submitSearch = (value?: string) => {
     const text = String(value ?? keyword).trim()
@@ -116,14 +157,26 @@ export default function SearchResults() {
     Taro.setStorageSync('homeRecentSearches', nextRecent)
   }
 
-  const openPost = (post: SearchPost) => {
-    Taro.navigateTo({ url: `/sp-content/pages/post-detail/index?postId=${encodeURIComponent(getPostId(post))}&from=search&keyword=${encodeURIComponent(keyword)}` })
-  }
-
-  const openAuthor = (post: SearchPost) => {
-    const userId = getAuthorId(post)
-    if (!userId) return
-    openUnifiedUserProfile(userId, getAuthorName(post))
+  const openResult = (item: SearchResult) => {
+    if (item.type === 'user' || item.type === 'skill') {
+      openUnifiedUserProfile(item.authorId || item.id, item.authorName || item.title)
+      return
+    }
+    if (item.type === 'activity') {
+      const activity = item.source
+      const query = [
+        `id=${encodeURIComponent(activity.id || activity._id || item.id)}`,
+        `title=${encodeURIComponent(activity.title || item.title)}`,
+        `organizer=${encodeURIComponent(activity.organizer || '')}`,
+        `time=${encodeURIComponent(activity.time || '')}`,
+        `location=${encodeURIComponent(activity.location || '')}`,
+        `participants=${encodeURIComponent(String(activity.participants || activity.participantCount || 0))}`,
+        `maxParticipants=${encodeURIComponent(String(activity.maxParticipants || ''))}`,
+      ].join('&')
+      Taro.navigateTo({ url: `/sp-content/pages/activity-register/index?${query}` })
+      return
+    }
+    Taro.navigateTo({ url: `/sp-content/pages/post-detail/index?postId=${encodeURIComponent(item.id)}&from=search&keyword=${encodeURIComponent(keyword)}` })
   }
 
   return (
@@ -132,11 +185,11 @@ export default function SearchResults() {
         <SearchBar
           className='search-result-bar'
           value={keyword}
-          placeholder='搜索帖子、技能、活动或同学'
+          placeholder='搜索昵称、技能、帖子或活动'
           onInput={setKeyword}
           onConfirm={submitSearch}
         />
-        <Text className='search-summary'>与“{keyword || '全部'}”相关的帖子</Text>
+        <Text className='search-summary'>与“{keyword || '全部'}”相关的结果</Text>
       </View>
 
       <View className='hot-search-card'>
@@ -154,42 +207,36 @@ export default function SearchResults() {
         {loading ? (
           <View className='search-empty'><Text>正在搜索...</Text></View>
         ) : null}
-        {!loading && !visiblePosts.length ? (
-          <View className='search-empty'><Text>没有找到相关帖子，换个关键词试试</Text></View>
+        {!loading && !visibleResults.length ? (
+          <View className='search-empty'><Text>未找到结果，换个关键词试试</Text></View>
         ) : null}
-        {visiblePosts.map((post) => {
-          const cover = getCover(post)
-          return (
-            <View className='search-card' key={getPostId(post)} onClick={() => openPost(post)}>
-              <View className='search-cover'>
-                {isImage(cover) ? <Image className='search-cover-img' src={cover} mode='aspectFill' lazyLoad /> : <Text>{post.mainCategory || post.category || '帖子'}</Text>}
+        {visibleResults.map((item) => (
+          <View className='search-card' key={`${item.type}_${item.id}`} onClick={() => openResult(item)}>
+            <View className='search-cover'>
+              {isImage(item.cover) ? <Image className='search-cover-img' src={item.cover || ''} mode='aspectFill' lazyLoad /> : <Text>{typeLabel(item.type)}</Text>}
+            </View>
+            <View className='search-main'>
+              <View className='search-title-row'>
+                <Text className='search-title' numberOfLines={2}>{item.title}</Text>
+                <Text className='search-type'>{typeLabel(item.type)}</Text>
               </View>
-              <View className='search-main'>
-                <View className='search-title-row'>
-                  <Text className='search-title' numberOfLines={2}>{post.title}</Text>
-                  <Text className='search-type'>{post.mainCategory || post.category || '帖子'}</Text>
-                </View>
-                <Text className='search-desc' numberOfLines={2}>{getDesc(post)}</Text>
-                <View className='search-author' onClick={(event) => { event.stopPropagation(); openAuthor(post) }}>
-                  <Text className='search-author-name'>{getAuthorName(post)}</Text>
-                  {getGenderSymbol({ gender: post.author?.gender, name: getAuthorName(post), id: getAuthorId(post) }) ? (
-                    <Text className={`search-gender search-gender--${getGenderTone({ gender: post.author?.gender, name: getAuthorName(post), id: getAuthorId(post) })}`}>
-                      {getGenderSymbol({ gender: post.author?.gender, name: getAuthorName(post), id: getAuthorId(post) })}
-                    </Text>
-                  ) : null}
-                  <Text className='search-author-meta'>{post.author?.college || '浙江大学'} · {formatTime(post.createdAt)}</Text>
-                </View>
-                <View className='search-actions'>
-                  <Text>♡ {Number(post.likeCount ?? post.likes ?? 0)}</Text>
-                  <Text>💬 {Number(post.commentCount ?? post.comments ?? 0)}</Text>
-                  <Text>☆ {Number(post.favoriteCount ?? 0)}</Text>
-                </View>
+              <Text className='search-desc' numberOfLines={2}>{item.desc}</Text>
+              <View className='search-author'>
+                <Text className='search-author-name'>{item.authorName || typeLabel(item.type)}</Text>
+                {getGenderSymbol({ gender: item.authorGender, name: item.authorName, id: item.authorId }) ? (
+                  <Text className={`search-gender search-gender--${getGenderTone({ gender: item.authorGender, name: item.authorName, id: item.authorId })}`}>
+                    {getGenderSymbol({ gender: item.authorGender, name: item.authorName, id: item.authorId })}
+                  </Text>
+                ) : null}
+                <Text className='search-author-meta'>{item.authorCollege || ''}</Text>
+              </View>
+              <View className='search-actions'>
+                {item.tags.slice(0, 3).map((tag) => <Text key={`${item.id}_${tag}`}>{tag}</Text>)}
               </View>
             </View>
-          )
-        })}
+          </View>
+        ))}
       </View>
     </View>
   )
 }
-

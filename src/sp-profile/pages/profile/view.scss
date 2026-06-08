@@ -343,6 +343,62 @@ page {
   justify-content: center;
 }
 
+.profile-skill-sections {
+  margin-top: 28rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+}
+
+.profile-skill-section {
+  padding: 24rpx;
+  border-radius: 28rpx;
+  background: #FFFFFF;
+  border: 1rpx solid #E2E8F0;
+  box-shadow: 0 4rpx 16rpx rgba(15, 23, 42, 0.04);
+}
+
+.profile-skill-title {
+  display: block;
+  color: #0F172A;
+  font-size: 28rpx;
+  line-height: 36rpx;
+  font-weight: 800;
+}
+
+.profile-skill-tags {
+  margin-top: 16rpx;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14rpx;
+}
+
+.profile-skill-tag {
+  padding: 8rpx 18rpx;
+  border-radius: 999rpx;
+  background: #EAF2FF;
+  color: #2563EB;
+  font-size: 24rpx;
+  line-height: 32rpx;
+  font-weight: 700;
+}
+
+.profile-skill-tag.want {
+  background: #FFF7ED;
+  color: #EA580C;
+}
+
+.profile-skill-tag.verified {
+  background: #ECFDF5;
+  color: #059669;
+}
+
+.profile-skill-empty {
+  color: #94A3B8;
+  font-size: 24rpx;
+  line-height: 32rpx;
+}
+
 .report-link {
   color: #CBD5E1;
   font-size: 26rpx;

@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Image, Textarea } from '@tarojs/components'
+import { View, Text, ScrollView, Image } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { useEffect, useMemo, useState } from 'react'
 import {
@@ -9,6 +9,7 @@ import {
 } from '../../../api'
 import { CURRENT_USER } from '../../../utils/mock'
 import {
+  getPublicPosts,
   getPublicSkills,
   getPublicUser,
   getRelationForUser,
@@ -17,10 +18,7 @@ import {
   type PublicUser,
 } from '../../../utils/publicProfiles'
 import { getGenderSymbol, getGenderTone } from '../../../utils/gender'
-import { getMyRatingForUser, getRatingSummary, saveRating } from '../../../utils/ratings'
 import './view.scss'
-
-const RATING_TAGS = ['沟通顺畅', '很有帮助', '技能扎实', '准时靠谱', '体验不错']
 
 type FollowState = {
   isFollowing: boolean
@@ -46,16 +44,17 @@ function isRenderableImage(src?: string) {
   return !!src && !src.startsWith('linear-gradient') && !src.includes('/assets/avatar.png')
 }
 
+function calcMatchDegree(user: PublicUser, skills: any[]) {
+  const wants = Array.isArray(user.wantToLearn) ? user.wantToLearn : []
+  const verifiedSkillCount = skills.filter((skill) => Number(skill.proofCount || 0) > 0).length
+  return Math.min(100, verifiedSkillCount * 30 + skills.length * 15 + wants.length * 5)
+}
+
 export default function ProfileView() {
   const [routeUser, setRouteUser] = useState({ id: '', name: '' })
   const [remoteUser, setRemoteUser] = useState<any>(null)
   const [followState, setFollowState] = useState<FollowState>(DEFAULT_FOLLOW)
   const [followLoading, setFollowLoading] = useState(false)
-  const [ratingVersion, setRatingVersion] = useState(0)
-  const [ratingPanelVisible, setRatingPanelVisible] = useState(false)
-  const [draftRating, setDraftRating] = useState(5)
-  const [draftTags, setDraftTags] = useState<string[]>(['沟通顺畅'])
-  const [draftContent, setDraftContent] = useState('')
 
   useLoad((options) => {
     setRouteUser({
@@ -109,6 +108,7 @@ export default function ProfileView() {
       campus: remoteUser.campus || fallback.campus,
       intro: remoteUser.intro || remoteUser.bio || fallback.intro,
       canTeach: remoteUser.canTeach || remoteUser.skills || getPublicSkills(fallback.id),
+      wantToLearn: remoteUser.wantToLearn || remoteUser.learnWants || remoteUser.want || fallback.wantToLearn,
       followerCount: remoteUser.followerCount ?? remoteUser.stats?.followers ?? fallback.followerCount,
       followingCount: remoteUser.followingCount ?? remoteUser.stats?.following ?? fallback.followingCount,
       gender: remoteUser.gender || (fallback as any).gender,
@@ -117,12 +117,11 @@ export default function ProfileView() {
 
   const isSelf = user.id === CURRENT_USER.id || user.name === CURRENT_USER.name
   const metaLine = [user.school, user.college, user.grade, user.campus].filter(Boolean).join(' · ')
-  const ratingFallback = Number(remoteUser?.rating ?? 4.8)
-  const ratingSummary = getRatingSummary(user.id, (Number.isFinite(ratingFallback) ? ratingFallback : 4.8) + ratingVersion * 0)
-  const myRating = getMyRatingForUser(user.id)
-  const rating = ratingSummary.average.toFixed(1)
   const skills = Array.isArray(user.canTeach) ? user.canTeach : getPublicSkills(user.id)
-  const fullStars = Math.round(ratingSummary.average)
+  const posts = getPublicPosts(user.id)
+  const wants = Array.isArray(user.wantToLearn) ? user.wantToLearn : []
+  const verifiedSkills = skills.filter((skill: any) => Number(skill.proofCount || 0) > 0)
+  const matchDegree = calcMatchDegree(user, skills)
 
   const goBack = () => {
     const pages = getCurrentPages()
@@ -171,39 +170,6 @@ export default function ProfileView() {
     })
   }
 
-  const openRatingPanel = () => {
-    if (isSelf) {
-      Taro.navigateTo({ url: `/sp-content/pages/my-ratings/index?userId=${encodeURIComponent(user.id)}&name=${encodeURIComponent(user.name)}` })
-      return
-    }
-    const existing = getMyRatingForUser(user.id)
-    setDraftRating(existing?.rating || 5)
-    setDraftTags(existing?.tags?.length ? existing.tags : ['沟通顺畅'])
-    setDraftContent(existing?.content || '')
-    setRatingPanelVisible(true)
-  }
-
-  const toggleDraftTag = (tag: string) => {
-    setDraftTags((current) => current.includes(tag)
-      ? current.filter((item) => item !== tag)
-      : [...current, tag]
-    )
-  }
-
-  const submitRating = () => {
-    saveRating({
-      targetUserId: user.id,
-      targetUserName: user.name,
-      rating: draftRating,
-      tags: draftTags,
-      content: draftContent.trim(),
-      relatedType: 'profile',
-    })
-    setRatingPanelVisible(false)
-    setRatingVersion((current) => current + 1)
-    Taro.showToast({ title: myRating ? '评价已更新' : '评价已提交', icon: 'success' })
-  }
-
   const goOverview = (key: 'skills' | 'posts' | 'followers' | 'following') => {
     const pathMap: Record<string, string> = {
       skills: '/sp-content/pages/user-skills/index',
@@ -214,6 +180,17 @@ export default function ProfileView() {
     Taro.navigateTo({ url: `${pathMap[key] || pathMap.skills}?userId=${encodeURIComponent(user.id)}` })
   }
 
+  const renderSkillSection = (title: string, items: any[], empty: string, tone = '') => (
+    <View className='profile-skill-section'>
+      <Text className='profile-skill-title'>{title}</Text>
+      <View className='profile-skill-tags'>
+        {items.length ? items.slice(0, 4).map((item: any) => (
+          <Text className={`profile-skill-tag ${tone}`} key={item.id || item.name || item}>{item.name || item}</Text>
+        )) : <Text className='profile-skill-empty'>{empty}</Text>}
+      </View>
+    </View>
+  )
+
   return (
     <ScrollView scrollY className='view-scroll' showScrollbar={false} enhanced bounces={false}>
       <View className='view-page'>
@@ -223,7 +200,6 @@ export default function ProfileView() {
           <View className='nav-spacer' />
         </View>
 
-        {/* ── 个人资料卡片 ── */}
         <View className='profile-card'>
           <View className='profile-main-row'>
             <View className='avatar-wrap'>
@@ -250,20 +226,17 @@ export default function ProfileView() {
               <Text className='profile-bio' numberOfLines={2}>{user.intro || 'TA 还没有填写简介。'}</Text>
             </View>
 
-            <View className='rating-card' onClick={openRatingPanel}>
-              <Text className='rating-label'>评分</Text>
-              <Text className='rating-score'>{rating}</Text>
-              <Text className='rating-stars'>
-                {String('★').repeat(fullStars).padEnd(5, '☆')}
-              </Text>
+            <View className='rating-card'>
+              <Text className='rating-label'>匹配程度</Text>
+              <Text className='rating-score'>{matchDegree}</Text>
+              <Text className='rating-stars'>基于技能</Text>
             </View>
           </View>
 
-          {/* ── 操作按钮 ── */}
           {!isSelf && (
             <View className='card-actions'>
               <View className='act-chat' onClick={goChat}>
-                <Text>💬 发消息</Text>
+                <Text>发消息</Text>
               </View>
               <View
                 className={followState.isFollowing ? 'act-follow following' : 'act-follow'}
@@ -275,13 +248,12 @@ export default function ProfileView() {
           )}
         </View>
 
-        {/* ── 统计行 ── */}
         <View className='stats-card'>
           {[
             { label: '技能', value: skills.length, icon: '</>', key: 'skills' as const },
-            { label: '发布', value: 0, icon: '+', key: 'posts' as const },
-            { label: '粉丝', value: user.followerCount || 0, icon: '○', key: 'followers' as const },
-            { label: '关注', value: user.followingCount || 0, icon: '◎', key: 'following' as const },
+            { label: '发布', value: posts.length, icon: '+', key: 'posts' as const },
+            { label: '粉丝', value: user.followerCount || 0, icon: '●', key: 'followers' as const },
+            { label: '关注', value: user.followingCount || 0, icon: '●', key: 'following' as const },
           ].map((item, index) => (
             <View key={item.key} className={`stat-item ${index < 3 ? 'with-line' : ''}`} onClick={() => goOverview(item.key)}>
               <Text className='stat-icon'>{item.icon}</Text>
@@ -291,54 +263,17 @@ export default function ProfileView() {
           ))}
         </View>
 
-      {/* ── 举报 ── */}
+        <View className='profile-skill-sections'>
+          {renderSkillSection('我会', skills, '暂未公开')}
+          {renderSkillSection('我想学', wants, '暂未填写', 'want')}
+          {renderSkillSection('已认证', verifiedSkills, '暂无认证技能', 'verified')}
+        </View>
+
         {!isSelf && (
           <View className='report-bar'>
-            <Text className='report-link' onClick={reportUser}>⚐ 举报TA</Text>
+            <Text className='report-link' onClick={reportUser}>举报TA</Text>
           </View>
         )}
-
-        {/* ── 评价弹窗 ── */}
-        {ratingPanelVisible ? (
-          <View className='rating-mask' onClick={() => setRatingPanelVisible(false)}>
-            <View className='rating-panel' onClick={(event) => event.stopPropagation()}>
-              <View className='rating-panel-head'>
-                <Text className='rating-panel-title'>{myRating ? '修改评价' : `评价 ${user.name}`}</Text>
-                <Text className='rating-panel-close' onClick={() => setRatingPanelVisible(false)}>×</Text>
-              </View>
-              <View className='star-row'>
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Text
-                    key={star}
-                    className={star <= draftRating ? 'star active' : 'star'}
-                    onClick={() => setDraftRating(star)}
-                  >
-                    ★
-                  </Text>
-                ))}
-              </View>
-              <View className='rating-tag-row'>
-                {RATING_TAGS.map((tag) => (
-                  <Text
-                    key={tag}
-                    className={draftTags.includes(tag) ? 'rating-tag active' : 'rating-tag'}
-                    onClick={() => toggleDraftTag(tag)}
-                  >
-                    {tag}
-                  </Text>
-                ))}
-              </View>
-              <Textarea
-                className='rating-textarea'
-                value={draftContent}
-                maxlength={120}
-                placeholder='可以补充一下具体的合作体验'
-                onInput={(event) => setDraftContent(String(event.detail.value || ''))}
-              />
-              <View className='rating-submit' onClick={submitRating}><Text>提交评价</Text></View>
-            </View>
-          </View>
-        ) : null}
       </View>
     </ScrollView>
   )

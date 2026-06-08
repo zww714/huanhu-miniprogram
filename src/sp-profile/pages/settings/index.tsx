@@ -4,25 +4,28 @@ import './index.scss'
 
 const SETTINGS = [
   {
-    key: 'account',
-    title: '账号与安全',
-    desc: '账号资料、认证与登录安全',
-    icon: '盾',
-    tone: 'blue',
+    key: 'privacy',
+    title: '隐私设置',
+    desc: '主页展示、联系权限和浏览记录',
+    icon: '隐',
+    tone: 'purple',
+    type: 'detail',
   },
   {
     key: 'notice',
     title: '消息通知',
     desc: '赞藏、关注、评论与系统提醒',
-    icon: '铃',
+    icon: '通',
     tone: 'green',
+    type: 'detail',
   },
   {
-    key: 'privacy',
-    title: '隐私设置',
-    desc: '主页可见性与互动权限',
-    icon: '锁',
-    tone: 'purple',
+    key: 'account',
+    title: '账号登录',
+    desc: '登录、切换账号和认证状态',
+    icon: '账',
+    tone: 'blue',
+    type: 'login',
   },
   {
     key: 'cache',
@@ -30,6 +33,7 @@ const SETTINGS = [
     desc: '清理本地临时数据，不影响云端资料',
     icon: '清',
     tone: 'orange',
+    type: 'cache',
   },
   {
     key: 'about',
@@ -37,6 +41,7 @@ const SETTINGS = [
     desc: '版本、平台说明与反馈入口',
     icon: '换',
     tone: 'blue',
+    type: 'detail',
   },
 ]
 
@@ -69,8 +74,12 @@ export default function Settings() {
   }
 
   const handleItemClick = (item: typeof SETTINGS[number]) => {
-    if (item.key === 'cache') {
+    if (item.type === 'cache') {
       clearCache()
+      return
+    }
+    if (item.type === 'login') {
+      Taro.navigateTo({ url: '/sp-common/pages/login/index' })
       return
     }
     openDetail(item.key, item.title)
@@ -96,12 +105,6 @@ export default function Settings() {
           </View>
         ))}
       </View>
-
-      <View className='login-card' onClick={() => Taro.navigateTo({ url: '/sp-common/pages/login/index' })}>
-        <Text>登录 / 切换账号</Text>
-      </View>
     </View>
   )
 }
-
-
