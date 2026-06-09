@@ -216,10 +216,10 @@ export const SKILL_USERS: SkillUser[] = [
 export const FILTER_TAGS = ['全部', '热门', 'AI工具', '语言', '设计工具', '运动']
 
 export const INTEREST_GROUPS = [
-  { name: '炒股搭子', icon: 'trending', color: '#EFF6FF', iconColor: '#2563EB', followers: '1.2万' },
-  { name: '做饭搭子', icon: 'chef', color: '#F0FDF4', iconColor: '#10B981', followers: '8千' },
-  { name: '游戏搭子', icon: 'gamepad', color: '#FEF2F2', iconColor: '#EF4444', followers: '2.1万' },
-  { name: '摄影搭子', icon: 'camera', color: '#F0F9FF', iconColor: '#06B6D4', followers: '6千' },
+  { name: '炒股搭子', icon: 'trending', color: '#EFF6FF', iconColor: '#2563EB' },
+  { name: '做饭搭子', icon: 'chef', color: '#F0FDF4', iconColor: '#10B981' },
+  { name: '游戏搭子', icon: 'gamepad', color: '#FEF2F2', iconColor: '#EF4444' },
+  { name: '摄影搭子', icon: 'camera', color: '#F0F9FF', iconColor: '#06B6D4' },
 ]
 
 // ========== POSTS ==========
@@ -1138,7 +1138,7 @@ export const MY_PROFILE = {
   gender: 'male' as 'male' | 'female' | 'private',
   campus: '紫金港',
   bio: '擅长 Python 和数据分析，想找摄影搭子',
-  stats: { skills: 5, posts: 0, followers: 0, following: 0 },
+  stats: { skills: 0, posts: 0, followers: 0, following: 0 },
 }
 
 // ========== 认证技能（需官方验证） ==========
@@ -1398,7 +1398,7 @@ export const USER_DETAIL_PROFILE = {
   college: '物理学院',
   grade: '博士在读',
   bio: '擅长用 AI 和编程工具帮助同学快速上手科研与项目实践',
-  stats: { skills: 5, posts: 0, followers: 0, following: 0 },
+  stats: { skills: 0, posts: 0, followers: 0, following: 0 },
   is_following: false,
   can_message: true,
   skills: [

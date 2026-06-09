@@ -17,7 +17,6 @@ import {
   lower, getRecordId, firstChar, isRenderableImage,
   normalizeSkill, userSkills, userWants, userInterestLabels,
   getUserName, getUserCampus, getUserCollege, getUserIntro,
-  getMatchRate,
   userMatchesKeyword, activityMatchesKeyword,
   mergePendingSkill, mergePendingPartner, mergePendingActivity,
 } from './utils/helpers'
@@ -230,7 +229,6 @@ export default function Index() {
     const id = getRecordId(user)
     const skills = userSkills(user)
     const wants = userWants(user)
-    const matchRate = getMatchRate(user, index)
     const followed = !!followedUsers[id] || (!!id && getRelationForUser(id).isFollowing)
     const name = getUserName(user)
     const genderSymbol = getGenderSymbol(user as any)
@@ -258,11 +256,6 @@ export default function Index() {
           </View>
 
           <View className='home-match-side'>
-            <View className='home-match-text'>
-              <Text className='home-match-number'>{matchRate}</Text>
-              <Text className='home-match-percent'>%</Text>
-              <Text className='home-match-label'>匹配</Text>
-            </View>
             <Text className={followed ? 'home-heart home-heart--active' : 'home-heart'} onClick={() => toggleFollow(user)}>
               {followed ? '✓' : '＋'}
             </Text>

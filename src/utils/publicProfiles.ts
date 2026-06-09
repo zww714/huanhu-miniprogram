@@ -67,11 +67,182 @@ export type PublicRelation = {
   isMutual: boolean
   isSpecial: boolean
   isBlocked: boolean
+  source?: 'local'
 }
 
 export const PUBLIC_RELATION_STORAGE_KEY = 'publicUserRelations'
 
 export const PUBLIC_USERS: PublicUser[] = [
+  {
+    id: '1',
+    name: '陈同学',
+    gender: 'male',
+    verified: true,
+    school: '浙江大学',
+    college: '物理学院',
+    major: '物理',
+    grade: '博士在读',
+    campus: '紫金港',
+    intro: '擅长用 AI 和编程工具帮助同学快速上手科研与项目实践。',
+    canTeach: [],
+    wantToLearn: ['摄影', '产品设计', '羽毛球', '桌游'],
+    interests: ['科研', 'AI', '摄影'],
+    followerCount: 0,
+    followingCount: 0,
+  },
+  {
+    id: '2',
+    name: '小熊软糖',
+    gender: 'female',
+    verified: true,
+    school: '浙江大学',
+    college: '计算机学院',
+    major: '计算机科学',
+    grade: '研一',
+    campus: '玉泉',
+    intro: '擅长英语学习方法与翻译技巧，帮助提升语言应用能力。',
+    canTeach: [],
+    wantToLearn: ['Python', '数据分析'],
+    interests: ['英语', '学习'],
+    followerCount: 0,
+    followingCount: 0,
+  },
+  {
+    id: '3',
+    name: '橙子汽水',
+    gender: 'female',
+    verified: true,
+    school: '浙江大学',
+    college: '电气学院',
+    major: '电气工程',
+    grade: '大三',
+    campus: '紫金港',
+    intro: '擅长嵌入式开发与硬件调试，喜欢动手解决实际问题。',
+    canTeach: [],
+    wantToLearn: ['AI工具', '摄影'],
+    interests: ['硬件', '摄影'],
+    followerCount: 0,
+    followingCount: 0,
+  },
+  {
+    id: 'partner-1',
+    name: '陈思思',
+    gender: 'female',
+    verified: true,
+    school: '浙江大学',
+    college: '生命科学学院',
+    major: '数据科学',
+    grade: '大二',
+    campus: '紫金港',
+    intro: '喜欢周末去西湖边骑行，找一起骑行的伙伴。',
+    canTeach: [],
+    wantToLearn: ['摄影'],
+    interests: ['骑行', '运动'],
+    followerCount: 0,
+    followingCount: 0,
+  },
+  {
+    id: 'partner-2',
+    name: '赵子轩',
+    gender: 'male',
+    verified: false,
+    school: '浙江大学',
+    college: '计算机学院',
+    major: '计算机科学',
+    grade: '大三',
+    campus: '玉泉',
+    intro: '刚入坑桌游，想找人一起玩狼人杀和阿瓦隆。',
+    canTeach: [],
+    wantToLearn: ['产品设计'],
+    interests: ['桌游', '游戏'],
+    followerCount: 0,
+    followingCount: 0,
+  },
+  {
+    id: 'partner-3',
+    name: '林晓晓',
+    gender: 'female',
+    verified: true,
+    school: '浙江大学',
+    college: '外国语学院',
+    major: '英语',
+    grade: '研一',
+    campus: '西溪',
+    intro: '摄影爱好者，周末喜欢扫街，找摄影小伙伴互拍。',
+    canTeach: [],
+    wantToLearn: ['AI工具'],
+    interests: ['摄影', '修图', '徒步', '桌游'],
+    followerCount: 0,
+    followingCount: 0,
+  },
+  {
+    id: 'partner-4',
+    name: '周明远',
+    gender: 'male',
+    verified: true,
+    school: '浙江大学',
+    college: '数学科学学院',
+    major: '数据科学',
+    grade: '研一',
+    campus: '紫金港',
+    intro: '考研党，每天图书馆打卡，找一起学习监督的研友。',
+    canTeach: [],
+    wantToLearn: ['Python'],
+    interests: ['学习', '自习'],
+    followerCount: 0,
+    followingCount: 0,
+  },
+  {
+    id: 'partner-5',
+    name: '吴悦然',
+    gender: 'female',
+    verified: false,
+    school: '浙江大学',
+    college: '外国语学院',
+    major: '英语',
+    grade: '大一',
+    campus: '西溪',
+    intro: '民谣吉他爱好者，想组校园乐队，找主唱和鼓手。',
+    canTeach: [],
+    wantToLearn: ['摄影'],
+    interests: ['音乐', '吉他'],
+    followerCount: 0,
+    followingCount: 0,
+  },
+  {
+    id: 'partner-6',
+    name: '孙浩宇',
+    gender: 'male',
+    verified: true,
+    school: '浙江大学',
+    college: '材料学院',
+    major: '材料科学',
+    grade: '研二',
+    campus: '玉泉',
+    intro: '周末喜欢爬山露营，已经走过杭州多条徒步路线。',
+    canTeach: [],
+    wantToLearn: ['数据分析'],
+    interests: ['旅行', '徒步'],
+    followerCount: 0,
+    followingCount: 0,
+  },
+  {
+    id: 'partner-7',
+    name: '郑雅文',
+    gender: 'female',
+    verified: false,
+    school: '浙江大学',
+    college: '管理学院',
+    major: '数据科学',
+    grade: '大四',
+    campus: '紫金港',
+    intro: '烘焙达人，会做各种蛋糕甜点，想找人一起探店。',
+    canTeach: [],
+    wantToLearn: ['产品设计'],
+    interests: ['美食', '探店'],
+    followerCount: 0,
+    followingCount: 0,
+  },
   {
     id: '10086',
     name: '陈同学',
@@ -193,6 +364,96 @@ export const PUBLIC_USERS: PublicUser[] = [
 
 export const PUBLIC_SKILLS: PublicSkill[] = [
   {
+    id: 'home-ai-tools',
+    userId: '1',
+    name: 'AI工具',
+    level: 5,
+    intro: '熟悉 AI 工具在科研资料整理、写作和项目实践中的使用。',
+    tags: ['Prompt', '科研效率', '论文写作'],
+    proofCount: 1,
+    workCount: 0,
+  },
+  {
+    id: 'home-python',
+    userId: '1',
+    name: 'Python',
+    level: 4,
+    intro: '可以帮助同学入门 Python 数据处理和脚本自动化。',
+    tags: ['Python', '数据分析', '自动化'],
+    proofCount: 1,
+    workCount: 0,
+  },
+  {
+    id: 'home-data-analysis',
+    userId: '1',
+    name: '数据分析',
+    level: 3,
+    intro: '能梳理课程作业和科研数据的基础分析流程。',
+    tags: ['pandas', '可视化', '课程作业'],
+    proofCount: 0,
+    workCount: 0,
+  },
+  {
+    id: 'home-paper-writing',
+    userId: '1',
+    name: '论文写作',
+    level: 3,
+    intro: '可以交流论文结构、资料整理和初稿修改方法。',
+    tags: ['写作', '文献整理', '表达'],
+    proofCount: 0,
+    workCount: 0,
+  },
+  {
+    id: 'home-english',
+    userId: '2',
+    name: '英语',
+    level: 5,
+    intro: '擅长英语学习方法、口语表达和写作修改。',
+    tags: ['口语', '写作', '表达'],
+    proofCount: 1,
+    workCount: 0,
+  },
+  {
+    id: 'home-writing',
+    userId: '2',
+    name: '写作',
+    level: 4,
+    intro: '可以帮助优化英文写作结构和表达准确性。',
+    tags: ['英文写作', '结构', '修改'],
+    proofCount: 0,
+    workCount: 0,
+  },
+  {
+    id: 'home-translation',
+    userId: '2',
+    name: '翻译',
+    level: 3,
+    intro: '可以交流中英文互译和材料润色技巧。',
+    tags: ['翻译', '润色', '表达'],
+    proofCount: 0,
+    workCount: 0,
+  },
+  {
+    id: 'home-matlab',
+    userId: '3',
+    name: 'MATLAB',
+    level: 5,
+    intro: '熟悉 MATLAB 建模、数据处理和课程实验分析。',
+    tags: ['MATLAB', '建模', '实验'],
+    proofCount: 1,
+    workCount: 0,
+  },
+  {
+    id: 'home-embedded',
+    userId: '3',
+    name: '嵌入式开发',
+    level: 2,
+    intro: '可以交流单片机、硬件调试和基础嵌入式项目。',
+    tags: ['硬件', '调试', '项目'],
+    proofCount: 0,
+    workCount: 0,
+  },
+  {
     id: 'ai-tools',
     userId: '10086',
     name: 'AI工具',
@@ -285,6 +546,136 @@ export const PUBLIC_SKILLS: PublicSkill[] = [
 ]
 
 export const PUBLIC_POSTS: PublicPost[] = [
+  {
+    id: 'home-chen-1',
+    authorId: '1',
+    authorName: '陈同学',
+    title: 'AI 工具如何辅助科研入门',
+    summary: '整理了从资料检索、文献摘要到实验记录的 AI 工具使用流程。',
+    content: '这篇笔记主要分享如何把 AI 工具当成资料整理助手，而不是替代自己的判断。',
+    tags: ['AI工具', '科研'],
+    visibility: 'public',
+    likeCount: 0,
+    commentCount: 0,
+    createdAt: '2天前',
+  },
+  {
+    id: 'home-bear-1',
+    authorId: '2',
+    authorName: '小熊软糖',
+    title: '英语口语练习的一周计划',
+    summary: '分享一个适合课程和面试准备的口语练习节奏。',
+    content: '口语练习可以按跟读、复述、主题表达和复盘四步走。',
+    tags: ['英语', '写作'],
+    visibility: 'public',
+    likeCount: 0,
+    commentCount: 0,
+    createdAt: '3天前',
+  },
+  {
+    id: 'home-orange-1',
+    authorId: '3',
+    authorName: '橙子汽水',
+    title: '硬件调试前需要确认的几件事',
+    summary: '从供电、接口、日志到最小复现，整理嵌入式调试前的检查清单。',
+    content: '硬件问题先从可观测信号开始排查，逐步缩小范围。',
+    tags: ['MATLAB', '嵌入式开发'],
+    visibility: 'public',
+    likeCount: 0,
+    commentCount: 0,
+    createdAt: '4天前',
+  },
+  {
+    id: 'partner-1-post',
+    authorId: 'partner-1',
+    authorName: '陈思思',
+    title: '周末西湖骑行搭子招募',
+    summary: '想找节奏轻松的骑行伙伴，路线可以从校园到西湖边。',
+    content: '希望安全第一，路线提前确认，适合喜欢户外和拍照的同学。',
+    tags: ['骑行', '运动'],
+    visibility: 'public',
+    likeCount: 0,
+    commentCount: 0,
+    createdAt: '2天前',
+  },
+  {
+    id: 'partner-2-post',
+    authorId: 'partner-2',
+    authorName: '赵子轩',
+    title: '找桌游搭子一起开轻松局',
+    summary: '狼人杀、阿瓦隆都可以，新手友好，主要是周末放松。',
+    content: '希望大家时间稳定，规则可以现场一起熟悉。',
+    tags: ['桌游', '游戏'],
+    visibility: 'public',
+    likeCount: 0,
+    commentCount: 0,
+    createdAt: '3天前',
+  },
+  {
+    id: 'partner-3-post',
+    authorId: 'partner-3',
+    authorName: '林晓晓',
+    title: '周末校园扫街摄影约拍',
+    summary: '想找摄影小伙伴互拍，地点可以在西溪或紫金港。',
+    content: '可以一起练构图、光线和后期，也欢迎新手。',
+    tags: ['摄影', '修图'],
+    visibility: 'public',
+    likeCount: 0,
+    commentCount: 0,
+    createdAt: '1天前',
+  },
+  {
+    id: 'partner-4-post',
+    authorId: 'partner-4',
+    authorName: '周明远',
+    title: '找图书馆自习监督搭子',
+    summary: '考研复习期想找稳定打卡的同学，互相同步计划。',
+    content: '主要是数学和专业课复习，希望每天能简单复盘进度。',
+    tags: ['学习', '自习'],
+    visibility: 'public',
+    likeCount: 0,
+    commentCount: 0,
+    createdAt: '4天前',
+  },
+  {
+    id: 'partner-5-post',
+    authorId: 'partner-5',
+    authorName: '吴悦然',
+    title: '想找校园乐队搭子',
+    summary: '民谣吉他爱好者，想找主唱和鼓手一起练歌。',
+    content: '先从简单曲目开始，时间可以周末协调。',
+    tags: ['音乐', '吉他'],
+    visibility: 'public',
+    likeCount: 0,
+    commentCount: 0,
+    createdAt: '5天前',
+  },
+  {
+    id: 'partner-6-post',
+    authorId: 'partner-6',
+    authorName: '孙浩宇',
+    title: '周末徒步路线交流',
+    summary: '想找喜欢户外的同学一起规划轻量徒步路线。',
+    content: '路线强度以安全和体验为主，出发前会确认天气和装备。',
+    tags: ['旅行', '徒步'],
+    visibility: 'public',
+    likeCount: 0,
+    commentCount: 0,
+    createdAt: '6天前',
+  },
+  {
+    id: 'partner-7-post',
+    authorId: 'partner-7',
+    authorName: '郑雅文',
+    title: '找探店和烘焙交流搭子',
+    summary: '喜欢甜点和咖啡，想找人一起探店或交流烘焙经验。',
+    content: '可以从校园周边开始，也可以分享简单烘焙配方。',
+    tags: ['美食', '探店'],
+    visibility: 'public',
+    likeCount: 0,
+    commentCount: 0,
+    createdAt: '1周前',
+  },
   {
     id: '1',
     authorId: '10086',
@@ -391,57 +782,13 @@ export const PUBLIC_POSTS: PublicPost[] = [
   },
 ]
 
-export const PUBLIC_REVIEWS: PublicReview[] = [
-  {
-    id: 'review-u1-1',
-    userId: 'u1',
-    reviewerId: 'u_math',
-    reviewerName: '上岸锦鲤',
-    rating: 5,
-    tags: ['讲得清楚', '有耐心'],
-    content: 'Python 数据分析讲得很清楚，案例也很实用，帮我解决了课程作业里的大问题。',
-    relatedType: 'skill',
-    relatedTitle: 'Python 编程',
-    createdAt: '5天前',
-  },
-  {
-    id: 'review-photo-1',
-    userId: 'u_photo',
-    reviewerId: 'u1',
-    reviewerName: '科研小达人',
-    rating: 5,
-    tags: ['准时', '氛围好'],
-    content: '一起拍校园照片很轻松，还顺手教了我几个构图小技巧。',
-    relatedType: 'activity',
-    relatedTitle: '校园摄影',
-    createdAt: '1周前',
-  },
-  {
-    id: 'review-current-1',
-    userId: '10086',
-    reviewerId: 'u1',
-    reviewerName: '科研小达人',
-    rating: 5,
-    tags: ['认真', '专业'],
-    content: 'AI 工具流程整理得很系统，对论文写作很有帮助。',
-    relatedType: 'skill',
-    relatedTitle: 'AI工具',
-    createdAt: '3天前',
-  },
-]
+export const PUBLIC_REVIEWS: PublicReview[] = []
 
-export const PUBLIC_RELATIONS: PublicRelation[] = [
-  { userId: CURRENT_USER.id, targetUserId: 'u1', isFollowing: false, isFollower: true, isMutual: false, isSpecial: false, isBlocked: false },
-  { userId: CURRENT_USER.id, targetUserId: 'u_photo', isFollowing: true, isFollower: false, isMutual: false, isSpecial: true, isBlocked: false },
-  { userId: CURRENT_USER.id, targetUserId: 'u_math', isFollowing: false, isFollower: false, isMutual: false, isSpecial: false, isBlocked: false },
-  { userId: CURRENT_USER.id, targetUserId: 'u_boardgame', isFollowing: true, isFollower: true, isMutual: true, isSpecial: false, isBlocked: false },
-  { userId: CURRENT_USER.id, targetUserId: 'u_career', isFollowing: false, isFollower: true, isMutual: false, isSpecial: false, isBlocked: false },
-]
+export const PUBLIC_RELATIONS: PublicRelation[] = []
 
 export function normalizePublicUserId(id?: string | number, name?: string) {
   const raw = String(id || '').trim()
   if (raw && raw !== 'undefined') {
-    if (raw === '1' && (name === '陈同学' || name === CURRENT_USER.name)) return CURRENT_USER.id
     const namedUser = PUBLIC_USERS.find((item) => item.name === name)
     if (/^\d+$/.test(raw) && namedUser) return namedUser.id
     return raw
@@ -452,7 +799,7 @@ export function normalizePublicUserId(id?: string | number, name?: string) {
 
 export function openUnifiedUserProfile(userId?: string | number, name?: string) {
   const normalizedId = normalizePublicUserId(userId, name)
-  const isCurrentUser = normalizedId === CURRENT_USER.id || name === CURRENT_USER.name || name === '陈同学'
+  const isCurrentUser = normalizedId === CURRENT_USER.id
   if (isCurrentUser) {
     Taro.switchTab({ url: '/pages/profile/index' })
     return
@@ -508,7 +855,10 @@ export function getUserIntro(user: PublicUser) {
 
 export function readPublicRelations() {
   const cached = Taro.getStorageSync(PUBLIC_RELATION_STORAGE_KEY)
-  return Array.isArray(cached) && cached.length ? cached as PublicRelation[] : PUBLIC_RELATIONS
+  if (Array.isArray(cached) && cached.length) {
+    return (cached as PublicRelation[]).filter((relation) => relation.source === 'local')
+  }
+  return PUBLIC_RELATIONS
 }
 
 export function savePublicRelations(relations: PublicRelation[]) {
@@ -542,19 +892,22 @@ export function upsertRelation(targetUserId: string, patch: Partial<PublicRelati
       isSpecial: false,
       isBlocked: false,
       ...patch,
+      source: 'local',
     }]
   savePublicRelations(next)
   return next
 }
 
 export function getFollowersForUser(userId: string) {
-  const pool = ['u1', 'u_photo', 'u_math', 'u_career', 'u_boardgame', 'u_frontend', '10086']
-  return pool.filter((id) => id !== userId).slice(0, userId === 'u_photo' ? 4 : 3).map((id) => getPublicUser(id))
+  return readPublicRelations()
+    .filter((relation) => relation.targetUserId === userId && relation.isFollowing)
+    .map((relation) => getPublicUser(relation.userId))
 }
 
 export function getFollowingForUser(userId: string) {
-  const pool = ['u_math', 'u_photo', 'u_frontend', 'u_boardgame', 'u1', 'u_career']
-  return pool.filter((id) => id !== userId).slice(0, userId === 'u1' ? 4 : 3).map((id) => getPublicUser(id))
+  return readPublicRelations()
+    .filter((relation) => relation.userId === userId && relation.isFollowing)
+    .map((relation) => getPublicUser(relation.targetUserId))
 }
 
 export function setPendingPublicPost(post: PublicPost, author: PublicUser) {
