@@ -70,8 +70,16 @@ exports.main = async (event = {}) => {
 
       if (current.data.length) {
         const me = current.data[0]
-        isFollowing = (me.following || []).includes(userId)
-        isFollower = (target.data.following || []).includes(me._id)
+        const followingRes = await db.collection('follows')
+          .where({ followerId: me._id, followingId: userId, status: 'active' })
+          .limit(1)
+          .get()
+        const followerRes = await db.collection('follows')
+          .where({ followerId: userId, followingId: me._id, status: 'active' })
+          .limit(1)
+          .get()
+        isFollowing = followingRes.data.length > 0
+        isFollower = followerRes.data.length > 0
       }
     }
 

@@ -442,7 +442,8 @@ export function normalizePublicUserId(id?: string | number, name?: string) {
   const raw = String(id || '').trim()
   if (raw && raw !== 'undefined') {
     if (raw === '1' && (name === '陈同学' || name === CURRENT_USER.name)) return CURRENT_USER.id
-    if (/^\d+$/.test(raw) && raw !== CURRENT_USER.id) return `u${raw}`
+    const namedUser = PUBLIC_USERS.find((item) => item.name === name)
+    if (/^\d+$/.test(raw) && namedUser) return namedUser.id
     return raw
   }
   const user = PUBLIC_USERS.find((item) => item.name === name)
@@ -456,9 +457,10 @@ export function openUnifiedUserProfile(userId?: string | number, name?: string) 
     Taro.switchTab({ url: '/pages/profile/index' })
     return
   }
-  const query = normalizedId
-    ? `userId=${encodeURIComponent(normalizedId)}`
-    : `name=${encodeURIComponent(name || '同学')}`
+  const query = [
+    normalizedId ? `userId=${encodeURIComponent(normalizedId)}` : '',
+    name ? `name=${encodeURIComponent(name)}` : '',
+  ].filter(Boolean).join('&') || `name=${encodeURIComponent('同学')}`
   Taro.navigateTo({ url: `/sp-profile/pages/profile/view?${query}` })
 }
 

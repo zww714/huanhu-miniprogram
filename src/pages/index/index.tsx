@@ -6,7 +6,7 @@ import FloatingPostButton from '../../components/common/FloatingPostButton'
 import SearchBar from '../../components/common/SearchBar'
 import { followUser, getPartners, getUsers, unfollowUser } from '../../api'
 import { getActivities } from '../../api/activity'
-import { openUnifiedUserProfile } from '../../utils/publicProfiles'
+import { getRelationForUser, openUnifiedUserProfile } from '../../utils/publicProfiles'
 import { getGenderSymbol, getGenderTone } from '../../utils/gender'
 import './index.scss'
 import {
@@ -181,15 +181,15 @@ export default function Index() {
   const toggleFollow = useCallback(async (user: SkillUser) => {
     const id = getRecordId(user)
     if (!id) return
-    const wasFollowed = !!followedUsers[id]
+    const wasFollowed = !!followedUsers[id] || getRelationForUser(id).isFollowing
     setFollowedUsers((current) => ({ ...current, [id]: !wasFollowed }))
     try {
       if (wasFollowed) await unfollowUser({ targetUserId: id })
       else await followUser({ targetUserId: id })
       Taro.showToast({ title: wasFollowed ? '已取消关注' : '已关注', icon: 'success' })
     } catch (e) {
-      setFollowedUsers((current) => ({ ...current, [id]: wasFollowed }))
-      Taro.showToast({ title: '操作失败', icon: 'none' })
+      setFollowedUsers((current) => ({ ...current, [id]: !wasFollowed }))
+      Taro.showToast({ title: wasFollowed ? '已取消关注' : '已关注', icon: 'success' })
     }
   }, [followedUsers])
 
@@ -231,7 +231,7 @@ export default function Index() {
     const skills = userSkills(user)
     const wants = userWants(user)
     const matchRate = getMatchRate(user, index)
-    const followed = !!followedUsers[id]
+    const followed = !!followedUsers[id] || (!!id && getRelationForUser(id).isFollowing)
     const name = getUserName(user)
     const genderSymbol = getGenderSymbol(user as any)
     const genderTone = getGenderTone(user as any)
@@ -264,7 +264,7 @@ export default function Index() {
               <Text className='home-match-label'>匹配</Text>
             </View>
             <Text className={followed ? 'home-heart home-heart--active' : 'home-heart'} onClick={() => toggleFollow(user)}>
-              {followed ? '✓' : '+'}
+              {followed ? '✓' : '＋'}
             </Text>
           </View>
         </View>

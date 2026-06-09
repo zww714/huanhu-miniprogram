@@ -654,21 +654,23 @@ page {
 }
 
 .home-heart {
-  width: 58rpx;
-  height: 58rpx;
-  border-radius: $radius-pill;
-  background: $color-primary;
-  color: #FFFFFF;
-  font-size: 38rpx;
-  line-height: 58rpx;
+  width: 62rpx;
+  height: 52rpx;
+  border-radius: 24rpx;
+  border: 2rpx solid rgba(37, 99, 235, 0.28);
+  background: #FFFFFF;
+  color: $color-primary;
+  font-size: 34rpx;
+  line-height: 50rpx;
   text-align: center;
-  font-weight: 800;
-  box-shadow: 0 10rpx 22rpx rgba(37, 99, 235, 0.2);
+  font-weight: 900;
+  box-shadow: 0 8rpx 18rpx rgba(37, 99, 235, 0.12);
 }
 
 .home-heart--active {
-  background: #EAF2FF;
-  color: $color-primary;
+  border-color: transparent;
+  background: $color-primary;
+  color: #FFFFFF;
   box-shadow: none;
 }
 

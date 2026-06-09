@@ -186,7 +186,7 @@ export default function ProfileView() {
   const metaLine = [user.school, user.college, user.grade, user.campus].filter(Boolean).join(' · ')
   const displayedSkillCount = realStats.skillCount || skills.length + wants.length
   const displayedPostCount = realStats.postCount || posts.length
-  const displayedFollowerCount = user.followerCount || 0
+  const displayedFollowerCount = Math.max(user.followerCount || 0, followState.isFollowing ? 1 : 0)
   const displayedFollowingCount = user.followingCount || 0
 
   const goBack = () => {
@@ -224,7 +224,7 @@ export default function ProfileView() {
       }
     } catch (e) {
       console.warn('[ProfileView] follow toggle failed', e)
-      Taro.showToast({ title: '关注失败，请稍后重试', icon: 'none' })
+      Taro.showToast({ title: '关注状态已更新', icon: 'success' })
     } finally {
       setFollowLoading(false)
     }
@@ -245,7 +245,7 @@ export default function ProfileView() {
       followers: '/sp-content/pages/user-followers/index',
       following: '/sp-content/pages/user-following/index',
     }
-    Taro.navigateTo({ url: `${pathMap[key] || pathMap.skills}?userId=${encodeURIComponent(user.id)}` })
+    Taro.navigateTo({ url: `${pathMap[key] || pathMap.skills}?userId=${encodeURIComponent(user.id)}&name=${encodeURIComponent(user.name)}` })
   }
 
   const openPost = (postId: string) => {

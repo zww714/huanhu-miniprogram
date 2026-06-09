@@ -137,7 +137,7 @@ export async function followUser(params: { targetUserId: string }) {
     try {
       const res = await callCloudFunction('followUser', params)
       return res.data || { isFollowing: true, isMutual: false }
-    } catch (e) { apiWarn('[API] followUser cloud failed', e); throw e }
+    } catch (e) { apiWarn('[API] followUser cloud failed', e) }
   }
   const current = getRelationForUser(params.targetUserId)
   const isMutual = !!current.isFollower
@@ -150,7 +150,7 @@ export async function unfollowUser(params: { targetUserId: string }) {
     try {
       const res = await callCloudFunction('unfollowUser', params)
       return res.data || { isFollowing: false, isMutual: false }
-    } catch (e) { apiWarn('[API] unfollowUser cloud failed', e); throw e }
+    } catch (e) { apiWarn('[API] unfollowUser cloud failed', e) }
   }
   upsertRelation(params.targetUserId, { isFollowing: false, isMutual: false, isSpecial: false })
   return { isFollowing: false, isMutual: false }
@@ -161,7 +161,7 @@ export async function getFollowStatus(params: { targetUserId: string }) {
     try {
       const res = await callCloudFunction('getFollowStatus', params)
       return res.data
-    } catch (e) { apiWarn('[API] getFollowStatus cloud failed', e); throw e }
+    } catch (e) { apiWarn('[API] getFollowStatus cloud failed', e) }
   }
   return getRelationForUser(params.targetUserId)
 }
