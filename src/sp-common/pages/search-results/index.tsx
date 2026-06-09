@@ -2,13 +2,15 @@ import { useMemo, useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { Image, Text, View } from '@tarojs/components'
 import SearchBar from '../../../components/common/SearchBar'
-import { getActivities, getPosts, getUsers } from '../../../api'
-import { ACTIVITIES, MOCK_POSTS, SKILL_USERS } from '../../../utils/mock'
+import { getActivities } from '../../../api/activity'
+import { getPosts } from '../../../api/post'
+import { getUsers } from '../../../api/user'
 import { openUnifiedUserProfile } from '../../../utils/publicProfiles'
 import { getGenderSymbol, getGenderTone } from '../../../utils/gender'
 import './index.scss'
 
 const HOT_RECOMMENDS = ['Python 入门', '科研经验', '摄影搭子', '论文写作', 'AI工具', '校园活动']
+const CAMPUS_TOPICS = ['期末复习搭子', '科研经验交流', '校园摄影', '实习面试', 'AI工具分享']
 
 type ResultType = 'user' | 'skill' | 'post' | 'activity'
 
@@ -27,21 +29,24 @@ type SearchResult = {
 }
 
 function idOf(item: any) {
+  if (!item) return ''
   return String(item.id || item._id || item.userId || item.title || item.name || '')
 }
 
 function includesKeyword(values: unknown[], keyword: string) {
   if (!keyword) return true
-  const lower = keyword.toLowerCase()
-  return values.filter(Boolean).some((value) => String(value).toLowerCase().includes(lower))
+  const lowerKeyword = keyword.toLowerCase()
+  return values.filter(Boolean).some((value) => String(value).toLowerCase().includes(lowerKeyword))
 }
 
 function skillsOf(user: any) {
-  return (user.canTeach || user.can || user.skills || []).map((skill: any) => typeof skill === 'string' ? skill : skill.name).filter(Boolean)
+  return (user?.canTeach || user?.can || user?.skills || [])
+    .map((skill: any) => typeof skill === 'string' ? skill : skill?.name)
+    .filter(Boolean)
 }
 
 function wantsOf(user: any) {
-  return (user.wantToLearn || user.want || user.learnWants || []).filter(Boolean)
+  return (user?.wantToLearn || user?.want || user?.learnWants || []).filter(Boolean)
 }
 
 function normalizeUser(user: any): SearchResult {
@@ -49,29 +54,29 @@ function normalizeUser(user: any): SearchResult {
   return {
     id: idOf(user),
     type: skills.length ? 'skill' : 'user',
-    title: user.name || '同学',
-    desc: user.intro || user.bio || user.lookingFor || 'TA还没有填写简介',
+    title: user?.name || '同学',
+    desc: user?.intro || user?.bio || user?.lookingFor || 'TA还没有填写简介',
     tags: [...skills, ...wantsOf(user)].slice(0, 4),
-    cover: user.avatar,
+    cover: user?.avatar,
     authorId: idOf(user),
-    authorName: user.name || '同学',
-    authorGender: user.gender,
-    authorCollege: user.college || user.school || '浙江大学',
+    authorName: user?.name || '同学',
+    authorGender: user?.gender,
+    authorCollege: user?.college || user?.school || '浙江大学',
     source: user,
   }
 }
 
 function normalizePost(post: any): SearchResult {
-  const author = post.author || {}
+  const author = post?.author || {}
   return {
     id: idOf(post),
     type: 'post',
-    title: post.title,
-    desc: post.summary || post.excerpt || post.content || '',
-    tags: post.tags || [],
-    cover: post.images?.[0] || post.cover,
-    authorId: post.authorId || post.userId || author.id || author.userId,
-    authorName: post.authorName || author.name || '同学',
+    title: post?.title || '帖子',
+    desc: post?.summary || post?.excerpt || post?.content || '',
+    tags: post?.tags || [],
+    cover: post?.images?.[0] || post?.cover,
+    authorId: post?.authorId || post?.userId || author.id || author.userId,
+    authorName: post?.authorName || author.name || '同学',
     authorGender: author.gender,
     authorCollege: author.college || '浙江大学',
     source: post,
@@ -82,12 +87,12 @@ function normalizeActivity(activity: any): SearchResult {
   return {
     id: idOf(activity),
     type: 'activity',
-    title: activity.title,
-    desc: activity.description || `${activity.time || ''} ${activity.location || ''}`.trim(),
-    tags: activity.tags || [],
-    cover: activity.cover,
-    authorName: activity.organizer || '校园活动',
-    authorCollege: activity.location || '',
+    title: activity?.title || '校园活动',
+    desc: activity?.description || `${activity?.time || ''} ${activity?.location || ''}`.trim(),
+    tags: activity?.tags || [],
+    cover: activity?.cover,
+    authorName: activity?.organizer || '校园活动',
+    authorCollege: activity?.location || '',
     source: activity,
   }
 }
@@ -116,18 +121,18 @@ export default function SearchResults() {
     setLoading(true)
     try {
       const [postData, userData, activityData] = await Promise.all([
-        getPosts({ page: 0, keyword: nextKeyword }),
+        getPosts({ page: 0 }),
         getUsers({ page: 0 }),
         getActivities({ page: 0 }),
       ])
-      setPosts(postData?.length ? postData : MOCK_POSTS)
-      setUsers(userData?.length ? userData : SKILL_USERS)
-      setActivities(activityData?.length ? activityData : ACTIVITIES)
+      setPosts(Array.isArray(postData) ? postData : [])
+      setUsers(Array.isArray(userData) ? userData : [])
+      setActivities(Array.isArray(activityData) ? activityData : [])
     } catch (error) {
       console.warn('[SearchResults] load failed', error)
-      setPosts(MOCK_POSTS)
-      setUsers(SKILL_USERS)
-      setActivities(ACTIVITIES)
+      setPosts([])
+      setUsers([])
+      setActivities([])
     } finally {
       setLoading(false)
     }
@@ -153,7 +158,9 @@ export default function SearchResults() {
     const text = String(value ?? keyword).trim()
     setKeyword(text)
     const recent = Taro.getStorageSync('homeRecentSearches')
-    const nextRecent = [text, ...(Array.isArray(recent) ? recent.filter((item) => item !== text) : [])].filter(Boolean).slice(0, 6)
+    const nextRecent = [text, ...(Array.isArray(recent) ? recent.filter((item) => item !== text) : [])]
+      .filter(Boolean)
+      .slice(0, 6)
     Taro.setStorageSync('homeRecentSearches', nextRecent)
   }
 
@@ -163,7 +170,7 @@ export default function SearchResults() {
       return
     }
     if (item.type === 'activity') {
-      const activity = item.source
+      const activity = item.source || {}
       const query = [
         `id=${encodeURIComponent(activity.id || activity._id || item.id)}`,
         `title=${encodeURIComponent(activity.title || item.title)}`,
@@ -237,6 +244,19 @@ export default function SearchResults() {
           </View>
         ))}
       </View>
+
+      {!loading && !visibleResults.length ? (
+        <View className='campus-topic-card'>
+          <Text className='campus-topic-title'>本周校园热议</Text>
+          <View className='campus-topic-list'>
+            {CAMPUS_TOPICS.map((topic) => (
+              <View className='campus-topic-chip' key={topic} onClick={() => submitSearch(topic)}>
+                <Text>{topic}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      ) : null}
     </View>
   )
 }
