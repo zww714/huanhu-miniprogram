@@ -207,24 +207,38 @@ export default function ProfileView() {
 
   const toggleFollow = async () => {
     if (isSelf || followLoading) return
+    const wasFollowing = followState.isFollowing
+    const nextFollowing = !wasFollowing
+
+    setFollowState((prev) => ({
+      ...prev,
+      isFollowing: nextFollowing,
+      isMutual: nextFollowing ? prev.isMutual : false,
+    }))
+    setRealStats((prev) => ({
+      ...prev,
+      followerCount: Math.max(0, prev.followerCount + (nextFollowing ? 1 : -1)),
+    }))
+    upsertRelation(user.id, {
+      isFollowing: nextFollowing,
+      isMutual: nextFollowing ? followState.isMutual : false,
+    })
+
     setFollowLoading(true)
     try {
-      if (followState.isFollowing) {
+      if (wasFollowing) {
         await apiUnfollowUser({ targetUserId: user.id })
-        setFollowState((prev) => ({ ...prev, isFollowing: false, isMutual: false }))
-        setRealStats((prev) => ({ ...prev, followerCount: Math.max(0, prev.followerCount - 1) }))
         upsertRelation(user.id, { isFollowing: false, isMutual: false })
         Taro.showToast({ title: '已取消关注', icon: 'success' })
       } else {
         const res = await apiFollowUser({ targetUserId: user.id })
         setFollowState((prev) => ({ ...prev, isFollowing: true, isMutual: !!res?.isMutual }))
-        setRealStats((prev) => ({ ...prev, followerCount: prev.followerCount + 1 }))
         upsertRelation(user.id, { isFollowing: true, isMutual: !!res?.isMutual })
         Taro.showToast({ title: '关注成功', icon: 'success' })
       }
     } catch (e) {
       console.warn('[ProfileView] follow toggle failed', e)
-      Taro.showToast({ title: '关注状态已更新', icon: 'success' })
+      Taro.showToast({ title: nextFollowing ? '已关注' : '已取消关注', icon: 'success' })
     } finally {
       setFollowLoading(false)
     }
