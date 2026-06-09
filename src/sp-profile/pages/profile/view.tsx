@@ -5,12 +5,15 @@ import {
   followUser as apiFollowUser,
   getFollowStatus,
   getUserDetail,
+  getUserPosts,
+  getUserSkills,
   unfollowUser as apiUnfollowUser,
 } from '../../../api'
 import { getUserStats } from '../../../api/stats'
 import { CURRENT_USER } from '../../../utils/mock'
 import {
   getPublicPosts,
+  getPublicSkills,
   getPublicUser,
   getRelationForUser,
   normalizePublicUserId,
@@ -44,16 +47,35 @@ function isRenderableImage(src?: string) {
   return !!src && !src.startsWith('linear-gradient') && !src.includes('/assets/avatar.png')
 }
 
-function calcMatchDegree(user: PublicUser, skills: any[]) {
-  if (!(user as any).hasRealSkillData) return 0
-  const wants = Array.isArray(user.wantToLearn) ? user.wantToLearn : []
-  const verifiedSkillCount = skills.filter((skill) => Number(skill.proofCount || 0) > 0).length
-  return Math.min(100, verifiedSkillCount * 30 + skills.length * 15 + wants.length * 5)
+function normalizeSkillItem(skill: any, index = 0) {
+  if (typeof skill === 'string') {
+    return { id: `want-${index}-${skill}`, name: skill, level: 0, tags: [] as string[], proofCount: 0 }
+  }
+  return {
+    ...skill,
+    id: skill.id || skill._id || `skill-${index}`,
+    name: skill.name || skill.title || '技能',
+    level: Number(skill.level || skill.skillLevel || 0),
+    tags: Array.isArray(skill.tags) ? skill.tags : [],
+    proofCount: Number(skill.proofCount || skill.verifiedCount || (skill.verified ? 1 : 0) || 0),
+  }
+}
+
+function normalizePostItem(post: any, index = 0) {
+  return {
+    ...post,
+    id: post.id || post._id || `post-${index}`,
+    title: post.title || 'TA的发布',
+    summary: post.summary || post.excerpt || post.content || '',
+    tags: Array.isArray(post.tags) ? post.tags : [],
+  }
 }
 
 export default function ProfileView() {
   const [routeUser, setRouteUser] = useState({ id: '', name: '' })
   const [remoteUser, setRemoteUser] = useState<any>(null)
+  const [remoteSkills, setRemoteSkills] = useState<any[]>([])
+  const [remotePosts, setRemotePosts] = useState<any[]>([])
   const [realStats, setRealStats] = useState({ followerCount: 0, followingCount: 0, postCount: 0, skillCount: 0 })
   const [followState, setFollowState] = useState<FollowState>(DEFAULT_FOLLOW)
   const [followLoading, setFollowLoading] = useState(false)
@@ -88,7 +110,9 @@ export default function ProfileView() {
           isBlocked: !!status.isBlocked || !!status.blockedByTarget,
         })
       })
-      .catch(() => setFollowState(getRelationForUser(userId)))
+      .catch(() => {
+        if (alive) setFollowState(getRelationForUser(userId))
+      })
 
     getUserStats(userId)
       .then((stats) => {
@@ -102,41 +126,68 @@ export default function ProfileView() {
       })
       .catch(() => undefined)
 
+    getUserSkills({ userId })
+      .then((data) => {
+        if (alive && Array.isArray(data)) setRemoteSkills(data)
+      })
+      .catch(() => undefined)
+
+    getUserPosts({ userId })
+      .then((data) => {
+        if (alive && Array.isArray(data)) setRemotePosts(data)
+      })
+      .catch(() => undefined)
+
     return () => { alive = false }
   }, [userId])
 
-  const user = useMemo<PublicUser>(() => {
-    const fallback = getPublicUser(userId, routeUser.name)
-    if (!remoteUser) return fallback
-    return {
-      ...fallback,
-      ...remoteUser,
-      id: remoteUser.id || remoteUser._id || fallback.id,
-      name: remoteUser.name || remoteUser.nickname || fallback.name,
-      avatar: remoteUser.avatar || fallback.avatar,
-      verified: remoteUser.verified ?? fallback.verified,
-      school: remoteUser.school || fallback.school,
-      college: remoteUser.college || fallback.college,
-      major: remoteUser.major || fallback.major,
-      grade: remoteUser.grade || fallback.grade,
-      campus: remoteUser.campus || fallback.campus,
-      intro: remoteUser.intro || remoteUser.bio || fallback.intro,
-      canTeach: remoteUser.canTeach || remoteUser.skills || [],
-      wantToLearn: remoteUser.wantToLearn || remoteUser.learnWants || remoteUser.want || fallback.wantToLearn,
-      followerCount: realStats.followerCount,
-      followingCount: realStats.followingCount,
-      gender: remoteUser.gender || (fallback as any).gender,
-      hasRealSkillData: Array.isArray(remoteUser.canTeach) || Array.isArray(remoteUser.skills),
-    }
-  }, [realStats.followerCount, realStats.followingCount, remoteUser, routeUser.name, userId])
+  const fallback = useMemo(() => getPublicUser(userId, routeUser.name), [routeUser.name, userId])
+
+  const skills = useMemo(() => {
+    const source = remoteSkills.length
+      ? remoteSkills
+      : remoteUser?.canTeach || remoteUser?.skills || getPublicSkills(fallback.id)
+    return (Array.isArray(source) ? source : []).map(normalizeSkillItem).filter((skill) => !!skill.name)
+  }, [fallback.id, remoteSkills, remoteUser])
+
+  const wants = useMemo(() => {
+    const source = remoteUser?.wantToLearn || remoteUser?.learnWants || remoteUser?.want || fallback.wantToLearn || []
+    return (Array.isArray(source) ? source : []).map(String).filter(Boolean)
+  }, [fallback.wantToLearn, remoteUser])
+
+  const posts = useMemo(() => {
+    const source = remotePosts.length ? remotePosts : getPublicPosts(fallback.id)
+    return (Array.isArray(source) ? source : []).map(normalizePostItem)
+  }, [fallback.id, remotePosts])
+
+  const verifiedSkills = useMemo(() => skills.filter((skill) => Number(skill.proofCount || 0) > 0 || !!skill.verified), [skills])
+
+  const user = useMemo<PublicUser>(() => ({
+    ...fallback,
+    ...(remoteUser || {}),
+    id: remoteUser?.id || remoteUser?._id || fallback.id,
+    name: remoteUser?.name || remoteUser?.nickname || fallback.name,
+    avatar: remoteUser?.avatar || fallback.avatar,
+    verified: remoteUser?.verified ?? fallback.verified,
+    school: remoteUser?.school || fallback.school,
+    college: remoteUser?.college || fallback.college,
+    major: remoteUser?.major || fallback.major,
+    grade: remoteUser?.grade || fallback.grade,
+    campus: remoteUser?.campus || fallback.campus,
+    intro: remoteUser?.intro || remoteUser?.bio || fallback.intro,
+    canTeach: skills as any,
+    wantToLearn: wants,
+    followerCount: realStats.followerCount,
+    followingCount: realStats.followingCount,
+    gender: remoteUser?.gender || fallback.gender || 'private',
+  }), [fallback, realStats.followerCount, realStats.followingCount, remoteUser, skills, wants])
 
   const isSelf = user.id === CURRENT_USER.id || user.name === CURRENT_USER.name
   const metaLine = [user.school, user.college, user.grade, user.campus].filter(Boolean).join(' · ')
-  const skills = Array.isArray(user.canTeach) ? user.canTeach : []
-  const posts = getPublicPosts(user.id)
-  const wants = Array.isArray(user.wantToLearn) ? user.wantToLearn : []
-  const verifiedSkills = skills.filter((skill: any) => Number(skill.proofCount || 0) > 0)
-  const matchDegree = calcMatchDegree(user, skills)
+  const displayedSkillCount = realStats.skillCount || skills.length + wants.length
+  const displayedPostCount = realStats.postCount || posts.length
+  const displayedFollowerCount = user.followerCount || 0
+  const displayedFollowingCount = user.followingCount || 0
 
   const goBack = () => {
     const pages = getCurrentPages()
@@ -161,17 +212,19 @@ export default function ProfileView() {
       if (followState.isFollowing) {
         await apiUnfollowUser({ targetUserId: user.id })
         setFollowState((prev) => ({ ...prev, isFollowing: false, isMutual: false }))
+        setRealStats((prev) => ({ ...prev, followerCount: Math.max(0, prev.followerCount - 1) }))
         upsertRelation(user.id, { isFollowing: false, isMutual: false })
         Taro.showToast({ title: '已取消关注', icon: 'success' })
       } else {
         const res = await apiFollowUser({ targetUserId: user.id })
         setFollowState((prev) => ({ ...prev, isFollowing: true, isMutual: !!res?.isMutual }))
+        setRealStats((prev) => ({ ...prev, followerCount: prev.followerCount + 1 }))
         upsertRelation(user.id, { isFollowing: true, isMutual: !!res?.isMutual })
         Taro.showToast({ title: '关注成功', icon: 'success' })
       }
     } catch (e) {
       console.warn('[ProfileView] follow toggle failed', e)
-      Taro.showToast({ title: '操作失败', icon: 'none' })
+      Taro.showToast({ title: '关注失败，请稍后重试', icon: 'none' })
     } finally {
       setFollowLoading(false)
     }
@@ -193,6 +246,10 @@ export default function ProfileView() {
       following: '/sp-content/pages/user-following/index',
     }
     Taro.navigateTo({ url: `${pathMap[key] || pathMap.skills}?userId=${encodeURIComponent(user.id)}` })
+  }
+
+  const openPost = (postId: string) => {
+    Taro.navigateTo({ url: `/sp-content/pages/post-detail/index?postId=${encodeURIComponent(postId)}&from=user-profile` })
   }
 
   const renderSkillSection = (title: string, items: any[], empty: string, tone = '') => (
@@ -230,21 +287,13 @@ export default function ProfileView() {
             <View className='profile-info'>
               <View className='name-row'>
                 <Text className='profile-name'>{user.name}</Text>
-                {getGenderSymbol(user as any) && (
-                  <Text className={`gender-symbol gender-symbol--${getGenderTone(user as any)}`}>{getGenderSymbol(user as any)}</Text>
-                )}
+                <Text className={`gender-symbol gender-symbol--${getGenderTone(user as any)}`}>{getGenderSymbol(user as any)}</Text>
                 {user.verified && (
                   <View className='verify-dot'><Text>✓</Text></View>
                 )}
               </View>
               <Text className='profile-meta' numberOfLines={2}>{metaLine || '浙江大学 · 在读'}</Text>
               <Text className='profile-bio' numberOfLines={2}>{user.intro || 'TA 还没有填写简介。'}</Text>
-            </View>
-
-            <View className='rating-card'>
-              <Text className='rating-label'>匹配程度</Text>
-              <Text className='rating-score'>{matchDegree}</Text>
-              <Text className='rating-stars'>基于技能</Text>
             </View>
           </View>
 
@@ -257,7 +306,7 @@ export default function ProfileView() {
                 className={followState.isFollowing ? 'act-follow following' : 'act-follow'}
                 onClick={toggleFollow}
               >
-                <Text>{followState.isFollowing ? '已关注' : '+ 关注TA'}</Text>
+                <Text>{followLoading ? '处理中' : followState.isFollowing ? '已关注' : '+ 关注TA'}</Text>
               </View>
             </View>
           )}
@@ -265,10 +314,10 @@ export default function ProfileView() {
 
         <View className='stats-card'>
           {[
-            { label: '技能', value: realStats.skillCount, icon: '</>', key: 'skills' as const },
-            { label: '发布', value: realStats.postCount, icon: '+', key: 'posts' as const },
-            { label: '粉丝', value: user.followerCount || 0, icon: '●', key: 'followers' as const },
-            { label: '关注', value: user.followingCount || 0, icon: '●', key: 'following' as const },
+            { label: '技能', value: displayedSkillCount, icon: '</>', key: 'skills' as const },
+            { label: '发布', value: displayedPostCount, icon: '+', key: 'posts' as const },
+            { label: '粉丝', value: displayedFollowerCount, icon: '○', key: 'followers' as const },
+            { label: '关注', value: displayedFollowingCount, icon: '●', key: 'following' as const },
           ].map((item, index) => (
             <View key={item.key} className={`stat-item ${index < 3 ? 'with-line' : ''}`} onClick={() => goOverview(item.key)}>
               <Text className='stat-icon'>{item.icon}</Text>
@@ -278,9 +327,27 @@ export default function ProfileView() {
           ))}
         </View>
 
+        <View className='profile-post-section'>
+          <View className='profile-section-head'>
+            <Text className='profile-section-title'>已发布</Text>
+            <Text className='profile-section-more' onClick={() => goOverview('posts')}>查看全部</Text>
+          </View>
+          {posts.length ? posts.slice(0, 3).map((post) => (
+            <View className='profile-post-item' key={post.id} onClick={() => openPost(post.id)}>
+              <Text className='profile-post-title' numberOfLines={1}>{post.title}</Text>
+              <Text className='profile-post-summary' numberOfLines={2}>{post.summary || '暂无内容摘要'}</Text>
+              <View className='profile-post-tags'>
+                {post.tags.slice(0, 3).map((tag: string) => <Text key={tag}>{tag}</Text>)}
+              </View>
+            </View>
+          )) : (
+            <Text className='profile-post-empty'>TA 还没有发布公开内容</Text>
+          )}
+        </View>
+
         <View className='profile-skill-sections'>
-          {renderSkillSection('我会', skills, '暂未公开')}
-          {renderSkillSection('我想学', wants, '暂未填写', 'want')}
+          {renderSkillSection('TA会', skills, '暂未公开')}
+          {renderSkillSection('TA想学', wants, '暂未填写', 'want')}
           {renderSkillSection('已认证', verifiedSkills, '暂无认证技能', 'verified')}
         </View>
 

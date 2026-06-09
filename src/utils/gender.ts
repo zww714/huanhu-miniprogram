@@ -9,24 +9,6 @@ type GenderSource = {
   authorId?: string | number
 }
 
-const GENDER_BY_NAME: Record<string, 'male' | 'female'> = {
-  陈同学: 'male',
-  张三: 'male',
-  王同学: 'male',
-  李学姐: 'female',
-  小熊软糖: 'female',
-  橘子汽水: 'female',
-  陈思思: 'female',
-  林晓晓: 'female',
-  吴悦然: 'female',
-  郑雅文: 'female',
-  科研小达人: 'female',
-  光影捕手: 'male',
-  上岸锦鲤: 'female',
-  实习记录员: 'male',
-  前端小结: 'male',
-}
-
 const GENDER_BY_ID: Record<string, 'male' | 'female'> = {
   '10086': 'male',
   user_chen: 'male',
@@ -35,6 +17,24 @@ const GENDER_BY_ID: Record<string, 'male' | 'female'> = {
   u_math: 'female',
   u_career: 'male',
   u_frontend: 'male',
+}
+
+const GENDER_BY_NAME: Record<string, 'male' | 'female'> = {
+  '陈同学': 'male',
+  '张三': 'male',
+  '王同学': 'male',
+  '李学姐': 'female',
+  '小熊软糖': 'female',
+  '橙子汽水': 'female',
+  '陈思思': 'female',
+  '林晓晴': 'female',
+  '吴悦然': 'female',
+  '郑雅文': 'female',
+  '科研小达人': 'female',
+  '光影捕手': 'male',
+  '上岸锦鲤': 'female',
+  '实习记录员': 'male',
+  '前端小结': 'male',
 }
 
 export function normalizeGender(value?: GenderLike): 'male' | 'female' | 'private' {
@@ -63,7 +63,7 @@ export function getGenderSymbol(source?: GenderSource | GenderLike) {
   const gender = getDisplayGender(source)
   if (gender === 'male') return '♂'
   if (gender === 'female') return '♀'
-  return ''
+  return '○'
 }
 
 export function getGenderTone(source?: GenderSource | GenderLike) {

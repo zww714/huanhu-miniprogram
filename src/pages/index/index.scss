@@ -597,21 +597,8 @@ page {
   background: #EC4899;
 }
 
-.home-status-tag {
-  padding: 4rpx 12rpx;
-  border-radius: $radius-sm;
-  font-size: 20rpx;
-  font-weight: 900;
-}
-
-.home-status-tag--match {
-  color: $color-warning;
-  background: #FFEDD5;
-}
-
-.home-status-tag--hot {
-  color: $color-danger;
-  background: #FEE2E2;
+.home-gender--private {
+  background: #94A3B8;
 }
 
 .home-user-meta,
@@ -667,13 +654,22 @@ page {
 }
 
 .home-heart {
-  color: #94A3B8;
-  font-size: 42rpx;
-  line-height: 1;
+  width: 58rpx;
+  height: 58rpx;
+  border-radius: $radius-pill;
+  background: $color-primary;
+  color: #FFFFFF;
+  font-size: 38rpx;
+  line-height: 58rpx;
+  text-align: center;
+  font-weight: 800;
+  box-shadow: 0 10rpx 22rpx rgba(37, 99, 235, 0.2);
 }
 
 .home-heart--active {
-  color: $color-danger;
+  background: #EAF2FF;
+  color: $color-primary;
+  box-shadow: none;
 }
 
 .home-user-tags {

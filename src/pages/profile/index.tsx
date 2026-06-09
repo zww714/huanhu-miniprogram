@@ -164,7 +164,6 @@ export default function Profile() {
 
   const p = profileData
   const systemAvatar = SYSTEM_AVATARS.find((item) => item.id === avatarUrl)
-  const profileRating = String(p.rating || 0)
   const userId = p.user_id || p.id || p._id || CHEN_PROFILE.user_id
   const stats = p.stats || {}
   const statValues = {
@@ -240,11 +239,6 @@ export default function Profile() {
               </Text>
             </View>
 
-            <View className='rating-card' onClick={() => go(withProfileParams('/sp-content/pages/my-ratings/index'))}>
-              <Text className='rating-label'>评分</Text>
-              <Text className='rating-score'>{profileRating}</Text>
-              <Text className='rating-stars'>★★★★★</Text>
-            </View>
           </View>
 
           <View className='profile-tag-lines'>

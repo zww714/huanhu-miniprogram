@@ -132,7 +132,7 @@ page {
 }
 
 .profile-name {
-  max-width: 220rpx;
+  max-width: 360rpx;
   color: #0F172A;
   font-size: 44rpx;
   line-height: 56rpx;
@@ -162,6 +162,10 @@ page {
 
 .gender-symbol--female {
   background: #EC4899;
+}
+
+.gender-symbol--private {
+  background: #94A3B8;
 }
 
 .verify-dot {
@@ -348,6 +352,85 @@ page {
   display: flex;
   flex-direction: column;
   gap: 18rpx;
+}
+
+.profile-post-section {
+  margin-top: 28rpx;
+  padding: 24rpx;
+  border-radius: 28rpx;
+  background: #FFFFFF;
+  border: 1rpx solid #E2E8F0;
+  box-shadow: 0 4rpx 16rpx rgba(15, 23, 42, 0.04);
+}
+
+.profile-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.profile-section-title {
+  color: #0F172A;
+  font-size: 30rpx;
+  line-height: 40rpx;
+  font-weight: 900;
+}
+
+.profile-section-more {
+  color: #2563EB;
+  font-size: 24rpx;
+  line-height: 32rpx;
+  font-weight: 800;
+}
+
+.profile-post-item {
+  margin-top: 18rpx;
+  padding: 20rpx 0;
+  border-top: 1rpx solid #E8EEF8;
+}
+
+.profile-post-title {
+  display: block;
+  color: #0F172A;
+  font-size: 28rpx;
+  line-height: 38rpx;
+  font-weight: 800;
+}
+
+.profile-post-summary {
+  display: block;
+  margin-top: 8rpx;
+  color: #64748B;
+  font-size: 24rpx;
+  line-height: 34rpx;
+}
+
+.profile-post-tags {
+  margin-top: 12rpx;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+}
+
+.profile-post-tags text {
+  padding: 5rpx 14rpx;
+  border-radius: 999rpx;
+  background: #F1F5F9;
+  color: #64748B;
+  font-size: 22rpx;
+  line-height: 30rpx;
+  font-weight: 700;
+}
+
+.profile-post-empty {
+  display: block;
+  margin-top: 18rpx;
+  padding: 26rpx 0;
+  color: #94A3B8;
+  font-size: 25rpx;
+  line-height: 36rpx;
+  text-align: center;
 }
 
 .profile-skill-section {

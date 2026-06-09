@@ -23,7 +23,7 @@ page {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 48rpx;
+  margin-bottom: 28rpx;
 }
 
 .back-icon,
@@ -70,10 +70,47 @@ page {
   font-weight: 900;
 }
 
+.skill-section {
+  margin-top: 28rpx;
+}
+
+.section-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18rpx;
+}
+
+.section-title {
+  color: #0F172A;
+  font-size: 32rpx;
+  line-height: 42rpx;
+  font-weight: 900;
+}
+
+.section-count {
+  color: #2563EB;
+  font-size: 24rpx;
+  line-height: 32rpx;
+  font-weight: 800;
+}
+
+.section-empty {
+  display: block;
+  padding: 34rpx;
+  border-radius: 28rpx;
+  background: #FFFFFF;
+  border: 1rpx solid rgba(226, 232, 240, 0.86);
+  color: #94A3B8;
+  font-size: 26rpx;
+  line-height: 36rpx;
+  text-align: center;
+}
+
 .skill-list {
   display: flex;
   flex-direction: column;
-  gap: 36rpx;
+  gap: 22rpx;
 }
 
 .skill-card {
@@ -164,4 +201,21 @@ page {
   font-size: 56rpx;
   line-height: 1;
   font-weight: 300;
+}
+
+.want-card {
+  min-height: 88rpx;
+  padding: 0 30rpx;
+  border-radius: 26rpx;
+  background: #FFFFFF;
+  border: 1rpx solid rgba(226, 232, 240, 0.86);
+  display: flex;
+  align-items: center;
+}
+
+.want-card text {
+  color: #EA580C;
+  font-size: 28rpx;
+  line-height: 38rpx;
+  font-weight: 800;
 }

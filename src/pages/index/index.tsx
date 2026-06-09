@@ -252,7 +252,6 @@ export default function Index() {
               <Text className='home-user-name'>{name}</Text>
               {genderSymbol ? <Text className={`home-gender home-gender--${genderTone}`}>{genderSymbol}</Text> : null}
               {user.verified ? <Text className='home-verified'>✓</Text> : null}
-              {index === 0 ? <Text className='home-status-tag home-status-tag--match'>高匹配</Text> : null}
             </View>
             <Text className='home-user-meta' numberOfLines={1}>{getUserCollege(user)} · {user.grade || '在读'}</Text>
             <Text className='home-user-intro' numberOfLines={2}>{getUserIntro(user)}</Text>
@@ -265,7 +264,7 @@ export default function Index() {
               <Text className='home-match-label'>匹配</Text>
             </View>
             <Text className={followed ? 'home-heart home-heart--active' : 'home-heart'} onClick={() => toggleFollow(user)}>
-              {followed ? '已关注' : '+关注'}
+              {followed ? '✓' : '+'}
             </Text>
           </View>
         </View>

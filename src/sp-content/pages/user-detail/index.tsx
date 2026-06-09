@@ -346,8 +346,8 @@ export default function UserDetail() {
 
         <View className='stat-row'>
           {[
-            { key: 'skills', label: '技能', value: detailUser.canTeach.length },
-            { key: 'posts', label: '发布', value: getPublicPosts(detailUser.id).length },
+            { key: 'skills', label: '技能', value: detailUser.canTeach.length + (detailUser.wantToLearn?.length || 0) },
+            { key: 'posts', label: '发布', value: posts.length },
             { key: 'followers', label: '粉丝', value: followerCount },
             { key: 'following', label: '关注', value: followingCount },
           ].map((item) => (
