@@ -17,12 +17,6 @@ import './index.scss'
 
 const CATEGORIES = ['推荐', '科研', '升学', '兴趣', '活动', '兼职']
 
-const HOT_TOPICS = [
-  { rank: 1, title: '# 浙大人毕业去哪了', count: '1231讨论', theme: 'red', desc: '收集不同学院同学的升学、就业和科研去向经验，适合正在规划路径的同学参考。' },
-  { rank: 2, title: '# 暑期科研经历分享', count: '856讨论', theme: 'blue', desc: '围绕暑研申请、导师联系、组会汇报和项目复盘展开讨论。' },
-  { rank: 3, title: '# 考研择校交流', count: '642讨论', theme: 'green', desc: '分享择校信息、复习节奏、资料整理和复试准备经验。' },
-]
-
 const CATEGORY_ICONS: Record<string, string> = {
   科研: '研',
   升学: '升',
@@ -348,7 +342,6 @@ export default function Discover() {
   const [postStats, setPostStats] = useState<Record<string, { likeCount: number; commentCount: number; favoriteCount: number }>>({})
   const [activityStats, setActivityStats] = useState<Record<string, number>>({})
   const [loading, setLoading] = useState(true)
-  const [topicPopupOpen, setTopicPopupOpen] = useState(false)
   const [likedItems, setLikedItems] = useState<Record<string, boolean>>({})
   const [favoritedItems, setFavoritedItems] = useState<Record<string, boolean>>({})
 
@@ -405,6 +398,23 @@ export default function Discover() {
       return itemMatchesCategory(item, category) && itemMatchesKeyword(item, keyword)
     })
   }, [activeCat, activities, keyword, posts])
+
+  const hotTopicPreview = useMemo(() => {
+    return posts
+      .map((post) => {
+        const id = getPostId(post)
+        const stats = postStats[id] || { likeCount: 0, commentCount: 0, favoriteCount: 0 }
+        return {
+          id,
+          title: post.title,
+          desc: post.summary || post.excerpt || post.content || '',
+          heat: stats.commentCount + stats.likeCount + stats.favoriteCount,
+          commentCount: stats.commentCount,
+        }
+      })
+      .sort((a, b) => b.heat - a.heat)
+      .slice(0, 3)
+  }, [postStats, posts])
 
   useEffect(() => {
     const ids = posts.map(getPostId).filter(Boolean)
@@ -478,12 +488,12 @@ export default function Discover() {
     openUnifiedUserProfile(item.authorId, item.authorName)
   }
 
-  const handleTopicClick = () => {
-    setTopicPopupOpen(true)
-  }
-
   const openSearch = () => {
     Taro.navigateTo({ url: `/sp-common/pages/search-results/index?keyword=${encodeURIComponent(searchQuery)}&from=discover` })
+  }
+
+  const openHotTopics = () => {
+    Taro.navigateTo({ url: '/sp-common/pages/hot-topics/index' })
   }
 
   const toggleLike = (id: string) => {
@@ -600,11 +610,6 @@ export default function Discover() {
     )
   }
 
-  const openTopicSearch = (topic: string) => {
-    const keyword = topic.replace(/^#\s*/, '')
-    Taro.navigateTo({ url: `/sp-common/pages/search-results/index?keyword=${encodeURIComponent(keyword)}&from=discover-topic` })
-  }
-
   return (
     <ErrorBoundary>
     <View className='discover-page'>
@@ -631,17 +636,24 @@ export default function Discover() {
 
         <View className='hot-topic-section'>
           <View className='section-header'>
-            <Text className='section-title'>🔥 本周校园热门话题</Text>
-            <Text className='section-more' onClick={() => setTopicPopupOpen(true)}>查看更多 &gt;</Text>
+            <Text className='section-title'>校园热榜</Text>
+            <Text className='section-more' onClick={openHotTopics}>查看全部 &gt;</Text>
           </View>
-          <View className='topic-grid'>
-            {HOT_TOPICS.map((topic) => (
-              <View className={`topic-card topic-card--${topic.theme}`} key={topic.title} onClick={handleTopicClick}>
-                <Text className='topic-rank'>#{topic.rank}</Text>
-                <Text className='topic-title' numberOfLines={2}>{topic.title}</Text>
-                <Text className='topic-count'>{topic.count}</Text>
+          <View className='topic-rank-list'>
+            {hotTopicPreview.length ? hotTopicPreview.map((topic, index) => (
+              <View className='topic-rank-row' key={topic.id} onClick={openHotTopics}>
+                <Text className={`topic-rank-index topic-rank-index--${index < 3 ? index + 1 : 'normal'}`}>{index + 1}</Text>
+                <View className='topic-rank-main'>
+                  <Text className='topic-rank-title' numberOfLines={1}>{topic.title}</Text>
+                  <Text className='topic-rank-desc' numberOfLines={1}>{topic.desc || '来自真实帖子互动'}</Text>
+                </View>
+                <Text className='topic-rank-heat'>{topic.commentCount} 讨论</Text>
               </View>
-            ))}
+            )) : (
+              <View className='topic-rank-empty' onClick={openHotTopics}>
+                <Text>暂无真实热榜数据</Text>
+              </View>
+            )}
           </View>
         </View>
 
@@ -660,31 +672,6 @@ export default function Discover() {
         className='discover-floating-post'
         onClick={() => Taro.navigateTo({ url: '/sp-content/pages/publish/index?mode=post' })}
       />
-      {topicPopupOpen ? (
-        <View className='topic-modal-mask' onClick={() => setTopicPopupOpen(false)}>
-          <View className='topic-modal' onClick={(event) => event.stopPropagation()}>
-            <View className='topic-modal-head'>
-              <Text className='topic-modal-title'>本周校园热门话题</Text>
-              <Text className='topic-modal-close' onClick={() => setTopicPopupOpen(false)}>×</Text>
-            </View>
-            <Text className='topic-modal-desc'>根据当前校园讨论热度，为你整理本周值得关注的话题。</Text>
-            <View className='topic-modal-list'>
-              {HOT_TOPICS.map((topic) => (
-                <View className='topic-modal-item' key={topic.title} onClick={() => openTopicSearch(topic.title)}>
-                  <View className={`topic-modal-rank topic-modal-rank--${topic.theme}`}>
-                    <Text>#{topic.rank}</Text>
-                  </View>
-                  <View className='topic-modal-item-main'>
-                    <Text className='topic-modal-item-title'>{topic.title}</Text>
-                    <Text className='topic-modal-item-desc'>{topic.desc}</Text>
-                    <Text className='topic-modal-item-count'>{topic.count}</Text>
-                  </View>
-                </View>
-              ))}
-            </View>
-          </View>
-        </View>
-      ) : null}
     </View>
     </ErrorBoundary>
   )

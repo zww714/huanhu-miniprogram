@@ -10,8 +10,6 @@ import { getGenderSymbol, getGenderTone } from '../../../utils/gender'
 import './index.scss'
 
 const HOT_RECOMMENDS = ['Python 入门', '科研经验', '摄影搭子', '论文写作', 'AI工具', '校园活动']
-const CAMPUS_TOPICS = ['期末复习搭子', '科研经验交流', '校园摄影', '实习面试', 'AI工具分享']
-
 type ResultType = 'user' | 'skill' | 'post' | 'activity'
 
 type SearchResult = {
@@ -164,6 +162,10 @@ export default function SearchResults() {
     Taro.setStorageSync('homeRecentSearches', nextRecent)
   }
 
+  const openHotTopics = () => {
+    Taro.navigateTo({ url: '/sp-common/pages/hot-topics/index' })
+  }
+
   const openResult = (item: SearchResult) => {
     if (item.type === 'user' || item.type === 'skill') {
       openUnifiedUserProfile(item.authorId || item.id, item.authorName || item.title)
@@ -246,15 +248,10 @@ export default function SearchResults() {
       </View>
 
       {!loading && !visibleResults.length ? (
-        <View className='campus-topic-card'>
+        <View className='campus-topic-card' onClick={openHotTopics}>
           <Text className='campus-topic-title'>本周校园热议</Text>
-          <View className='campus-topic-list'>
-            {CAMPUS_TOPICS.map((topic) => (
-              <View className='campus-topic-chip' key={topic} onClick={() => submitSearch(topic)}>
-                <Text>{topic}</Text>
-              </View>
-            ))}
-          </View>
+          <Text className='campus-topic-desc'>查看基于真实帖子互动统计的校园热榜</Text>
+          <Text className='campus-topic-action'>去看热榜</Text>
         </View>
       ) : null}
     </View>

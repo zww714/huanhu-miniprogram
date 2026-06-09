@@ -236,25 +236,18 @@ page {
   font-weight: 900;
 }
 
-.campus-topic-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 14rpx;
-  margin-top: 18rpx;
-}
-
-.campus-topic-chip {
-  min-height: 54rpx;
-  padding: 0 22rpx;
-  border-radius: 999rpx;
-  background: #F8FAFC;
-  display: flex;
-  align-items: center;
-  border: 1rpx solid #E2E8F0;
-}
-
-.campus-topic-chip text {
+.campus-topic-desc {
+  display: block;
+  margin-top: 12rpx;
   color: #334155;
-  font-size: 24rpx;
+  font-size: 25rpx;
+  line-height: 36rpx;
+}
+
+.campus-topic-action {
+  display: block;
+  margin-top: 16rpx;
+  color: #2563EB;
+  font-size: 25rpx;
   font-weight: 800;
 }
