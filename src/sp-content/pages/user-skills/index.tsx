@@ -2,7 +2,7 @@ import { View, Text, ScrollView } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { useEffect, useMemo, useState } from 'react'
 import { getUserDetail, getUserSkills } from '../../../api'
-import { getPublicSkills, getPublicUser, normalizePublicUserId } from '../../../utils/publicProfiles'
+import { normalizePublicUserId } from '../../../utils/publicProfiles'
 import './index.scss'
 
 function normalizeSkill(skill: any, index: number) {
@@ -24,49 +24,45 @@ export default function UserSkills() {
   const [userId, setUserId] = useState('')
   const [remoteUser, setRemoteUser] = useState<any>(null)
   const [remoteSkills, setRemoteSkills] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
   useLoad((options) => {
     setUserId(normalizePublicUserId(String(options?.userId || options?.id || '')))
   })
 
-  const user = useMemo(() => {
-    const fallback = getPublicUser(userId)
-    return {
-      ...fallback,
-      ...(remoteUser || {}),
-      id: remoteUser?.id || remoteUser?._id || fallback.id,
-      name: remoteUser?.name || remoteUser?.nickname || fallback.name,
-      wantToLearn: remoteUser?.wantToLearn || remoteUser?.learnWants || remoteUser?.want || fallback.wantToLearn || [],
-    }
-  }, [remoteUser, userId])
+  useEffect(() => {
+    if (!userId) return
+    let alive = true
+    setLoading(true)
+    Promise.all([
+      getUserDetail({ userId }).catch(() => undefined),
+      getUserSkills({ userId }).catch(() => []),
+    ]).then(([user, skills]) => {
+      if (!alive) return
+      setRemoteUser(user || null)
+      setRemoteSkills(Array.isArray(skills) ? skills : [])
+    }).finally(() => {
+      if (alive) setLoading(false)
+    })
+    return () => { alive = false }
+  }, [userId])
+
+  const user = useMemo(() => ({
+    id: remoteUser?.id || remoteUser?._id || userId,
+    name: remoteUser?.name || remoteUser?.nickname || '同学',
+    wantToLearn: remoteUser?.wantToLearn || remoteUser?.learnWants || remoteUser?.want || [],
+  }), [remoteUser, userId])
 
   const skills = useMemo(() => {
-    const source = remoteSkills.length ? remoteSkills : remoteUser?.canTeach || remoteUser?.skills || getPublicSkills(user.id)
+    const source = remoteSkills.length ? remoteSkills : remoteUser?.canTeach || remoteUser?.skills || []
     return (Array.isArray(source) ? source : []).map(normalizeSkill).filter((skill) => !!skill.name)
-  }, [remoteSkills, remoteUser, user.id])
+  }, [remoteSkills, remoteUser])
 
   const wants = useMemo(() => (
     Array.isArray(user.wantToLearn) ? user.wantToLearn.map(String).filter(Boolean) : []
   ), [user.wantToLearn])
 
   const verifiedSkills = useMemo(() => skills.filter((skill) => Number(skill.proofCount || 0) > 0), [skills])
-
-  useEffect(() => {
-    if (!userId) return
-    let alive = true
-    getUserDetail({ userId })
-      .then((data) => {
-        if (alive && data) setRemoteUser(data)
-      })
-      .catch(() => undefined)
-    getUserSkills({ userId })
-      .then((data) => {
-        if (!alive || !Array.isArray(data)) return
-        setRemoteSkills(data)
-      })
-      .catch(() => undefined)
-    return () => { alive = false }
-  }, [userId])
 
   const goBack = () => {
     const pages = getCurrentPages()
@@ -99,10 +95,10 @@ export default function UserSkills() {
     <View className='skill-section'>
       <View className='section-title-row'>
         <Text className='section-title'>{title}</Text>
-        <Text className='section-count'>{count}项</Text>
+        <Text className='section-count'>{count} 项</Text>
       </View>
       <View className='skill-list'>
-        {count ? children : <Text className='section-empty'>{empty}</Text>}
+        {count ? children : <Text className='section-empty'>{loading ? '正在加载...' : empty}</Text>}
       </View>
     </View>
   )

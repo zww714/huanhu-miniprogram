@@ -9,7 +9,6 @@ import { openUnifiedUserProfile } from '../../../utils/publicProfiles'
 import { getGenderSymbol, getGenderTone } from '../../../utils/gender'
 import './index.scss'
 
-const HOT_RECOMMENDS = ['Python 入门', '科研经验', '摄影搭子', '论文写作', 'AI工具', '校园活动']
 type ResultType = 'user' | 'skill' | 'post' | 'activity'
 
 type SearchResult = {
@@ -106,6 +105,34 @@ function typeLabel(type: ResultType) {
   return '帖子'
 }
 
+function getRealRecommendWords(users: any[], posts: any[], activities: any[]) {
+  const counter = new Map<string, number>()
+  const addWord = (value?: unknown) => {
+    const word = String(value || '').trim()
+    if (!word || word.length > 16) return
+    counter.set(word, (counter.get(word) || 0) + 1)
+  }
+
+  users.forEach((user) => {
+    skillsOf(user).forEach(addWord)
+    wantsOf(user).forEach(addWord)
+    ;(Array.isArray(user?.interests) ? user.interests : []).forEach(addWord)
+  })
+  posts.forEach((post) => {
+    ;(Array.isArray(post?.tags) ? post.tags : []).forEach(addWord)
+    addWord(post?.category)
+  })
+  activities.forEach((activity) => {
+    ;(Array.isArray(activity?.tags) ? activity.tags : []).forEach(addWord)
+    addWord(activity?.category)
+  })
+
+  return Array.from(counter.entries())
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .slice(0, 8)
+    .map(([word]) => word)
+}
+
 export default function SearchResults() {
   const [keyword, setKeyword] = useState('')
   const [posts, setPosts] = useState<any[]>([])
@@ -151,6 +178,8 @@ export default function SearchResults() {
       ...item.tags,
     ], text))
   }, [activities, keyword, posts, users])
+
+  const recommendWords = useMemo(() => getRealRecommendWords(users, posts, activities), [activities, posts, users])
 
   const submitSearch = (value?: string) => {
     const text = String(value ?? keyword).trim()
@@ -201,16 +230,18 @@ export default function SearchResults() {
         <Text className='search-summary'>与“{keyword || '全部'}”相关的结果</Text>
       </View>
 
-      <View className='hot-search-card'>
-        <Text className='hot-search-title'>热门推荐</Text>
-        <View className='hot-search-list'>
-          {HOT_RECOMMENDS.map((word) => (
-            <View className='hot-search-chip' key={word} onClick={() => submitSearch(word)}>
-              <Text>{word}</Text>
-            </View>
-          ))}
+      {recommendWords.length ? (
+        <View className='hot-search-card'>
+          <Text className='hot-search-title'>热门推荐</Text>
+          <View className='hot-search-list'>
+            {recommendWords.map((word) => (
+              <View className='hot-search-chip' key={word} onClick={() => submitSearch(word)}>
+                <Text>{word}</Text>
+              </View>
+            ))}
+          </View>
         </View>
-      </View>
+      ) : null}
 
       <View className='search-list'>
         {loading ? (
