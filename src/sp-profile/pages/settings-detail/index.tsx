@@ -3,6 +3,8 @@ import Taro, { useLoad } from '@tarojs/taro'
 import { Switch, Text, View } from '@tarojs/components'
 import './index.scss'
 
+const NOTIFICATION_SETTINGS_KEY = 'huanhuNotificationSettings'
+
 type SettingType = 'account' | 'notice' | 'privacy' | 'about'
 type Row = {
   key: string
@@ -46,6 +48,7 @@ const COPY: Record<SettingType, {
           { key: 'likes', label: '赞和收藏', desc: '有人点赞或收藏内容时提醒', type: 'switch', value: 'on' },
           { key: 'follows', label: '新增关注', desc: '有同学关注你时提醒', type: 'switch', value: 'on' },
           { key: 'comments', label: '评论和回复', desc: '评论、回复或提到你时提醒', type: 'switch', value: 'on' },
+          { key: 'system', label: '系统通知', desc: '平台公告和系统提醒', type: 'switch', value: 'on' },
         ],
       },
       {
@@ -91,7 +94,10 @@ const COPY: Record<SettingType, {
 
 export default function SettingsDetail() {
   const [type, setType] = useState<SettingType>('privacy')
-  const [switches, setSwitches] = useState<Record<string, boolean>>({})
+  const [switches, setSwitches] = useState<Record<string, boolean>>(() => {
+    const saved = Taro.getStorageSync(NOTIFICATION_SETTINGS_KEY)
+    return saved && typeof saved === 'object' ? saved : {}
+  })
 
   useLoad((options) => {
     const nextType = String(options?.type || 'privacy') as SettingType
@@ -111,7 +117,9 @@ export default function SettingsDetail() {
   }
 
   const toggleSwitch = (key: string, value: boolean) => {
-    setSwitches((current) => ({ ...current, [key]: value }))
+    const next = { ...switches, [key]: value }
+    setSwitches(next)
+    if (type === 'notice') Taro.setStorageSync(NOTIFICATION_SETTINGS_KEY, next)
     Taro.showToast({ title: value ? '已开启' : '已关闭', icon: 'none' })
   }
 

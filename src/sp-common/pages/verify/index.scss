@@ -1,3 +1,109 @@
 /* postcss-pxtransform disable */
 
 page { background-color: #F8FAFC; }
+
+.verify-page {
+  min-height: 100vh;
+  background: #F8FAFC;
+  padding: 24px 16px;
+  box-sizing: border-box;
+}
+
+.verify-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 24px 18px;
+  box-sizing: border-box;
+}
+
+.verify-logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: #2563EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+
+  text {
+    color: #FFFFFF;
+    font-size: 24px;
+    font-weight: 800;
+  }
+}
+
+.verify-title {
+  display: block;
+  font-size: 22px;
+  line-height: 30px;
+  color: #0F172A;
+  font-weight: 800;
+}
+
+.verify-desc {
+  display: block;
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 22px;
+  color: #64748B;
+}
+
+.verify-info {
+  margin-top: 22px;
+  padding: 14px;
+  border-radius: 10px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+}
+
+.verify-info-title,
+.verify-info-text {
+  display: block;
+}
+
+.verify-info-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1E293B;
+  margin-bottom: 8px;
+}
+
+.verify-info-text {
+  font-size: 13px;
+  line-height: 21px;
+  color: #64748B;
+}
+
+.verify-primary,
+.verify-secondary {
+  height: 46px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 18px;
+
+  text {
+    font-size: 15px;
+    font-weight: 700;
+  }
+}
+
+.verify-primary {
+  background: #2563EB;
+
+  text {
+    color: #FFFFFF;
+  }
+}
+
+.verify-secondary {
+  margin-top: 10px;
+  background: #EFF6FF;
+
+  text {
+    color: #2563EB;
+  }
+}
