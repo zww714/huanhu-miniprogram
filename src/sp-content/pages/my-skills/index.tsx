@@ -74,7 +74,6 @@ export default function MySkillsPage() {
 
   const verifiedSkills = useMemo(() => skills.filter((skill) => skill.verified || skill.proofCount > 0), [skills])
 
-  const goBack = () => Taro.navigateBack()
   const goEditSelfSkill = () => Taro.navigateTo({ url: '/sp-content/pages/edit-skills/index?type=can' })
   const goEditLearnWant = () => Taro.navigateTo({ url: '/sp-content/pages/edit-skills/index?type=want' })
   const goCreateVerified = () => Taro.navigateTo({ url: '/sp-content/pages/edit-verified-skill/index' })
@@ -172,12 +171,6 @@ export default function MySkillsPage() {
 
   return (
     <View className='my-skills-page'>
-      <View className='my-skills-nav'>
-        <Text className='nav-back' onClick={goBack}>‹ 返回</Text>
-        <Text className='nav-title'>我的技能</Text>
-        <View style={{ width: '80rpx' }} />
-      </View>
-
       <View className='tab-bar'>
         {([
           { key: 'all' as ActiveTab, label: '全部' },

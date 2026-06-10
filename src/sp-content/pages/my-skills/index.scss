@@ -6,32 +6,11 @@
 .my-skills-page {
   min-height: 100vh;
   background-color: #F8FAFC;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 // ===== 顶部导航 =====
-.my-skills-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 88rpx;
-  padding: 0 28rpx;
-  background: #FFFFFF;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-
-  .nav-back {
-    font-size: 28rpx;
-    color: #2563EB;
-    font-weight: 500;
-  }
-  .nav-title {
-    font-size: 32rpx;
-    font-weight: 600;
-    color: #1E293B;
-  }
-}
-
 // ===== 分段切换 =====
 .tab-bar {
   display: flex;
@@ -39,8 +18,10 @@
   padding: 12rpx 28rpx 16rpx;
   gap: 12rpx;
   position: sticky;
-  top: 88rpx;
+  top: 0;
   z-index: 9;
+  box-sizing: border-box;
+  width: 100%;
 
   .tab-item {
     flex: 1;
@@ -65,8 +46,10 @@
 
 // ===== 滚动区 =====
 .my-skills-scroll {
-  height: calc(100vh - 88rpx - 100rpx);
+  height: calc(100vh - 100rpx);
   padding: 0 24rpx;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 // ===== 分区标题 =====
@@ -74,15 +57,24 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 20rpx;
   margin: 28rpx 0 8rpx;
 
   .section-header-left {
     display: flex;
     align-items: center;
     gap: 10rpx;
+    min-width: 0;
   }
   .section-icon { font-size: 28rpx; }
-  .section-title { font-size: 30rpx; font-weight: 600; color: #1E293B; }
+  .section-title {
+    font-size: 30rpx;
+    font-weight: 600;
+    color: #1E293B;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
   .section-badge {
     padding: 2rpx 14rpx;
@@ -99,6 +91,7 @@
     color: #2563EB;
     font-weight: 500;
     padding: 6rpx 12rpx;
+    flex-shrink: 0;
   }
 }
 
@@ -125,6 +118,8 @@
   border: 2rpx solid #E2E8F0;
   transition: all 0.15s;
   position: relative;
+  box-sizing: border-box;
+  width: 100%;
 
   // 类型色
   &.self { border-left: 6rpx solid #2563EB; }
@@ -320,6 +315,8 @@
   padding: 40rpx;
   text-align: center;
   margin-bottom: 16rpx;
+  box-sizing: border-box;
+  width: 100%;
 
   .empty-text {
     font-size: 26rpx;
