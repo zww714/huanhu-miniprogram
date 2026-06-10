@@ -9,7 +9,7 @@ import './index.scss'
 export default function MyFollowers() {
   const [followers, setFollowers] = useState<any[]>([])
   const [total, setTotal] = useState(0)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   const loadFollowers = useCallback(() => {
     setLoading(true)

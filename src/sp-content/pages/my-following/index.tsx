@@ -10,7 +10,7 @@ export default function MyFollowing() {
   const [filter, setFilter] = useState<'all' | 'special'>('all')
   const [following, setFollowing] = useState<any[]>([])
   const [total, setTotal] = useState(0)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [manageMode, setManageMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
 

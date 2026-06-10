@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { ScrollView, Text, View } from '@tarojs/components'
 import { getCurrentUser, getMySkills } from '../../../api'
+import { smoothNavigateTo } from '../../../utils/navigation'
 import './index.scss'
 
 type ActiveTab = 'all' | 'self' | 'verified'
@@ -74,14 +75,12 @@ export default function MySkillsPage() {
 
   const verifiedSkills = useMemo(() => skills.filter((skill) => skill.verified || skill.proofCount > 0), [skills])
 
-  const goEditSelfSkill = () => Taro.navigateTo({ url: '/sp-content/pages/edit-skills/index?type=can' })
-  const goEditLearnWant = () => Taro.navigateTo({ url: '/sp-content/pages/edit-skills/index?type=want' })
-  const goCreateVerified = () => Taro.navigateTo({ url: '/sp-content/pages/edit-verified-skill/index' })
+  const goEditSelfSkill = () => smoothNavigateTo('/sp-content/pages/edit-skills/index?type=can')
+  const goEditLearnWant = () => smoothNavigateTo('/sp-content/pages/edit-skills/index?type=want')
+  const goCreateVerified = () => smoothNavigateTo('/sp-content/pages/edit-verified-skill/index')
 
   const goSkillDetail = (skill: SkillItem) => {
-    Taro.navigateTo({
-      url: `/sp-content/pages/skill-detail/index?userId=${encodeURIComponent(skill.userId || userId)}&skillId=${encodeURIComponent(skill.id)}`,
-    })
+    smoothNavigateTo(`/sp-content/pages/skill-detail/index?userId=${encodeURIComponent(skill.userId || userId)}&skillId=${encodeURIComponent(skill.id)}`)
   }
 
   const renderSkillCard = (skill: SkillItem, tone: 'self' | 'verified') => (

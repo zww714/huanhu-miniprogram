@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
 import { getMyActivityRegistrations, cancelActivityRegistration } from '../../../api'
+import { smoothNavigateTo } from '../../../utils/navigation'
 import './index.scss'
 
 export default function MyActivities() {
@@ -33,7 +34,7 @@ export default function MyActivities() {
       `phone=${encodeURIComponent(item.phone || item.contact || registration.phone || registration.contact || '')}`,
       `note=${encodeURIComponent(item.note || item.remark || registration.note || registration.remark || '')}`,
     ].join('&')
-    Taro.navigateTo({ url: `/sp-content/pages/activity-register/index?${query}` })
+    smoothNavigateTo(`/sp-content/pages/activity-register/index?${query}`)
   }
 
   const cancelRegistration = (item: any) => {

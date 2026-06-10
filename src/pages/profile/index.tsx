@@ -6,6 +6,7 @@ import './index.scss'
 import { getCurrentUser, updateProfile } from '../../api'
 import { getUserStats } from '../../api/stats'
 import { getGenderSymbol, getGenderTone } from '../../utils/gender'
+import { smoothNavigateTo } from '../../utils/navigation'
 
 import {
   AVATAR_STORAGE_KEY,
@@ -70,10 +71,7 @@ export default function Profile() {
   const [myPosts, setMyPosts] = useState<any[]>([])
 
   const toast = (msg: string) => Taro.showToast({ title: msg, icon: 'none' })
-  const go = (url: string) => Taro.navigateTo({
-    url,
-    fail: () => toast('功能开发中'),
-  })
+  const go = (url: string) => smoothNavigateTo(url)
   const safeGo = (url?: string) => {
     if (!url) {
       toast('功能开发中')

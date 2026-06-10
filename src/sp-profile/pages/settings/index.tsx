@@ -1,5 +1,6 @@
 import Taro from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
+import { smoothNavigateTo } from '../../../utils/navigation'
 import './index.scss'
 
 const SETTINGS = [
@@ -57,18 +58,12 @@ const SETTINGS = [
 
 export default function Settings() {
   const openDetail = (type: string, title: string) => {
-    Taro.navigateTo({
-      url: `/sp-profile/pages/settings-detail/index?type=${encodeURIComponent(type)}&title=${encodeURIComponent(title)}`,
-      fail: () => Taro.showToast({ title: '功能开发中', icon: 'none' }),
-    })
+    smoothNavigateTo(`/sp-profile/pages/settings-detail/index?type=${encodeURIComponent(type)}&title=${encodeURIComponent(title)}`)
   }
 
   const openLink = (url?: string) => {
     if (!url) return
-    Taro.navigateTo({
-      url,
-      fail: () => Taro.showToast({ title: '功能开发中', icon: 'none' }),
-    })
+    smoothNavigateTo(url)
   }
 
   const clearCache = () => {

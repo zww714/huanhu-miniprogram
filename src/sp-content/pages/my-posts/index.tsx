@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
 import { deletePost, getMyPosts, updatePost } from '../../../api'
+import { smoothNavigateTo } from '../../../utils/navigation'
 import './index.scss'
 
 type ManagedPost = {
@@ -45,10 +46,11 @@ export default function MyPosts() {
   const [batchMode, setBatchMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [desc, setDesc] = useState(true)
+  const [loading, setLoading] = useState(true)
 
   useDidShow(() => {
     const localPosts = readPosts()
-    setPosts(localPosts)
+    setLoading(true)
     getMyPosts()
       .then((data) => {
         if (!Array.isArray(data) || !data.length) {
@@ -72,6 +74,7 @@ export default function MyPosts() {
         console.warn('[MyPosts] getMyPosts failed, fallback local', e)
         setPosts(localPosts)
       })
+      .finally(() => setLoading(false))
   })
 
   const visiblePosts = useMemo(() => {
@@ -89,7 +92,7 @@ export default function MyPosts() {
   }
 
   const goDetail = (postId: string) => {
-    Taro.navigateTo({ url: `/sp-content/pages/post-detail/index?postId=${encodeURIComponent(postId)}&from=mine` })
+    smoothNavigateTo(`/sp-content/pages/post-detail/index?postId=${encodeURIComponent(postId)}&from=mine`)
   }
 
   const showPostMenu = (post: ManagedPost) => {
@@ -98,8 +101,8 @@ export default function MyPosts() {
       itemColor: '#1E293B',
       success: ({ tapIndex }) => {
         if (tapIndex === 0) goDetail(post.id)
-        if (tapIndex === 1) Taro.navigateTo({ url: `/sp-content/pages/publish/index?mode=edit&postId=${encodeURIComponent(post.id)}` })
-        if (tapIndex === 2) Taro.navigateTo({ url: `/sp-content/pages/post-manage/index?postId=${encodeURIComponent(post.id)}` })
+        if (tapIndex === 1) smoothNavigateTo(`/sp-content/pages/publish/index?mode=edit&postId=${encodeURIComponent(post.id)}`)
+        if (tapIndex === 2) smoothNavigateTo(`/sp-content/pages/post-manage/index?postId=${encodeURIComponent(post.id)}`)
         if (tapIndex === 3) {
           const next = posts.map((item) => item.id === post.id ? { ...item, visibility: item.visibility === 'private' ? 'public' : 'private' } : item)
           updatePosts(next)
@@ -142,6 +145,18 @@ export default function MyPosts() {
   }
 
   const allSelected = visiblePosts.length > 0 && selectedIds.length === visiblePosts.length
+
+  if (loading) {
+    return (
+      <View className='my-posts-page'>
+        <View className='post-list'>
+          <View className='loading-state'>
+            <Text>加载中...</Text>
+          </View>
+        </View>
+      </View>
+    )
+  }
 
   return (
     <View className='my-posts-page'>

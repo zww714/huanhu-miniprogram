@@ -16,6 +16,7 @@ import {
   type PublicUser,
 } from '../../../utils/publicProfiles'
 import { getGenderSymbol, getGenderTone } from '../../../utils/gender'
+import { smoothNavigateTo, smoothSwitchTab } from '../../../utils/navigation'
 import './view.scss'
 
 type FollowState = {
@@ -202,17 +203,15 @@ export default function ProfileView() {
   const goBack = () => {
     const pages = getCurrentPages()
     if (pages.length > 1) Taro.navigateBack()
-    else Taro.switchTab({ url: '/pages/index/index' })
+    else smoothSwitchTab('/pages/index/index')
   }
 
   const goChat = () => {
     if (isSelf) {
-      Taro.switchTab({ url: '/pages/profile/index' })
+      smoothSwitchTab('/pages/profile/index')
       return
     }
-    Taro.navigateTo({
-      url: `/sp-social/pages/chat/index?userId=${encodeURIComponent(user.id)}&id=${encodeURIComponent(user.id)}&name=${encodeURIComponent(user.name)}&category=${encodeURIComponent('个人主页')}`,
-    })
+    smoothNavigateTo(`/sp-social/pages/chat/index?userId=${encodeURIComponent(user.id)}&id=${encodeURIComponent(user.id)}&name=${encodeURIComponent(user.name)}&category=${encodeURIComponent('个人主页')}`)
   }
 
   const toggleFollow = async () => {
@@ -272,11 +271,11 @@ export default function ProfileView() {
       followers: '/sp-content/pages/user-followers/index',
       following: '/sp-content/pages/user-following/index',
     }
-    Taro.navigateTo({ url: `${pathMap[key] || pathMap.skills}?userId=${encodeURIComponent(user.id)}&name=${encodeURIComponent(user.name)}` })
+    smoothNavigateTo(`${pathMap[key] || pathMap.skills}?userId=${encodeURIComponent(user.id)}&name=${encodeURIComponent(user.name)}`)
   }
 
   const openPost = (postId: string) => {
-    Taro.navigateTo({ url: `/sp-content/pages/post-detail/index?postId=${encodeURIComponent(postId)}&from=user-profile` })
+    smoothNavigateTo(`/sp-content/pages/post-detail/index?postId=${encodeURIComponent(postId)}&from=user-profile`)
   }
 
   const renderSkillSection = (title: string, items: any[], empty: string, tone = '') => (

@@ -3,6 +3,7 @@ import Taro from '@tarojs/taro'
 import { Image, Text, View } from '@tarojs/components'
 import { getMyFavorites } from '../../../api'
 import { openUnifiedUserProfile } from '../../../utils/publicProfiles'
+import { smoothNavigateTo } from '../../../utils/navigation'
 import './index.scss'
 
 type FavoriteItem = {
@@ -63,7 +64,7 @@ export default function MyFavorites() {
   }, [])
 
   const goPostDetail = (postId: string) => {
-    Taro.navigateTo({ url: `/sp-content/pages/post-detail/index?postId=${encodeURIComponent(postId)}` })
+    smoothNavigateTo(`/sp-content/pages/post-detail/index?postId=${encodeURIComponent(postId)}`)
   }
 
   if (loading) {

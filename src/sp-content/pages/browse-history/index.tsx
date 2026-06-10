@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
 import { getBrowseHistory, clearBrowseHistory, type BrowseItem } from '../../../utils/history'
+import { smoothNavigateTo } from '../../../utils/navigation'
 import './index.scss'
 
 const typeLabels: Record<BrowseItem['type'], string> = {
@@ -31,9 +32,11 @@ function formatTime(ts: number) {
 
 export default function BrowseHistory() {
   const [items, setItems] = useState<BrowseItem[]>([])
+  const [ready, setReady] = useState(false)
 
   useDidShow(() => {
     setItems(getBrowseHistory())
+    setReady(true)
   })
 
   const handleClear = () => {
@@ -56,12 +59,22 @@ export default function BrowseHistory() {
       skill: `/sp-content/pages/skill-detail/index?skillId=${encodeURIComponent(item.id)}`,
       user: `/sp-profile/pages/profile/view?userId=${encodeURIComponent(item.id)}&name=${encodeURIComponent(item.title)}`,
     }
-    Taro.navigateTo({ url: urls[item.type] })
+    smoothNavigateTo(urls[item.type])
+  }
+
+  if (!ready) {
+    return (
+      <View className='history-page'>
+        <View className='history-empty'>
+          <Text className='empty-text'>加载中...</Text>
+        </View>
+      </View>
+    )
   }
 
   return (
     <View className='history-page'>
-      <View className='history-comment-entry' onClick={() => Taro.navigateTo({ url: '/sp-social/pages/message-comments/index' })}>
+      <View className='history-comment-entry' onClick={() => smoothNavigateTo('/sp-social/pages/message-comments/index')}>
         <View>
           <Text className='history-comment-title'>我的评论</Text>
           <Text className='history-comment-desc'>查看我发出和收到的评论</Text>
