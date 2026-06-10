@@ -58,30 +58,34 @@ page {
   flex-direction: column;
   gap: 8px;
   flex-shrink: 0;
-  max-width: 96px;
+  width: 82px;
 }
 
 .primary-pill text {
   color: #FFFFFF;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 800;
+  white-space: nowrap;
 }
 
 .outline-pill {
   height: 32px;
-  padding: 0 14px;
+  width: 100%;
+  padding: 0;
   border-radius: 999px;
   border: 1px solid #BFDBFE;
   background: #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
 }
 
 .outline-pill text {
   color: #2563EB;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 800;
+  white-space: nowrap;
 }
 
 .user-list {

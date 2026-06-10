@@ -172,11 +172,9 @@ export default function MyFollowing() {
           <Text className='page-title'>我的关注</Text>
           <Text className='page-subtitle'>共 {total} 人，{following.filter((u) => u.isSpecial).length} 位特别关注</Text>
         </View>
-        {following.length ? (
-          <View className={`outline-pill ${manageMode ? 'active' : ''}`} onClick={() => { setManageMode(!manageMode); setSelectedIds([]) }}>
-            <Text>{manageMode ? '完成' : '管理'}</Text>
-          </View>
-        ) : null}
+        <View className={`outline-pill ${manageMode ? 'active' : ''}`} onClick={() => { setManageMode(!manageMode); setSelectedIds([]) }}>
+          <Text>{manageMode ? '完成' : '管理'}</Text>
+        </View>
       </View>
 
       <View className='filter-row'>

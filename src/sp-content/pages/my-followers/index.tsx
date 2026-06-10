@@ -163,16 +163,14 @@ export default function MyFollowers() {
           <Text className='page-title'>我的粉丝</Text>
           <Text className='page-subtitle'>共 {total} 人，{unfollowedCount} 人待回关</Text>
         </View>
-        {followers.length ? (
-          <View className='header-actions'>
-            <View className='primary-pill' onClick={followBackAll}>
-              <Text>一键回关</Text>
-            </View>
-            <View className='outline-pill' onClick={() => Taro.showToast({ title: '可通过每条右侧 ... 管理关系', icon: 'none' })}>
-              <Text>管理</Text>
-            </View>
+        <View className='header-actions'>
+          <View className='primary-pill' onClick={followBackAll}>
+            <Text>一键回关</Text>
           </View>
-        ) : null}
+          <View className='outline-pill' onClick={() => Taro.showToast({ title: '可通过每条右侧 ... 管理关系', icon: 'none' })}>
+            <Text>管理</Text>
+          </View>
+        </View>
       </View>
 
       <View className='user-list'>
