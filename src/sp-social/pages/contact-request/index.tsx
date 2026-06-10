@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { Text, Textarea, View } from '@tarojs/components'
-import { CURRENT_USER } from '../../../utils/mock'
+import { sendChatMessage } from '../../../api'
 import './index.scss'
 
 type ContactOptions = {
@@ -28,6 +28,7 @@ export default function ContactRequest() {
   const [postId, setPostId] = useState('')
   const [source, setSource] = useState('')
   const [message, setMessage] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
   useLoad((options: ContactOptions) => {
     const nextId = decode(options.userId || options.id)
@@ -45,7 +46,8 @@ export default function ContactRequest() {
 
   const goBack = () => Taro.navigateBack()
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    if (submitting) return
     const text = message.trim()
     if (!targetId) {
       Taro.showToast({ title: '用户信息不存在', icon: 'none' })
@@ -56,27 +58,37 @@ export default function ContactRequest() {
       return
     }
 
-    Taro.setStorageSync('lastContactRequest', {
-      id: `contact_${Date.now()}`,
-      fromUserId: CURRENT_USER.id,
-      toUserId: targetId,
-      targetName,
-      category,
-      skillId,
-      proofId,
-      postId,
-      source,
-      message: text,
-      createdAt: new Date().toISOString(),
-      status: 'mock_submitted',
-    })
-
-    Taro.showToast({ title: '已发送联系申请', icon: 'success' })
-    setTimeout(() => {
+    setSubmitting(true)
+    try {
+      await sendChatMessage({
+        targetId,
+        targetName,
+        category,
+        text,
+      })
+      Taro.setStorageSync('lastContactRequest', {
+        id: `contact_${Date.now()}`,
+        toUserId: targetId,
+        targetName,
+        category,
+        skillId,
+        proofId,
+        postId,
+        source,
+        message: text,
+        createdAt: new Date().toISOString(),
+        status: 'sent',
+      })
+      Taro.showToast({ title: '已发送联系申请', icon: 'success' })
       Taro.navigateTo({
         url: `/sp-social/pages/chat/index?id=${encodeURIComponent(targetId)}&name=${encodeURIComponent(targetName)}&category=${encodeURIComponent(category)}`,
       })
-    }, 500)
+    } catch (e) {
+      console.warn('[ContactRequest] send failed', e)
+      Taro.showToast({ title: '发送失败，请稍后重试', icon: 'none' })
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -108,7 +120,7 @@ export default function ContactRequest() {
             placeholder='简单说明你想交流的内容'
             onInput={(event) => setMessage(event.detail.value)}
           />
-          <Text className='hint'>第一版使用本地 mock 记录，发送后会进入聊天页。</Text>
+          <Text className='hint'>发送后会进入聊天页，后续沟通记录会保存在消息中。</Text>
         </View>
 
         <View className='info-card'>
@@ -140,7 +152,7 @@ export default function ContactRequest() {
 
       <View className='bottom-bar'>
         <View className='submit-btn' onClick={handleSubmit}>
-          <Text>发送申请</Text>
+          <Text>{submitting ? '发送中...' : '发送申请'}</Text>
         </View>
       </View>
     </View>

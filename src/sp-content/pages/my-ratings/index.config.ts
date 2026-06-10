@@ -1,3 +1,3 @@
 export default definePageConfig({
-  navigationBarTitleText: '我的评分',
+  navigationBarTitleText: '评价功能',
 })

@@ -12,6 +12,32 @@ page {
   color: #0F172A;
 }
 
+.empty-rating-card {
+  margin-top: 80rpx;
+  padding: 48rpx 32rpx;
+  border-radius: 30rpx;
+  background: #FFFFFF;
+  border: 1rpx solid rgba(226, 232, 240, 0.86);
+  box-shadow: 0 12rpx 32rpx rgba(27, 86, 180, 0.06);
+  text-align: center;
+}
+
+.empty-rating-title {
+  display: block;
+  color: #0F172A;
+  font-size: 34rpx;
+  line-height: 44rpx;
+  font-weight: 900;
+}
+
+.empty-rating-desc {
+  display: block;
+  margin-top: 14rpx;
+  color: #64748B;
+  font-size: 26rpx;
+  line-height: 38rpx;
+}
+
 .summary-card,
 .dist-card,
 .review-card {
