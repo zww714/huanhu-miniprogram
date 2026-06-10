@@ -48,7 +48,7 @@ const SETTINGS = [
   {
     key: 'about',
     title: '关于换乎',
-    desc: '版本、平台说明与反馈入口',
+    desc: '版本和平台说明',
     icon: '换',
     tone: 'blue',
     type: 'detail',

@@ -50,10 +50,7 @@ const COPY: Record<SettingType, {
       },
       {
         title: '消息中心',
-        rows: [
-          { key: 'messages', label: '查看消息页', desc: '进入消息中心处理未读内容', type: 'link', url: '/pages/messages/index' },
-          { key: 'system', label: '系统通知', desc: '查看平台公告和系统提醒', type: 'link', url: '/sp-social/pages/message-system/index' },
-        ],
+        rows: [],
       },
     ],
   },
@@ -66,7 +63,6 @@ const COPY: Record<SettingType, {
         rows: [
           { key: 'profileVisible', label: '公开个人主页', desc: '允许同学查看技能、发布和兴趣标签', type: 'switch', value: 'on' },
           { key: 'showActivity', label: '展示活动记录', desc: '在个人主页展示公开活动参与记录', type: 'switch' },
-          { key: 'showHistory', label: '本机浏览记录', desc: '只保存在本机，可随时清理', type: 'link', url: '/sp-content/pages/browse-history/index' },
         ],
       },
       {
@@ -87,13 +83,6 @@ const COPY: Record<SettingType, {
         rows: [
           { key: 'version', label: '当前版本', desc: '换乎 ZJU版', type: 'value', value: 'UI redesign v2' },
           { key: 'scope', label: '服务范围', desc: '浙江大学校园内测使用', type: 'value', value: '校园版' },
-        ],
-      },
-      {
-        title: '反馈与支持',
-        rows: [
-          { key: 'feedback', label: '意见反馈', desc: '提交体验问题或功能建议', type: 'link', url: '/sp-social/pages/contact-request/index?type=feedback' },
-          { key: 'discover', label: '查看社区', desc: '返回发现页浏览校园内容', type: 'link', url: '/pages/discover/index' },
         ],
       },
     ],
@@ -133,7 +122,7 @@ export default function SettingsDetail() {
         <Text className='detail-desc'>{detail.desc}</Text>
       </View>
 
-      {detail.groups.map((group) => (
+      {detail.groups.filter((group) => group.rows.length > 0).map((group) => (
         <View className='detail-card' key={group.title}>
           <Text className='group-title'>{group.title}</Text>
           {group.rows.map((row, index) => {

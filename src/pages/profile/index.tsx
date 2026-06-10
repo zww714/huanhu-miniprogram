@@ -9,7 +9,6 @@ import { getGenderSymbol, getGenderTone } from '../../utils/gender'
 
 import {
   AVATAR_STORAGE_KEY,
-  MY_PROFILE,
   SYSTEM_AVATARS,
 } from '../../utils/mock'
 
@@ -22,35 +21,28 @@ const QUICK_ENTRIES = [
 
 const PROFILE_STORAGE_KEY = 'profileDraft'
 
-const CHEN_PROFILE = {
-  ...MY_PROFILE,
-  user_id: MY_PROFILE.user_id || '10086',
-  name: '陈同学',
+const EMPTY_PROFILE = {
+  user_id: '',
+  name: '同学',
   avatar: '',
-  gender: 'male',
-  verified: true,
+  gender: 'private',
+  verified: false,
   school: '浙江大学',
-  college: '计算机学院',
+  college: '',
   major: '',
-  grade: '大三',
-  campus: '紫金港校区',
-  bio: '擅长 Python 和数据分析，想找摄影搭子',
-  intro: '擅长 Python 和数据分析，想找摄影搭子',
-  wantToLearn: ['摄影', '产品设计', '羽毛球'],
-  learnWants: ['摄影', '产品设计', '羽毛球'],
-  interests: ['科研', 'AI', '徒步', '摄影'],
+  grade: '',
+  campus: '',
+  bio: '',
+  intro: '',
+  wantToLearn: [],
+  learnWants: [],
+  interests: [],
   skillCount: 0,
   postCount: 0,
   followerCount: 0,
   followingCount: 0,
   rating: 0,
-  stats: {
-    ...(MY_PROFILE.stats || {}),
-    skills: 0,
-    posts: 0,
-    followers: 0,
-    following: 0,
-  },
+  stats: { skills: 0, posts: 0, followers: 0, following: 0 },
 }
 
 function getSavedProfile() {
@@ -62,11 +54,11 @@ function getSavedProfile() {
 function getDisplayProfile() {
   const saved = getSavedProfile()
   return {
-    ...CHEN_PROFILE,
+    ...EMPTY_PROFILE,
     ...saved,
-    name: saved.name || saved.nickname || CHEN_PROFILE.name,
-    bio: saved.bio || saved.intro || CHEN_PROFILE.bio,
-    intro: saved.intro || saved.bio || CHEN_PROFILE.intro,
+    name: saved.name || saved.nickname || EMPTY_PROFILE.name,
+    bio: saved.bio || saved.intro || EMPTY_PROFILE.bio,
+    intro: saved.intro || saved.bio || EMPTY_PROFILE.intro,
   }
 }
 
@@ -93,7 +85,7 @@ export default function Profile() {
     const params = {
       from: 'profile',
       userId: String(userId),
-      name: String(p.name || CHEN_PROFILE.name),
+      name: String(p.name || EMPTY_PROFILE.name),
       ...extra,
     }
     const query = Object.entries(params)
@@ -162,18 +154,18 @@ export default function Profile() {
 
   const p = profileData
   const systemAvatar = SYSTEM_AVATARS.find((item) => item.id === avatarUrl)
-  const userId = p.user_id || p.id || p._id || CHEN_PROFILE.user_id
+  const userId = p.user_id || p.id || p._id || ''
   const stats = p.stats || {}
   const statValues = {
-    skills: p.skillCount ?? stats.skills ?? mySkills.length ?? CHEN_PROFILE.stats.skills,
-    posts: p.postCount ?? stats.posts ?? myPosts.length ?? CHEN_PROFILE.stats.posts,
-    followers: p.followerCount ?? stats.followers ?? CHEN_PROFILE.stats.followers,
-    following: p.followingCount ?? stats.following ?? CHEN_PROFILE.stats.following,
+    skills: p.skillCount ?? stats.skills ?? mySkills.length ?? 0,
+    posts: p.postCount ?? stats.posts ?? myPosts.length ?? 0,
+    followers: p.followerCount ?? stats.followers ?? 0,
+    following: p.followingCount ?? stats.following ?? 0,
   }
   const metaItems = [p.school || '浙江大学', p.college, p.major, p.grade, p.campus].filter(Boolean)
   const wantTags = (p.wantToLearn || p.learnWants || p.want || []).slice(0, 3)
   const interestTags = (p.interests || []).slice(0, 3)
-  const avatarText = (p.name || CHEN_PROFILE.name || '我').charAt(0)
+  const avatarText = (p.name || EMPTY_PROFILE.name || '我').charAt(0)
   const genderSymbol = getGenderSymbol(p)
   const genderTone = getGenderTone(p)
 
@@ -202,7 +194,8 @@ export default function Profile() {
         console.warn('[Profile] load current user failed', e)
       }
 
-      const nextUserId = currentProfile.user_id || currentProfile.id || currentProfile._id || CHEN_PROFILE.user_id
+      const nextUserId = currentProfile.user_id || currentProfile.id || currentProfile._id || ''
+      if (!nextUserId) return
       try {
         const realStats = await getUserStats(String(nextUserId))
         const normalizedStats = {
@@ -250,13 +243,13 @@ export default function Profile() {
 
             <View className='profile-info'>
               <View className='name-row'>
-                <Text className='profile-name'>{p.name || CHEN_PROFILE.name}</Text>
+                <Text className='profile-name'>{p.name || EMPTY_PROFILE.name}</Text>
                 {genderSymbol ? <Text className={`gender-symbol gender-symbol--${genderTone}`}>{genderSymbol}</Text> : null}
                 {p.verified !== false && <View className='verify-dot'><Text>✓</Text></View>}
               </View>
-              <Text className='profile-meta' numberOfLines={2}>{metaItems.join(' · ')}</Text>
+              <Text className='profile-meta' numberOfLines={2}>{metaItems.join(' · ') || '完善资料后展示学院、年级和校区'}</Text>
               <Text className='profile-bio' numberOfLines={2}>
-                {p.bio || p.intro || '热爱校园互助，期待和更多同学交换技能与经验。'}
+                {p.bio || p.intro || '还没有填写个人介绍'}
               </Text>
             </View>
 

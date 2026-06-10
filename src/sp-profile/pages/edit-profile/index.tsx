@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import Taro from '@tarojs/taro'
 import { Button, Input, Text, Textarea, View } from '@tarojs/components'
-import { MY_PROFILE } from '../../../utils/mock'
 import { getCurrentUser, updateProfile } from '../../../api'
 import './index.scss'
 
@@ -22,12 +21,12 @@ function getSavedProfile() {
 
 export default function EditProfile() {
   const saved = getSavedProfile()
-  const [nickname, setNickname] = useState(saved.nickname || saved.name || MY_PROFILE.name || '')
-  const [gender, setGender] = useState<Gender>(saved.gender || MY_PROFILE.gender || 'private')
-  const [college, setCollege] = useState(saved.college || MY_PROFILE.college || '')
-  const [grade, setGrade] = useState(saved.grade || MY_PROFILE.grade || '')
-  const [campus, setCampus] = useState(saved.campus || MY_PROFILE.campus || '')
-  const [intro, setIntro] = useState(saved.intro || saved.bio || MY_PROFILE.bio || '')
+  const [nickname, setNickname] = useState(saved.nickname || saved.name || '')
+  const [gender, setGender] = useState<Gender>(saved.gender || 'private')
+  const [college, setCollege] = useState(saved.college || '')
+  const [grade, setGrade] = useState(saved.grade || '')
+  const [campus, setCampus] = useState(saved.campus || '')
+  const [intro, setIntro] = useState(saved.intro || saved.bio || '')
 
   useEffect(() => {
     let alive = true

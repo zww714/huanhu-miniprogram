@@ -7,7 +7,6 @@ import {
   getCloudCollection, getCloudDocument, updateCloudDocument,
   LOGIN_USER_KEY,
 } from './base'
-import { MY_PROFILE } from '../utils/mock'
 import type { SkillUser } from '../utils/mock'
 
 export async function getUsers(params?: { category?: string; page?: number }) {
@@ -59,7 +58,7 @@ export async function login() {
     } catch (e) { apiWarn('[API] login cloud failed', e) }
   }
   await delay()
-  return MY_PROFILE
+  return wx.getStorageSync(LOGIN_USER_KEY) || wx.getStorageSync('profileDraft') || null
 }
 
 export async function getCurrentUser() {
@@ -70,7 +69,7 @@ export async function getCurrentUser() {
     } catch (e) { apiWarn('[API] getCurrentUser cloud failed', e) }
   }
   await delay()
-  return wx.getStorageSync('profileDraft') || MY_PROFILE
+  return wx.getStorageSync(LOGIN_USER_KEY) || wx.getStorageSync('profileDraft') || null
 }
 
 export async function saveWechatProfile(params: { nickName?: string; avatarUrl?: string }) {
@@ -104,7 +103,7 @@ export async function getUserDetail(params: { userId?: string; userName?: string
 
 export async function getMyProfile() {
   const current = await getCurrentUser()
-  return current || MY_PROFILE
+  return current || wx.getStorageSync('profileDraft') || {}
 }
 
 export async function updateProfile(params: { field?: string; value?: any; profile?: Record<string, any> } | Record<string, any>) {
@@ -116,8 +115,9 @@ export async function updateProfile(params: { field?: string; value?: any; profi
   }
   const profile = (params as any).profile || ((params as any).field ? { [(params as any).field]: (params as any).value } : params)
   const cached = wx.getStorageSync('profileDraft') || {}
-  const localUser = { ...MY_PROFILE, ...cached, ...profile, bio: profile.intro || profile.bio || cached.bio || MY_PROFILE.bio }
+  const localUser = { ...cached, ...profile, bio: profile.intro || profile.bio || cached.bio || '' }
   wx.setStorageSync('profileDraft', localUser)
+  wx.setStorageSync(LOGIN_USER_KEY, { ...(wx.getStorageSync(LOGIN_USER_KEY) || {}), ...localUser })
   return localUser
 }
 
