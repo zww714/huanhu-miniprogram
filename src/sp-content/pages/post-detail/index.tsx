@@ -1,11 +1,8 @@
 import { useState } from 'react'
 import Taro, { useLoad, useShareAppMessage } from '@tarojs/taro'
 import { Button, Image, Input, ScrollView, Text, View } from '@tarojs/components'
-import {
-  CURRENT_USER,
-  type Comment,
-} from '../../../utils/mock'
-import { addComment, deleteComment as apiDeleteComment, deletePost, getComments, getPostDetail, getPosts, replyComment, updatePost, toggleLike, toggleFavorite, getInteractionStatus } from '../../../api'
+import type { Comment } from '../../../utils/mock'
+import { addComment, deleteComment as apiDeleteComment, deletePost, getComments, getPostDetail, getPosts, replyComment, updatePost, toggleLike, toggleFavorite, getInteractionStatus, getSavedLoginUser } from '../../../api'
 import { getPostStats } from '../../../api/stats'
 import { openUnifiedUserProfile } from '../../../utils/publicProfiles'
 import { recordBrowse } from '../../../utils/history'
@@ -51,13 +48,21 @@ type ReplyTarget = {
   userName: string
 }
 
+const FALLBACK_USER = {
+  id: '',
+  _id: '',
+  name: '同学',
+  avatar: '',
+  gender: 'private',
+}
+
 const fallbackPost: Post = {
   id: 'fallback',
   title: '帖子详情',
   content: '暂时没有找到这条帖子，请返回发现页重新打开。',
   tags: ['发现'],
-  authorId: CURRENT_USER.id,
-  author: { id: CURRENT_USER.id, userId: CURRENT_USER.id, name: CURRENT_USER.name, college: '浙江大学', grade: '在读', avatar: CURRENT_USER.avatar, gender: CURRENT_USER.gender },
+  authorId: '',
+  author: { id: '', userId: '', name: FALLBACK_USER.name, college: '', grade: '', avatar: '', gender: FALLBACK_USER.gender },
   likes: 0,
   comments: 0,
 }
@@ -67,14 +72,16 @@ function getRecordId(post: Post) {
 }
 
 function getAuthor(post: Post) {
+  const currentUser = getSavedLoginUser() || FALLBACK_USER
+  const currentUserId = currentUser._id || currentUser.id || ''
   return post.author || {
-    id: post.authorId || post.userId || CURRENT_USER.id,
-    userId: post.authorId || post.userId || CURRENT_USER.id,
-    name: post.authorId === CURRENT_USER.id ? CURRENT_USER.name : '同学',
+    id: post.authorId || post.userId || currentUserId,
+    userId: post.authorId || post.userId || currentUserId,
+    name: post.authorId && post.authorId === currentUserId ? currentUser.name || '我' : '同学',
     college: '浙江大学',
     grade: '在读',
     avatar: '',
-    gender: post.authorId === CURRENT_USER.id ? CURRENT_USER.gender : undefined,
+    gender: post.authorId && post.authorId === currentUserId ? currentUser.gender : undefined,
   }
 }
 
@@ -125,6 +132,8 @@ export default function PostDetail() {
   const [comments, setComments] = useState<Comment[]>([])
   const [commentText, setCommentText] = useState('')
   const [replyTarget, setReplyTarget] = useState<ReplyTarget | null>(null)
+  const currentUser = getSavedLoginUser() || FALLBACK_USER
+  const currentUserId = currentUser._id || currentUser.id || ''
 
   useLoad(async (options) => {
     const id = decodeURIComponent(String(options?.postId || options?.id || ''))
@@ -195,7 +204,7 @@ export default function PostDetail() {
   const author = getAuthor(displayPost)
   const authorId = getAuthorId(displayPost)
   const postId = getRecordId(displayPost)
-  const isOwner = !isMissing && (!!(post as any)?.canManage || authorId === CURRENT_USER.id)
+  const isOwner = !isMissing && (!!(post as any)?.canManage || (!!currentUserId && authorId === currentUserId))
   const body = (displayPost.content || displayPost.excerpt || '').split('\n').filter(Boolean)
   const images = displayPost.images?.length ? displayPost.images.filter(isRenderableImage) : isImageCover(displayPost.cover) ? [displayPost.cover!] : []
   const commentTotal = comments.reduce((total, comment) => total + 1 + (comment.replies?.length || 0), 0)
@@ -322,12 +331,8 @@ export default function PostDetail() {
   }
 
   const handleCommentLike = (commentId: string) => {
-    setComments((current) => current.map((comment) => {
-      if (comment.id !== commentId) return comment
-      const likedNext = !comment.liked
-      const nextCount = likedNext ? getCommentLikes(comment) + 1 : Math.max(0, getCommentLikes(comment) - 1)
-      return { ...comment, liked: likedNext, likeCount: nextCount, likes: nextCount }
-    }))
+    if (!commentId) return
+    Taro.showToast({ title: '评论点赞暂未开放', icon: 'none' })
   }
 
   const handleSendComment = async () => {
@@ -348,43 +353,7 @@ export default function PostDetail() {
       setReplyTarget(null)
       Taro.showToast({ title: '评论成功', icon: 'success' })
     } catch (e) {
-      if (replyTarget) {
-        const reply = {
-          id: `reply_${Date.now()}`,
-          commentId: replyTarget.commentId,
-          userId: CURRENT_USER.id,
-          userName: CURRENT_USER.name,
-          userAvatar: CURRENT_USER.avatar,
-          replyToUserId: replyTarget.userId,
-          replyToUserName: replyTarget.userName,
-          content: text,
-          createdAt: '刚刚',
-        }
-        setComments((current) => current.map((comment) => (
-          String(comment.id || comment._id || '') === replyTarget.commentId
-            ? { ...comment, replies: [...(comment.replies || []), reply] }
-            : comment
-        )))
-      } else {
-        setComments((current) => [{
-        id: `local_${Date.now()}`,
-        postId,
-        userId: CURRENT_USER.id,
-        userName: CURRENT_USER.name,
-        userAvatar: CURRENT_USER.avatar,
-        author: { name: CURRENT_USER.name, avatar: CURRENT_USER.avatar },
-        content: text,
-        time: '刚刚',
-        createdAt: '刚刚',
-        likes: 0,
-        likeCount: 0,
-        liked: false,
-        canDelete: true,
-        replies: [],
-      }, ...current])
-      }
-      setCommentText('')
-      setReplyTarget(null)
+      Taro.showToast({ title: '评论发送失败', icon: 'none' })
     }
   }
 

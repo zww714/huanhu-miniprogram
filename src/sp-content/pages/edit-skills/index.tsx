@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import Taro, { useLoad } from '@tarojs/taro'
 import { Button, Input, Text, Textarea, View } from '@tarojs/components'
-import { MY_LEARN_WANTS } from '../../../utils/mock'
-import { createSkill, deleteSkill, getMySkills, updateSkill } from '../../../api'
+import { createSkill, deleteSkill, getMyLearnWants, getMySkills, updateSkill } from '../../../api'
 import './index.scss'
 
 type EditType = 'can' | 'want'
@@ -11,6 +10,7 @@ type Visibility = 'public' | 'private'
 export default function EditSkills() {
   const [type, setType] = useState<EditType>('can')
   const [skills, setSkills] = useState<any[]>([])
+  const [learnWants, setLearnWants] = useState<any[]>([])
   const [selectedId, setSelectedId] = useState('')
   const [name, setName] = useState('')
   const [intro, setIntro] = useState('')
@@ -26,10 +26,14 @@ export default function EditSkills() {
   })
 
   const loadSkills = () => {
-    getMySkills()
-      .then((data) => {
+    Promise.all([
+      getMySkills().catch(() => []),
+      getMyLearnWants().catch(() => []),
+    ])
+      .then(([data, wants]) => {
         const list = Array.isArray(data) ? data : []
         setSkills(list)
+        setLearnWants(Array.isArray(wants) ? wants.map((item: any) => typeof item === 'string' ? { name: item } : item) : [])
         if (selectedId) {
           const current = list.find((item) => item.id === selectedId || item._id === selectedId)
           if (current) fillForm(current)
@@ -113,7 +117,7 @@ export default function EditSkills() {
     })
   }
 
-  const current = type === 'can' ? skills : MY_LEARN_WANTS.map((item) => ({ name: item.name }))
+  const current = type === 'can' ? skills : learnWants
 
   return (
     <View style={{ minHeight: '100vh', backgroundColor: '#F8FAFC', padding: '16px', boxSizing: 'border-box' }}>

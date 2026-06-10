@@ -2,7 +2,7 @@
  * API 评论模块
  */
 import { callCloudFunction, apiWarn, getUseCloud, delay } from './base'
-import { POST_COMMENTS, type Comment } from '../utils/mock'
+import type { Comment } from '../utils/mock'
 
 // ============ 时间格式化 ============
 function formatCloudTime(value: any): string {
@@ -72,7 +72,7 @@ export async function getComments(params: { postId: string }): Promise<Comment[]
     } catch (e) { apiWarn('[API] getComments cloud failed', e) }
   }
   await delay()
-  return POST_COMMENTS.map((c) => ({ ...c })) as Comment[]
+  return []
 }
 
 export async function addComment(params: { postId: string; content: string }): Promise<any> {

@@ -1,8 +1,7 @@
 /**
  * API 技能模块 — 技能 CRUD、学习愿望、评价、兴趣搭子
  */
-import { callCloudFunction, delay, apiWarn, getUseCloud, getCloudDocument, updateCloudDocument } from './base'
-import { MY_SKILLS, MY_LEARN_WANTS, MY_INTERESTS, MY_REVIEWS } from '../utils/mock'
+import { callCloudFunction, apiWarn, getUseCloud, getCloudDocument, updateCloudDocument, LOGIN_USER_KEY } from './base'
 
 // ============ 技能 CRUD ============
 export async function getMySkills() {
@@ -13,7 +12,7 @@ export async function getMySkills() {
     } catch (e) { apiWarn('[API] getMySkills failed', e) }
   }
   const saved = wx.getStorageSync('localMySkills')
-  return Array.isArray(saved) ? saved : MY_SKILLS
+  return Array.isArray(saved) ? saved : []
 }
 
 export async function getUserSkills(params: { userId: string }) {
@@ -44,7 +43,7 @@ export async function createSkill(params: Record<string, any>) {
     } catch (e) { apiWarn('[API] createSkill failed', e) }
   }
   const saved = wx.getStorageSync('localMySkills')
-  const list = Array.isArray(saved) ? saved : MY_SKILLS
+  const list = Array.isArray(saved) ? saved : []
   const next = { ...params, id: `local-${Date.now()}`, desc: params.intro || params.desc || '' }
   wx.setStorageSync('localMySkills', [next, ...list])
   return next
@@ -58,7 +57,7 @@ export async function updateSkill(params: { skillId: string; skill: Record<strin
     } catch (e) { apiWarn('[API] updateSkill failed', e) }
   }
   const saved = wx.getStorageSync('localMySkills')
-  const list = Array.isArray(saved) ? saved : MY_SKILLS
+  const list = Array.isArray(saved) ? saved : []
   const next = list.map((item: any) =>
     (item.id === params.skillId || item._id === params.skillId)
       ? { ...item, ...params.skill, desc: params.skill.intro || params.skill.desc || item.desc }
@@ -74,7 +73,7 @@ export async function deleteSkill(params: { skillId: string }) {
     catch (e) { apiWarn('[API] deleteSkill failed', e) }
   }
   const saved = wx.getStorageSync('localMySkills')
-  const list = Array.isArray(saved) ? saved : MY_SKILLS
+  const list = Array.isArray(saved) ? saved : []
   wx.setStorageSync('localMySkills', list.filter((item: any) => item.id !== params.skillId && item._id !== params.skillId))
   return { code: 0, msg: '已删除' }
 }
@@ -111,9 +110,33 @@ export async function publishSkillNeed(params: { type: 'can' | 'want'; name: str
 }
 
 // ============ 学习愿望/兴趣 ============
-export async function getMyLearnWants() { return MY_LEARN_WANTS }
-export async function getMyInterests() { return MY_INTERESTS }
-export async function getMyReviews() { return MY_REVIEWS }
+export async function getMyLearnWants() {
+  const saved = wx.getStorageSync('localMyLearnWants')
+  if (Array.isArray(saved)) return saved
+  let user = wx.getStorageSync(LOGIN_USER_KEY) || wx.getStorageSync('profileDraft') || null
+  if (getUseCloud()) {
+    try {
+      const res = await callCloudFunction('getCurrentUser')
+      user = res.currentUser || res.userData || user
+    } catch (e) { apiWarn('[API] getMyLearnWants current user failed', e) }
+  }
+  const wants = user?.learnWants || user?.want || user?.wantToLearn || []
+  return Array.isArray(wants) ? wants.map((item: any) => typeof item === 'string' ? { name: item } : item) : []
+}
+
+export async function getMyInterests() {
+  let user = wx.getStorageSync(LOGIN_USER_KEY) || wx.getStorageSync('profileDraft') || null
+  if (getUseCloud()) {
+    try {
+      const res = await callCloudFunction('getCurrentUser')
+      user = res.currentUser || res.userData || user
+    } catch (e) { apiWarn('[API] getMyInterests current user failed', e) }
+  }
+  const interests = user?.interests || []
+  return Array.isArray(interests) ? interests : []
+}
+
+export async function getMyReviews() { return [] }
 
 // ============ 发布兴趣搭子 ============
 export async function publishPartnerProfile(params: { bio: string; interests: string[] }) {

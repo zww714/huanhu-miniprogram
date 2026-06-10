@@ -6,8 +6,6 @@ import {
   addCloudDocument,
   CHAT_USER_KEY, LOCAL_MESSAGES_KEY, LOCAL_CONVERSATIONS_KEY,
 } from './base'
-import { login } from './user'
-import { CONVERSATIONS } from '../utils/mock'
 import type { Conversation } from '../utils/mock'
 
 // ============ 本地聊天工具函数 ============
@@ -22,7 +20,8 @@ function getLocalChatUser() {
 export async function getCurrentChatUser() {
   if (getUseCloud()) {
     try {
-      const userData = await login()
+      const res = await callCloudFunction('login')
+      const userData = res.currentUser || res.userData
       if (userData?._id) {
         const user = { id: userData._id, name: userData.name || '我' }
         wx.setStorageSync(CHAT_USER_KEY, user)
@@ -83,7 +82,8 @@ export async function getConversations() {
     } catch (e) { apiWarn('[API] getConversations cloud failed', e) }
   }
   await delay()
-  return CONVERSATIONS
+  const localData = wx.getStorageSync(LOCAL_CONVERSATIONS_KEY)
+  return Array.isArray(localData) ? localData : []
 }
 
 // ============ 消息 ============
