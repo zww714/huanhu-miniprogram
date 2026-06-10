@@ -25,6 +25,15 @@ type SearchResult = {
   source: any
 }
 
+type CampusTopic = {
+  id: string
+  title: string
+  desc: string
+  heat: number
+  commentCount: number
+  tags: string[]
+}
+
 function idOf(item: any) {
   if (!item) return ''
   return String(item.id || item._id || item.userId || item.title || item.name || '')
@@ -133,6 +142,23 @@ function getRealRecommendWords(users: any[], posts: any[], activities: any[]) {
     .map(([word]) => word)
 }
 
+function normalizeCampusTopic(post: any): CampusTopic | undefined {
+  const id = idOf(post)
+  const title = String(post?.title || '').trim()
+  if (!id || !title) return undefined
+  const commentCount = Number(post?.commentCount ?? post?.comments ?? 0)
+  const likeCount = Number(post?.likeCount ?? post?.likes ?? 0)
+  const favoriteCount = Number(post?.favoriteCount ?? post?.favorites ?? 0)
+  return {
+    id,
+    title,
+    desc: post?.summary || post?.excerpt || post?.content || '',
+    heat: commentCount + likeCount + favoriteCount,
+    commentCount,
+    tags: Array.isArray(post?.tags) ? post.tags : [],
+  }
+}
+
 export default function SearchResults() {
   const [keyword, setKeyword] = useState('')
   const [posts, setPosts] = useState<any[]>([])
@@ -181,6 +207,14 @@ export default function SearchResults() {
 
   const recommendWords = useMemo(() => getRealRecommendWords(users, posts, activities), [activities, posts, users])
 
+  const campusTopics = useMemo(() => (
+    posts
+      .map(normalizeCampusTopic)
+      .filter(Boolean)
+      .sort((a, b) => (b?.heat || 0) - (a?.heat || 0))
+      .slice(0, 5) as CampusTopic[]
+  ), [posts])
+
   const submitSearch = (value?: string) => {
     const text = String(value ?? keyword).trim()
     setKeyword(text)
@@ -193,6 +227,10 @@ export default function SearchResults() {
 
   const openHotTopics = () => {
     Taro.navigateTo({ url: '/sp-common/pages/hot-topics/index' })
+  }
+
+  const openTopicPost = (postId: string) => {
+    Taro.navigateTo({ url: `/sp-content/pages/post-detail/index?postId=${encodeURIComponent(postId)}&from=search-hot-topics` })
   }
 
   const openResult = (item: SearchResult) => {
@@ -280,9 +318,41 @@ export default function SearchResults() {
 
       {!loading && !visibleResults.length ? (
         <View className='campus-topic-card' onClick={openHotTopics}>
-          <Text className='campus-topic-title'>本周校园热议</Text>
-          <Text className='campus-topic-desc'>查看基于真实帖子互动统计的校园热榜</Text>
-          <Text className='campus-topic-action'>去看热榜</Text>
+          <View className='campus-topic-head'>
+            <View>
+              <Text className='campus-topic-title'>本周校园热议</Text>
+              <Text className='campus-topic-desc'>来自真实帖子互动统计</Text>
+            </View>
+            <Text className='campus-topic-action'>查看全部</Text>
+          </View>
+          {campusTopics.length ? (
+            <View className='campus-topic-list'>
+              {campusTopics.map((topic, index) => (
+                <View
+                  className='campus-topic-row'
+                  key={topic.id}
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    openTopicPost(topic.id)
+                  }}
+                >
+                  <Text className={`campus-topic-rank campus-topic-rank--${index < 3 ? index + 1 : 'normal'}`}>{index + 1}</Text>
+                  <View className='campus-topic-main'>
+                    <Text className='campus-topic-row-title' numberOfLines={1}>{topic.title}</Text>
+                    <Text className='campus-topic-row-desc' numberOfLines={1}>{topic.desc || '暂无摘要'}</Text>
+                    <View className='campus-topic-tags'>
+                      {topic.tags.slice(0, 2).map((tag) => <Text key={`${topic.id}_${tag}`}>{tag}</Text>)}
+                      <Text>{topic.commentCount} 讨论</Text>
+                    </View>
+                  </View>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <View className='campus-topic-empty'>
+              <Text>暂无真实热议数据</Text>
+            </View>
+          )}
         </View>
       ) : null}
     </View>

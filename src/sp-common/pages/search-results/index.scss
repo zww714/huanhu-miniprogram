@@ -229,6 +229,13 @@ page {
   box-shadow: 0 12rpx 32rpx rgba(27, 86, 180, 0.06);
 }
 
+.campus-topic-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
 .campus-topic-title {
   display: block;
   color: #111827;
@@ -238,16 +245,108 @@ page {
 
 .campus-topic-desc {
   display: block;
-  margin-top: 12rpx;
+  margin-top: 8rpx;
   color: #334155;
   font-size: 25rpx;
   line-height: 36rpx;
 }
 
 .campus-topic-action {
-  display: block;
-  margin-top: 16rpx;
+  flex-shrink: 0;
   color: #2563EB;
   font-size: 25rpx;
   font-weight: 800;
+}
+
+.campus-topic-list {
+  margin-top: 22rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+}
+
+.campus-topic-row {
+  display: flex;
+  gap: 18rpx;
+  padding: 18rpx 0;
+  border-top: 1rpx solid #EEF2F7;
+}
+
+.campus-topic-rank {
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 14rpx;
+  background: #F1F5F9;
+  color: #64748B;
+  font-size: 24rpx;
+  line-height: 44rpx;
+  text-align: center;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.campus-topic-rank--1 {
+  background: #FEF2F2;
+  color: #EF4444;
+}
+
+.campus-topic-rank--2 {
+  background: #FFF7ED;
+  color: #F97316;
+}
+
+.campus-topic-rank--3 {
+  background: #ECFDF5;
+  color: #10B981;
+}
+
+.campus-topic-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.campus-topic-row-title {
+  display: block;
+  color: #111827;
+  font-size: 28rpx;
+  line-height: 38rpx;
+  font-weight: 900;
+}
+
+.campus-topic-row-desc {
+  display: block;
+  margin-top: 6rpx;
+  color: #64748B;
+  font-size: 24rpx;
+  line-height: 34rpx;
+}
+
+.campus-topic-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 12rpx;
+}
+
+.campus-topic-tags text {
+  padding: 5rpx 12rpx;
+  border-radius: 999rpx;
+  background: #F1F5F9;
+  color: #475569;
+  font-size: 22rpx;
+  font-weight: 700;
+}
+
+.campus-topic-empty {
+  margin-top: 20rpx;
+  padding: 28rpx;
+  border-radius: 22rpx;
+  background: #F8FAFC;
+  text-align: center;
+}
+
+.campus-topic-empty text {
+  color: #94A3B8;
+  font-size: 25rpx;
+  font-weight: 700;
 }
