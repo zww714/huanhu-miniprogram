@@ -3,3 +3,171 @@
 page {
   background: #F8FAFC;
 }
+
+.login-page {
+  min-height: 100vh;
+  background: #F8FAFC;
+  padding: 28px 18px;
+  box-sizing: border-box;
+}
+
+.login-hero {
+  margin-bottom: 22px;
+}
+
+.login-title,
+.login-desc {
+  display: block;
+}
+
+.login-title {
+  font-size: 26px;
+  line-height: 36px;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.login-desc {
+  margin-top: 6px;
+  font-size: 14px;
+  line-height: 22px;
+  color: #64748B;
+}
+
+.login-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 22px 16px 16px;
+  box-sizing: border-box;
+}
+
+.avatar-button {
+  width: 76px;
+  height: 76px;
+  padding: 0;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: transparent;
+  overflow: hidden;
+  border: 0;
+  line-height: 1;
+}
+
+.avatar-button::after {
+  border: 0;
+}
+
+.avatar-placeholder,
+.avatar-image {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+}
+
+.avatar-placeholder {
+  background: #2563EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  text {
+    color: #FFFFFF;
+    font-size: 30px;
+    font-weight: 800;
+  }
+}
+
+.avatar-tip {
+  display: block;
+  text-align: center;
+  margin-top: 10px;
+  font-size: 13px;
+  color: #64748B;
+}
+
+.form-field {
+  margin-top: 22px;
+}
+
+.field-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1E293B;
+  margin-bottom: 8px;
+}
+
+.nickname-input {
+  height: 44px;
+  min-height: 44px;
+  line-height: 44px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  border-radius: 10px;
+  border: 1px solid #E2E8F0;
+  background: #F8FAFC;
+  font-size: 15px;
+  color: #0F172A;
+}
+
+.agreement-row {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid #CBD5E1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 4px;
+  box-sizing: border-box;
+
+  text {
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: 800;
+  }
+}
+
+.checkbox.checked {
+  border-color: #2563EB;
+  background: #2563EB;
+}
+
+.agreement-text,
+.agreement-link {
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.agreement-text {
+  color: #64748B;
+}
+
+.agreement-link {
+  color: #2563EB;
+  font-weight: 700;
+}
+
+.login-button {
+  height: 46px;
+  line-height: 46px;
+  border-radius: 10px;
+  background: #2563EB;
+  color: #FFFFFF;
+  font-size: 15px;
+  font-weight: 700;
+  margin-top: 18px;
+}
+
+.login-button::after {
+  border: 0;
+}

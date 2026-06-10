@@ -73,9 +73,10 @@ export async function getCurrentUser() {
 }
 
 export async function saveWechatProfile(params: { nickName?: string; avatarUrl?: string }) {
-  const user = await login()
+  const user = await login().catch(() => null)
   const nextProfile = {
     name: params.nickName || user?.name || '微信用户',
+    nickname: params.nickName || user?.nickname || user?.name || '微信用户',
     avatar: params.avatarUrl || user?.avatar || '',
   }
   if (getUseCloud() && user?._id) {
@@ -86,6 +87,7 @@ export async function saveWechatProfile(params: { nickName?: string; avatarUrl?:
   }
   const localUser = { ...(user || {}), ...nextProfile }
   wx.setStorageSync(LOGIN_USER_KEY, localUser)
+  wx.setStorageSync('profileDraft', { ...(wx.getStorageSync('profileDraft') || {}), ...localUser })
   return localUser
 }
 
