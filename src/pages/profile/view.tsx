@@ -373,13 +373,12 @@ export default function ProfileView() {
 
         <View className='stats-card'>
           {[
-            { key: 'skills', label: '技能', value: skills.length, icon: '</>' },
-            { key: 'posts', label: '发布', value: posts.length, icon: '↗' },
-            { key: 'followers', label: '粉丝', value: user.followerCount || 0, icon: '●●' },
-            { key: 'following', label: '关注', value: user.followingCount || 0, icon: '●' },
+            { key: 'skills', label: '技能', value: skills.length },
+            { key: 'posts', label: '发布', value: posts.length },
+            { key: 'followers', label: '粉丝', value: user.followerCount || 0 },
+            { key: 'following', label: '关注', value: user.followingCount || 0 },
           ].map((item, index) => (
             <View className={`stat-item ${index < 3 ? 'with-line' : ''}`} key={item.key} onClick={() => goOverview(item.key as any)}>
-              <Text className='stat-icon'>{item.icon}</Text>
               <Text className='stat-value'>{item.value}</Text>
               <Text className='stat-label'>{item.label}</Text>
             </View>

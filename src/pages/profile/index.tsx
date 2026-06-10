@@ -3,15 +3,13 @@ import Taro, { useDidShow } from '@tarojs/taro'
 import { useState } from 'react'
 import ErrorBoundary from '../../components/common/ErrorBoundary'
 import './index.scss'
-import { updateProfile } from '../../api'
+import { getCurrentUser, updateProfile } from '../../api'
 import { getUserStats } from '../../api/stats'
 import { getGenderSymbol, getGenderTone } from '../../utils/gender'
 
 import {
   AVATAR_STORAGE_KEY,
   MY_PROFILE,
-  MY_LEARN_WANTS,
-  MY_INTERESTS,
   SYSTEM_AVATARS,
 } from '../../utils/mock'
 
@@ -173,8 +171,8 @@ export default function Profile() {
     following: p.followingCount ?? stats.following ?? CHEN_PROFILE.stats.following,
   }
   const metaItems = [p.school || '浙江大学', p.college, p.major, p.grade, p.campus].filter(Boolean)
-  const wantTags = (p.wantToLearn || p.learnWants || CHEN_PROFILE.wantToLearn || MY_LEARN_WANTS.map((item) => item.name)).slice(0, 3)
-  const interestTags = (p.interests || CHEN_PROFILE.interests || MY_INTERESTS).slice(0, 3)
+  const wantTags = (p.wantToLearn || p.learnWants || p.want || []).slice(0, 3)
+  const interestTags = (p.interests || []).slice(0, 3)
   const avatarText = (p.name || CHEN_PROFILE.name || '我').charAt(0)
   const genderSymbol = getGenderSymbol(p)
   const genderTone = getGenderTone(p)
@@ -183,31 +181,54 @@ export default function Profile() {
     const nextProfile = getDisplayProfile()
     setProfileData(nextProfile)
     setAvatarUrl(nextProfile.avatar || '')
-    const nextUserId = nextProfile.user_id || nextProfile.id || nextProfile._id || CHEN_PROFILE.user_id
-    getUserStats(String(nextUserId)).then((realStats) => {
-      const normalizedStats = {
-        skills: realStats.skillCount ?? 0,
-        posts: realStats.postCount ?? 0,
-        followers: realStats.followerCount ?? 0,
-        following: realStats.followingCount ?? 0,
+    ;(async () => {
+      let currentProfile = nextProfile
+      try {
+        const currentUser = await getCurrentUser()
+        if (currentUser) {
+          currentProfile = {
+            ...nextProfile,
+            ...currentUser,
+            user_id: currentUser.user_id || currentUser.id || currentUser._id || nextProfile.user_id,
+            name: currentUser.name || currentUser.nickname || nextProfile.name,
+            bio: currentUser.bio || currentUser.intro || nextProfile.bio,
+            intro: currentUser.intro || currentUser.bio || nextProfile.intro,
+            rating: 0,
+          }
+          setProfileData(currentProfile)
+          if (currentUser.avatar) setAvatarUrl(currentUser.avatar)
+        }
+      } catch (e) {
+        console.warn('[Profile] load current user failed', e)
       }
-      setMySkills(Array.from({ length: normalizedStats.skills }))
-      setMyPosts(Array.from({ length: normalizedStats.posts }))
-      setProfileData((current: any) => ({
-        ...current,
-        skillCount: normalizedStats.skills,
-        postCount: normalizedStats.posts,
-        followerCount: normalizedStats.followers,
-        followingCount: normalizedStats.following,
-        stats: {
-          ...(current.stats || {}),
-          ...normalizedStats,
-        },
-        rating: 0,
-      }))
-    }).catch((e) => {
-      console.warn('[Profile] load user stats failed', e)
-    })
+
+      const nextUserId = currentProfile.user_id || currentProfile.id || currentProfile._id || CHEN_PROFILE.user_id
+      try {
+        const realStats = await getUserStats(String(nextUserId))
+        const normalizedStats = {
+          skills: realStats.skillCount ?? 0,
+          posts: realStats.postCount ?? 0,
+          followers: realStats.followerCount ?? 0,
+          following: realStats.followingCount ?? 0,
+        }
+        setMySkills(Array.from({ length: normalizedStats.skills }))
+        setMyPosts(Array.from({ length: normalizedStats.posts }))
+        setProfileData((current: any) => ({
+          ...current,
+          skillCount: normalizedStats.skills,
+          postCount: normalizedStats.posts,
+          followerCount: normalizedStats.followers,
+          followingCount: normalizedStats.following,
+          stats: {
+            ...(current.stats || {}),
+            ...normalizedStats,
+          },
+          rating: 0,
+        }))
+      } catch (e) {
+        console.warn('[Profile] load user stats failed', e)
+      }
+    })()
   })
 
   return (
@@ -259,13 +280,12 @@ export default function Profile() {
 
         <View className='stats-card'>
           {[
-            { label: '技能', value: statValues.skills, icon: '</>', url: withProfileParams('/sp-content/pages/my-skills/index', { self: 1 }) },
-            { label: '发布', value: statValues.posts, icon: '+', url: withProfileParams('/sp-content/pages/my-posts/index', { self: 1 }) },
-            { label: '粉丝', value: statValues.followers, icon: '○', url: withProfileParams('/sp-content/pages/my-followers/index') },
-            { label: '关注', value: statValues.following, icon: '◎', url: withProfileParams('/sp-content/pages/my-following/index') },
+            { label: '技能', value: statValues.skills, url: withProfileParams('/sp-content/pages/my-skills/index', { self: 1 }) },
+            { label: '发布', value: statValues.posts, url: withProfileParams('/sp-content/pages/my-posts/index', { self: 1 }) },
+            { label: '粉丝', value: statValues.followers, url: withProfileParams('/sp-content/pages/my-followers/index') },
+            { label: '关注', value: statValues.following, url: withProfileParams('/sp-content/pages/my-following/index') },
           ].map((item, index) => (
             <View key={item.label} className={`stat-item ${index < 3 ? 'with-line' : ''}`} onClick={() => safeGo(item.url)}>
-              <Text className='stat-icon'>{item.icon}</Text>
               <Text className='stat-value'>{item.value}</Text>
               <Text className='stat-label'>{item.label}</Text>
             </View>
@@ -289,5 +309,3 @@ export default function Profile() {
     </ErrorBoundary>
   )
 }
-
-

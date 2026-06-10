@@ -1,280 +1,207 @@
-import { useState } from 'react'
-import Taro from '@tarojs/taro'
-import { Image, ScrollView, Text, View } from '@tarojs/components'
-import {
-  MY_LEARN_WANTS, MY_PROFILE, MY_SKILLS, MY_VERIFIED_SKILLS,
-  SKILL_ID_BY_NAME, VERIFICATION_STATUS_TEXT,
-  type VerificationStatus,
-} from '../../../utils/mock'
-import { openUnifiedUserProfile } from '../../../utils/publicProfiles'
+import { useMemo, useState } from 'react'
+import Taro, { useDidShow } from '@tarojs/taro'
+import { ScrollView, Text, View } from '@tarojs/components'
+import { getCurrentUser, getMySkills } from '../../../api'
 import './index.scss'
-
-/** 验证状态对应的颜色 */
-const STATUS_STYLE: Record<VerificationStatus, { bg: string; color: string; icon: string }> = {
-  unverified: { bg: '#F1F5F9', color: '#64748B', icon: '○' },
-  pending:    { bg: '#FEF3C7', color: '#D97706', icon: '⏳' },
-  verifying:  { bg: '#DBEAFE', color: '#2563EB', icon: '🔄' },
-  approved:   { bg: '#D1FAE5', color: '#059669', icon: '✓' },
-  rejected:   { bg: '#FEE2E2', color: '#DC2626', icon: '✕' },
-}
-
-/** 统计认证技能各状态数量 */
-function countByStatus(skills: typeof MY_VERIFIED_SKILLS) {
-  const map: Record<string, number> = { approved: 0, pending: 0, verifying: 0, rejected: 0, unverified: 0 }
-  skills.forEach((s) => { map[s.verificationStatus] = (map[s.verificationStatus] || 0) + 1 })
-  return map
-}
 
 type ActiveTab = 'all' | 'self' | 'verified'
 
+type SkillItem = {
+  id: string
+  userId: string
+  name: string
+  level: number
+  desc: string
+  tags: string[]
+  verified: boolean
+  proofCount: number
+}
+
+function normalizeSkill(skill: any, index: number, userId: string): SkillItem {
+  const name = typeof skill === 'string' ? skill : skill?.name || skill?.title || ''
+  return {
+    id: String(skill?.id || skill?._id || `skill-${index}-${name}`),
+    userId: String(skill?.userId || userId || ''),
+    name,
+    level: Number(skill?.level || skill?.skillLevel || 0),
+    desc: skill?.desc || skill?.intro || skill?.summary || '',
+    tags: Array.isArray(skill?.tags) ? skill.tags : [],
+    verified: !!skill?.verified || Number(skill?.proofCount || 0) > 0,
+    proofCount: Number(skill?.proofCount || skill?.verifiedCount || 0),
+  }
+}
+
+function normalizeWants(user: any) {
+  const source = user?.wantToLearn || user?.learnWants || user?.want || []
+  return (Array.isArray(source) ? source : [])
+    .map((item: any, index: number) => {
+      if (typeof item === 'string') return { id: `want-${index}-${item}`, name: item, target: '' }
+      return {
+        id: String(item?.id || item?._id || `want-${index}-${item?.name || item?.title || ''}`),
+        name: String(item?.name || item?.title || '').trim(),
+        target: String(item?.target || item?.desc || item?.intro || '').trim(),
+      }
+    })
+    .filter((item) => !!item.name)
+}
+
 export default function MySkillsPage() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('all')
-  const statusCount = countByStatus(MY_VERIFIED_SKILLS)
+  const [skills, setSkills] = useState<SkillItem[]>([])
+  const [wants, setWants] = useState<Array<{ id: string; name: string; target: string }>>([])
+  const [loading, setLoading] = useState(true)
+  const [userId, setUserId] = useState('')
 
-  // ===== 导航 =====
+  useDidShow(() => {
+    let alive = true
+    setLoading(true)
+    Promise.all([
+      getCurrentUser().catch(() => null),
+      getMySkills().catch(() => []),
+    ]).then(([user, skillData]) => {
+      if (!alive) return
+      const currentUserId = String(user?.id || user?._id || user?.user_id || '')
+      setUserId(currentUserId)
+      setSkills((Array.isArray(skillData) ? skillData : [])
+        .map((item, index) => normalizeSkill(item, index, currentUserId))
+        .filter((item) => !!item.name))
+      setWants(normalizeWants(user))
+    }).finally(() => {
+      if (alive) setLoading(false)
+    })
+    return () => { alive = false }
+  })
+
+  const verifiedSkills = useMemo(() => skills.filter((skill) => skill.verified || skill.proofCount > 0), [skills])
+
   const goBack = () => Taro.navigateBack()
   const goEditSelfSkill = () => Taro.navigateTo({ url: '/sp-content/pages/edit-skills/index?type=can' })
   const goEditLearnWant = () => Taro.navigateTo({ url: '/sp-content/pages/edit-skills/index?type=want' })
+  const goCreateVerified = () => Taro.navigateTo({ url: '/sp-content/pages/edit-verified-skill/index' })
 
-  const goSelfSkillDetail = (skillName: string) => {
-    const skillId = SKILL_ID_BY_NAME[skillName] || encodeURIComponent(skillName)
+  const goSkillDetail = (skill: SkillItem) => {
     Taro.navigateTo({
-      url: `/sp-content/pages/skill-detail/index?userId=${encodeURIComponent(MY_PROFILE.user_id)}&skillId=${encodeURIComponent(skillId)}`,
+      url: `/sp-content/pages/skill-detail/index?userId=${encodeURIComponent(skill.userId || userId)}&skillId=${encodeURIComponent(skill.id)}`,
     })
   }
 
-  const goVerifiedSkillDetail = (skill: typeof MY_VERIFIED_SKILLS[number]) => {
-    Taro.navigateTo({
-      url: `/sp-content/pages/skill-proof-detail/index?skillId=${encodeURIComponent(skill.id)}&skillName=${encodeURIComponent(skill.name)}&userId=${encodeURIComponent(MY_PROFILE.user_id)}&type=verified`,
-    })
-  }
+  const renderSkillCard = (skill: SkillItem, tone: 'self' | 'verified') => (
+    <View key={skill.id} className={`skill-card ${tone}`} onClick={() => goSkillDetail(skill)}>
+      <View className='skill-card-head'>
+        <View className='skill-card-left'>
+          <Text className='skill-name'>{skill.name}</Text>
+          {skill.level ? <Text className={`skill-level ${tone === 'self' ? 'self' : 'verified-badge'}`}>Lv.{skill.level}</Text> : null}
+        </View>
+        <Text className='skill-arrow'>›</Text>
+      </View>
+      <Text className='skill-desc'>{skill.desc || '暂无技能介绍'}</Text>
+      <View className='skill-tags'>
+        {skill.tags.slice(0, 4).map((tag) => (
+          <Text key={tag} className={`tag ${tone}`}>{tag}</Text>
+        ))}
+      </View>
+    </View>
+  )
 
-  const goCreateVerified = () => {
-    Taro.navigateTo({ url: '/sp-content/pages/edit-verified-skill/index' })
-  }
-
-  // ===== 渲染：自定义技能 =====
   const renderSelfSkills = () => (
     <>
       <View className='section-header'>
         <View className='section-header-left'>
-          <Text className='section-icon'>🎨</Text>
           <Text className='section-title'>自定义技能</Text>
-          <View className='section-badge self'><Text>{MY_SKILLS.length}</Text></View>
+          <View className='section-badge self'><Text>{skills.length}</Text></View>
         </View>
-        <Text className='section-action' onClick={goEditSelfSkill}>编辑 ›</Text>
+        <Text className='section-action' onClick={goEditSelfSkill}>编辑</Text>
       </View>
-      <Text className='section-desc'>天马行空，自由描述你的技能——无需证明，随心展示</Text>
+      <Text className='section-desc'>展示你已公开的真实技能资料。</Text>
 
-      {MY_SKILLS.length ? (
-        MY_SKILLS.map((skill) => (
-          <View key={skill.name} className='skill-card self' onClick={() => goSelfSkillDetail(skill.name)}>
-            <View className='skill-card-head'>
-              <View className='skill-card-left'>
-                <Text className='skill-name'>{skill.name}</Text>
-                <Text className='skill-level self'>Lv.{skill.level}</Text>
-              </View>
-              <Text className='skill-arrow'>›</Text>
-            </View>
-            <Text className='skill-desc'>{skill.desc}</Text>
-            <View className='skill-tags'>
-              {skill.tags.map((tag) => (
-                <Text key={tag} className='tag self'>{tag}</Text>
-              ))}
-            </View>
-          </View>
-        ))
+      {skills.length ? (
+        skills.map((skill) => renderSkillCard(skill, 'self'))
       ) : (
         <View className='empty-card' onClick={goEditSelfSkill}>
-          <Text className='empty-text'>还没有自定义技能，点击添加</Text>
+          <Text className='empty-text'>{loading ? '正在加载...' : '还没有自定义技能，点击添加'}</Text>
         </View>
       )}
 
       <View className='section-header' style={{ marginTop: '24rpx' }}>
         <View className='section-header-left'>
-          <Text className='section-icon'>📖</Text>
           <Text className='section-title'>我想学</Text>
-          <View className='section-badge want'><Text>{MY_LEARN_WANTS.length}</Text></View>
+          <View className='section-badge want'><Text>{wants.length}</Text></View>
         </View>
-        <Text className='section-action' onClick={goEditLearnWant}>编辑 ›</Text>
+        <Text className='section-action' onClick={goEditLearnWant}>编辑</Text>
       </View>
-      {MY_LEARN_WANTS.length ? (
-        MY_LEARN_WANTS.map((item) => (
-          <View key={item.name} className='skill-card want'>
+      {wants.length ? (
+        wants.map((item) => (
+          <View key={item.id} className='skill-card want'>
             <View className='skill-card-head'>
               <Text className='skill-name want'>{item.name}</Text>
             </View>
-            <Text className='skill-desc'>{item.target}</Text>
+            <Text className='skill-desc'>{item.target || '暂无学习说明'}</Text>
           </View>
         ))
       ) : (
         <View className='empty-card' onClick={goEditLearnWant}>
-          <Text className='empty-text'>还没有想学的内容，点击添加</Text>
+          <Text className='empty-text'>{loading ? '正在加载...' : '还没有想学的内容，点击添加'}</Text>
         </View>
       )}
     </>
   )
 
-  // ===== 渲染：认证技能 =====
   const renderVerifiedSkills = () => (
     <>
       <View className='section-header'>
         <View className='section-header-left'>
-          <Text className='section-icon'>✅</Text>
           <Text className='section-title'>认证技能</Text>
-          <View className='section-badge verified'><Text>{MY_VERIFIED_SKILLS.length}</Text></View>
+          <View className='section-badge verified'><Text>{verifiedSkills.length}</Text></View>
         </View>
-        <Text className='section-action' onClick={goCreateVerified}>添加 ›</Text>
+        <Text className='section-action' onClick={goCreateVerified}>添加</Text>
       </View>
-      <Text className='section-desc'>提供证明材料 + 官方验证链接，平台审核后授予认证标识</Text>
+      <Text className='section-desc'>只展示已提交并有真实证明材料的技能。</Text>
 
-      {/* 状态统计条 */}
-      <View className='status-bar'>
-        <View className='status-item'>
-          <Text className='status-count approved'>{statusCount.approved}</Text>
-          <Text className='status-label'>已验证</Text>
-        </View>
-        <View className='status-item'>
-          <Text className='status-count verifying'>{statusCount.verifying}</Text>
-          <Text className='status-label'>验证中</Text>
-        </View>
-        <View className='status-item'>
-          <Text className='status-count pending'>{statusCount.pending}</Text>
-          <Text className='status-label'>待审核</Text>
-        </View>
-        <View className='status-item'>
-          <Text className='status-count rejected'>{statusCount.rejected}</Text>
-          <Text className='status-label'>未通过</Text>
-        </View>
-      </View>
-
-      {MY_VERIFIED_SKILLS.length ? (
-        MY_VERIFIED_SKILLS.map((skill) => {
-          const st = STATUS_STYLE[skill.verificationStatus]
-          const needsVerify = skill.verificationStatus === 'pending' || skill.verificationStatus === 'verifying'
-
-          return (
-            <View
-              key={skill.id}
-              className='skill-card verified'
-              onClick={() => goVerifiedSkillDetail(skill)}
-            >
-              {/* 顶部：名称 + 状态 */}
-              <View className='skill-card-head'>
-                <View className='skill-card-left'>
-                  <Text className='skill-name'>{skill.name}</Text>
-                  <View className='skill-level verified-badge' style={{ backgroundColor: `${st.bg} !important` }}>
-                    <Text>{st.icon}</Text>
-                  </View>
-                </View>
-                <View className='status-tag' style={{ backgroundColor: st.bg }}>
-                  <Text style={{ color: st.color }}>{VERIFICATION_STATUS_TEXT[skill.verificationStatus]}</Text>
-                </View>
-              </View>
-
-              {/* 描述 */}
-              <Text className='skill-desc'>{skill.desc}</Text>
-
-              {/* 验证来源信息 */}
-              {skill.verificationSource && (
-                <View className='verify-source'>
-                  <View className='verify-source-row'>
-                    <Text className='verify-source-label'>验证平台</Text>
-                    <Text className='verify-source-value'>{skill.verificationSource.platformName}</Text>
-                  </View>
-                  <View className='verify-source-row'>
-                    <Text className='verify-source-label'>证书编号</Text>
-                    <Text className='verify-source-value code'>{skill.verificationSource.verificationCode}</Text>
-                    <Text
-                      className='verify-action'
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        Taro.setClipboardData({
-                          data: skill.verificationSource.platformUrl,
-                          success: () => Taro.showToast({ title: '链接已复制，可前往验证', icon: 'success' }),
-                        })
-                      }}
-                    >
-                      🔗 去验证
-                    </Text>
-                  </View>
-                </View>
-              )}
-
-              {/* 审核反馈 */}
-              {skill.verificationFeedback?.comment && (
-                <View className='feedback-bar' style={{ backgroundColor: skill.verificationStatus === 'rejected' ? '#FEF2F2' : '#ECFDF5' }}>
-                  <Text className='feedback-text'>
-                    {skill.verificationStatus === 'rejected' ? '❌ ' : '✅ '}
-                    {skill.verificationFeedback.comment}
-                  </Text>
-                </View>
-              )}
-
-              {/* 待处理的提示 */}
-              {needsVerify && (
-                <View className='verify-hint'>
-                  <Text className='verify-hint-text'>等待平台审核中，审核结果将通知你</Text>
-                </View>
-              )}
-
-              {/* 标签 */}
-              <View className='skill-tags'>
-                {skill.tags.map((tag) => (
-                  <Text key={tag} className='tag verified'>{tag}</Text>
-                ))}
-              </View>
-            </View>
-          )
-        })
+      {verifiedSkills.length ? (
+        verifiedSkills.map((skill) => renderSkillCard(skill, 'verified'))
       ) : (
         <View className='empty-card' onClick={goCreateVerified}>
-          <Text className='empty-text'>还没有认证技能，点击提交首个认证</Text>
+          <Text className='empty-text'>{loading ? '正在加载...' : '暂无认证技能，点击提交证明'}</Text>
         </View>
       )}
     </>
   )
 
-  // ===== 主要渲染 =====
   const showSelf = activeTab === 'all' || activeTab === 'self'
   const showVerified = activeTab === 'all' || activeTab === 'verified'
 
   return (
     <View className='my-skills-page'>
-      {/* 顶部导航 */}
       <View className='my-skills-nav'>
         <Text className='nav-back' onClick={goBack}>‹ 返回</Text>
         <Text className='nav-title'>我的技能</Text>
         <View style={{ width: '80rpx' }} />
       </View>
 
-      {/* 分段切换 */}
       <View className='tab-bar'>
         {([
-          { key: 'all' as ActiveTab, label: '全部', icon: '📋' },
-          { key: 'self' as ActiveTab, label: '自定义', icon: '🎨' },
-          { key: 'verified' as ActiveTab, label: '认证', icon: '✅' },
+          { key: 'all' as ActiveTab, label: '全部' },
+          { key: 'self' as ActiveTab, label: '自定义' },
+          { key: 'verified' as ActiveTab, label: '认证' },
         ]).map((tab) => (
           <View
             key={tab.key}
             className={`tab-item ${activeTab === tab.key ? 'active' : ''}`}
             onClick={() => setActiveTab(tab.key)}
           >
-            <Text className='tab-icon'>{tab.icon}</Text>
             <Text className='tab-label'>{tab.label}</Text>
           </View>
         ))}
       </View>
 
-      {/* 内容 */}
       <ScrollView scrollY className='my-skills-scroll' showScrollbar={false} enhanced bounces={false}>
         {showVerified && activeTab === 'verified' ? renderVerifiedSkills() : null}
         {showSelf && activeTab === 'self' ? renderSelfSkills() : null}
         {activeTab === 'all' ? (
           <>
-            {renderVerifiedSkills()}
-            <View className='divider-line' />
             {renderSelfSkills()}
+            <View className='divider-line' />
+            {renderVerifiedSkills()}
           </>
         ) : null}
         <View className='bottom-space' />
