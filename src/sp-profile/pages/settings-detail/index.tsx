@@ -4,38 +4,34 @@ import { Switch, Text, View } from '@tarojs/components'
 import './index.scss'
 
 type SettingType = 'account' | 'notice' | 'privacy' | 'about'
+type Row = {
+  key: string
+  label: string
+  desc: string
+  type?: 'switch' | 'link' | 'value'
+  value?: string
+  url?: string
+}
 
 const COPY: Record<SettingType, {
   title: string
   desc: string
-  groups: Array<{
-    title: string
-    rows: Array<{
-      key: string
-      label: string
-      desc: string
-      type?: 'switch' | 'link' | 'value'
-      value?: string
-      url?: string
-    }>
-  }>
+  groups: Array<{ title: string; rows: Row[] }>
 }> = {
   account: {
-    title: '账号与安全',
-    desc: '管理个人资料、认证状态和账号安全信息。',
+    title: '账号登录',
+    desc: '管理校园认证和登录切换。',
     groups: [
       {
-        title: '账号资料',
+        title: '账号状态',
         rows: [
-          { key: 'profile', label: '编辑个人资料', desc: '头像、昵称、学院、简介等基础资料', type: 'link', url: '/sp-profile/pages/edit-profile/index' },
-          { key: 'verify', label: '校园认证', desc: '完善认证后获得蓝色认证标识', type: 'link', url: '/sp-common/pages/verify/index' },
+          { key: 'verify', label: '校园认证', desc: '完善认证后显示蓝色认证标识', type: 'link', url: '/sp-common/pages/verify/index' },
         ],
       },
       {
-        title: '登录安全',
+        title: '登录',
         rows: [
           { key: 'login', label: '登录 / 切换账号', desc: '重新授权或切换微信账号', type: 'link', url: '/sp-common/pages/login/index' },
-          { key: 'device', label: '当前设备', desc: '微信小程序环境', type: 'value', value: '已启用' },
         ],
       },
     ],
@@ -49,7 +45,7 @@ const COPY: Record<SettingType, {
         rows: [
           { key: 'likes', label: '赞和收藏', desc: '有人点赞或收藏内容时提醒', type: 'switch', value: 'on' },
           { key: 'follows', label: '新增关注', desc: '有同学关注你时提醒', type: 'switch', value: 'on' },
-          { key: 'comments', label: '评论和@', desc: '评论、回复或提到你时提醒', type: 'switch', value: 'on' },
+          { key: 'comments', label: '评论和回复', desc: '评论、回复或提到你时提醒', type: 'switch', value: 'on' },
         ],
       },
       {
@@ -97,7 +93,7 @@ const COPY: Record<SettingType, {
         title: '反馈与支持',
         rows: [
           { key: 'feedback', label: '意见反馈', desc: '提交体验问题或功能建议', type: 'link', url: '/sp-social/pages/contact-request/index?type=feedback' },
-          { key: 'discover', label: '看看社区', desc: '返回发现页浏览校园内容', type: 'link', url: '/pages/discover/index' },
+          { key: 'discover', label: '查看社区', desc: '返回发现页浏览校园内容', type: 'link', url: '/pages/discover/index' },
         ],
       },
     ],
@@ -105,11 +101,11 @@ const COPY: Record<SettingType, {
 }
 
 export default function SettingsDetail() {
-  const [type, setType] = useState<SettingType>('account')
+  const [type, setType] = useState<SettingType>('privacy')
   const [switches, setSwitches] = useState<Record<string, boolean>>({})
 
   useLoad((options) => {
-    const nextType = String(options?.type || 'account') as SettingType
+    const nextType = String(options?.type || 'privacy') as SettingType
     if (COPY[nextType]) setType(nextType)
   })
 
@@ -171,9 +167,3 @@ export default function SettingsDetail() {
     </View>
   )
 }
-
-
-
-
-
-

@@ -14,18 +14,28 @@ const SETTINGS = [
   {
     key: 'notice',
     title: '消息通知',
-    desc: '赞藏、关注、评论与系统提醒',
+    desc: '点赞、收藏、关注、评论与系统提醒',
     icon: '通',
     tone: 'green',
     type: 'detail',
   },
   {
-    key: 'account',
-    title: '账号登录',
-    desc: '登录、切换账号和认证状态',
+    key: 'verify',
+    title: '校园认证',
+    desc: '完善认证后显示蓝色认证标识',
+    icon: '认',
+    tone: 'blue',
+    type: 'link',
+    url: '/sp-common/pages/verify/index',
+  },
+  {
+    key: 'login',
+    title: '登录 / 切换账号',
+    desc: '重新授权或切换微信账号',
     icon: '账',
     tone: 'blue',
-    type: 'login',
+    type: 'link',
+    url: '/sp-common/pages/login/index',
   },
   {
     key: 'cache',
@@ -53,10 +63,18 @@ export default function Settings() {
     })
   }
 
+  const openLink = (url?: string) => {
+    if (!url) return
+    Taro.navigateTo({
+      url,
+      fail: () => Taro.showToast({ title: '功能开发中', icon: 'none' }),
+    })
+  }
+
   const clearCache = () => {
     Taro.showModal({
       title: '清除缓存',
-      content: '将清理最近搜索、临时草稿和本地浏览记录，云端资料不会受影响。',
+      content: '将清理最近搜索、临时草稿和本地浏览记录，云端资料不受影响。',
       confirmText: '清除',
       confirmColor: '#2563EB',
       success: ({ confirm }) => {
@@ -78,8 +96,8 @@ export default function Settings() {
       clearCache()
       return
     }
-    if (item.type === 'login') {
-      Taro.navigateTo({ url: '/sp-common/pages/login/index' })
+    if (item.type === 'link') {
+      openLink(item.url)
       return
     }
     openDetail(item.key, item.title)

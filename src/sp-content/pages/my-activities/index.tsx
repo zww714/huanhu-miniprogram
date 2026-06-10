@@ -20,6 +20,7 @@ export default function MyActivities() {
   })
 
   const goActivity = (item: any) => {
+    const registration = item.registration || item.form || {}
     const query = [
       `mode=detail`,
       `registrationId=${encodeURIComponent(item.id || item._id || '')}`,
@@ -28,9 +29,9 @@ export default function MyActivities() {
       `organizer=${encodeURIComponent(item.activity?.organizer || '')}`,
       `time=${encodeURIComponent(item.activity?.time || '')}`,
       `location=${encodeURIComponent(item.activity?.location || '')}`,
-      `name=${encodeURIComponent(item.name || item.form?.name || '')}`,
-      `phone=${encodeURIComponent(item.phone || item.form?.phone || '')}`,
-      `note=${encodeURIComponent(item.note || item.form?.note || '')}`,
+      `name=${encodeURIComponent(item.name || item.userName || registration.name || '')}`,
+      `phone=${encodeURIComponent(item.phone || item.contact || registration.phone || registration.contact || '')}`,
+      `note=${encodeURIComponent(item.note || item.remark || registration.note || registration.remark || '')}`,
     ].join('&')
     Taro.navigateTo({ url: `/sp-content/pages/activity-register/index?${query}` })
   }

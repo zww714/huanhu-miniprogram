@@ -14,16 +14,21 @@ function writeLocalFavorites(items: any[]) {
   wx.setStorageSync(FAVORITES_KEY, items)
 }
 
-function normalizeFavorite(targetId: string, targetType = 'post') {
+function normalizeFavorite(targetId: string, targetType = 'post', post?: any) {
+  const source = post || {}
+  const sourceAuthor = source.author || {}
   const fallbackAuthor = {
-    id: '',
-    _id: '',
-    name: '同学',
-    avatar: '',
-    college: '浙江大学',
-    grade: '在读',
-    verified: false,
+    id: source.authorId || source.userId || sourceAuthor.id || sourceAuthor._id || '',
+    _id: source.authorId || source.userId || sourceAuthor.id || sourceAuthor._id || '',
+    name: source.authorName || sourceAuthor.name || '同学',
+    avatar: source.authorAvatar || sourceAuthor.avatar || '',
+    college: source.college || sourceAuthor.college || '浙江大学',
+    grade: source.grade || sourceAuthor.grade || '',
+    verified: !!(source.verified || sourceAuthor.verified),
   }
+  const title = source.title || source.name || '收藏内容'
+  const excerpt = source.excerpt || source.summary || source.desc || source.content || ''
+  const tags = Array.isArray(source.tags) ? source.tags : []
 
   return {
     id: `${targetType}_${targetId}`,
@@ -33,15 +38,22 @@ function normalizeFavorite(targetId: string, targetType = 'post') {
     postId: targetId,
     createdAt: new Date().toISOString(),
     post: {
-      id: targetId,
-      _id: targetId,
-      title: '收藏内容',
-      excerpt: '',
-      tags: [],
-      authorId: '',
-      author: fallbackAuthor,
+      ...source,
+      id: source.id || source._id || targetId,
+      _id: source._id || source.id || targetId,
+      title,
+      excerpt,
+      tags,
+      authorId: source.authorId || source.userId || fallbackAuthor.id,
+      author: { ...fallbackAuthor, ...sourceAuthor },
     },
   }
+}
+
+function syncLocalFavorite(targetId: string, targetType: string, favorited: boolean, post?: any) {
+  const current = readLocalFavorites()
+  const withoutTarget = current.filter((item) => !(item.targetType === targetType && String(item.targetId || item.postId) === String(targetId)))
+  writeLocalFavorites(favorited ? [normalizeFavorite(targetId, targetType, post), ...withoutTarget] : withoutTarget)
 }
 
 export async function toggleLike(params: {
@@ -57,21 +69,23 @@ export async function toggleLike(params: {
 }
 
 export async function toggleFavorite(params: {
-  targetType?: string; targetId: string
+  targetType?: string; targetId: string; post?: any
 }): Promise<{ favorited: boolean; favoriteCount: number }> {
+  const targetType = params.targetType || 'post'
   if (getUseCloud()) {
     try {
-      const res = await callCloudFunction('toggleFavorite', { targetType: params.targetType || 'post', targetId: params.targetId })
-      return res.data || { favorited: false, favoriteCount: 0 }
-    } catch (e) { apiWarn('[API] toggleFavorite failed', e); throw e }
+      const res = await callCloudFunction('toggleFavorite', { targetType, targetId: params.targetId })
+      const data = res.data || { favorited: false, favoriteCount: 0 }
+      syncLocalFavorite(params.targetId, targetType, !!data.favorited, params.post)
+      return data
+    } catch (e) { apiWarn('[API] toggleFavorite failed, use local fallback', e) }
   }
 
-  const targetType = params.targetType || 'post'
   const current = readLocalFavorites()
   const exists = current.some((item) => item.targetType === targetType && String(item.targetId || item.postId) === String(params.targetId))
   const next = exists
     ? current.filter((item) => !(item.targetType === targetType && String(item.targetId || item.postId) === String(params.targetId)))
-    : [normalizeFavorite(params.targetId, targetType), ...current]
+    : [normalizeFavorite(params.targetId, targetType, params.post), ...current]
   writeLocalFavorites(next)
   return { favorited: !exists, favoriteCount: next.length }
 }
@@ -83,7 +97,7 @@ export async function getInteractionStatus(params: {
     try {
       const res = await callCloudFunction('getInteractionStatus', { targetType: params.targetType || 'post', targetId: params.targetId })
       return res.data || { liked: false, favorited: false, likeCount: 0, favoriteCount: 0 }
-    } catch (e) { apiWarn('[API] getInteractionStatus failed', e); throw e }
+    } catch (e) { apiWarn('[API] getInteractionStatus failed, use local fallback', e) }
   }
 
   const targetType = params.targetType || 'post'
@@ -98,7 +112,7 @@ export async function getMyFavorites(params?: { targetType?: string }): Promise<
       const res = await callCloudFunction('getMyFavorites', { targetType: params?.targetType || 'post' })
       const data = res.data || []
       if (Array.isArray(data) && data.length) return data
-    } catch (e) { apiWarn('[API] getMyFavorites failed', e); throw e }
+    } catch (e) { apiWarn('[API] getMyFavorites failed, use local fallback', e) }
   }
 
   const targetType = params?.targetType || 'post'

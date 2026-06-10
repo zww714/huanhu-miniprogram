@@ -310,7 +310,7 @@ export default function PostDetail() {
     }
 
     try {
-      const res = await toggleFavorite({ targetId: postId })
+      const res = await toggleFavorite({ targetId: postId, post })
       setBookmarked(res.favorited)
       setFavoriteCount(res.favoriteCount)
     } catch (e) {

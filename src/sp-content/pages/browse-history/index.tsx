@@ -62,8 +62,11 @@ export default function BrowseHistory() {
   return (
     <View className='history-page'>
       <View className='history-comment-entry' onClick={() => Taro.navigateTo({ url: '/sp-social/pages/message-comments/index' })}>
-        <Text className='history-comment-title'>我的评论</Text>
-        <Text className='history-comment-desc'>查看我发出和收到的评论</Text>
+        <View>
+          <Text className='history-comment-title'>我的评论</Text>
+          <Text className='history-comment-desc'>查看我发出和收到的评论</Text>
+        </View>
+        <Text className='history-comment-arrow'>›</Text>
       </View>
 
       {items.length > 0 && (

@@ -500,11 +500,29 @@ export default function Discover() {
     setLikedItems((current) => ({ ...current, [id]: !current[id] }))
   }
 
-  const toggleFavorite = async (id: string) => {
+  const toggleFavorite = async (item: FeedItem) => {
+    const id = item.id
     const currentValue = !!favoritedItems[id]
     setFavoritedItems((current) => ({ ...current, [id]: !currentValue }))
     try {
-      const res = await apiToggleFavorite({ targetType: 'post', targetId: id })
+      const res = await apiToggleFavorite({
+        targetType: 'post',
+        targetId: id,
+        post: {
+          ...(item.source || {}),
+          id,
+          _id: (item.source as any)?._id || id,
+          title: item.title,
+          excerpt: item.desc,
+          tags: item.tags,
+          coverImage: item.coverImage,
+          authorId: item.authorId,
+          authorName: item.authorName,
+          authorAvatar: item.authorAvatar,
+          authorGender: item.authorGender,
+          college: item.authorMeta,
+        },
+      })
       setFavoritedItems((current) => ({ ...current, [id]: !!res.favorited }))
       Taro.showToast({ title: res.favorited ? '已收藏' : '已取消收藏', icon: 'success' })
     } catch (e) {
@@ -598,7 +616,7 @@ export default function Discover() {
                 <Text className='feed-action'>💬 {commentCount}</Text>
                 <Text
                   className={favorited ? 'feed-action feed-action--active' : 'feed-action'}
-                  onClick={(event) => { event.stopPropagation(); toggleFavorite(item.id) }}
+                  onClick={(event) => { event.stopPropagation(); toggleFavorite(item) }}
                 >
                   ☆ {favoriteCount}
                 </Text>

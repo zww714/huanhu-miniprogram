@@ -74,7 +74,12 @@ exports.main = async (event = {}) => {
         const act = actMap[reg.activityId] || {}
         return {
           id: reg._id, activityId: reg.activityId,
-          registration: { name: reg.userName, note: reg.note, createdAt: reg.createdAt },
+          registration: {
+            name: reg.userName,
+            phone: reg.phone || '',
+            note: reg.note,
+            createdAt: reg.createdAt,
+          },
           activity: {
             id: act._id, title: act.title || '', time: act.time || '',
             location: act.location || '', campus: act.campus || '',

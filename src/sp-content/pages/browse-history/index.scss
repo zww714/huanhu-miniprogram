@@ -5,6 +5,9 @@
 }
 
 .history-comment-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 20rpx;
   padding: 24rpx;
   border-radius: 20rpx;
@@ -26,6 +29,13 @@
   color: #64748B;
   font-size: 24rpx;
   line-height: 32rpx;
+}
+
+.history-comment-arrow {
+  color: #94A3B8;
+  font-size: 40rpx;
+  line-height: 40rpx;
+  font-weight: 600;
 }
 
 .history-header {
