@@ -143,6 +143,12 @@ export default function MyFollowers() {
   if (loading) {
     return (
       <View className='relation-page'>
+        <View className='page-header'>
+          <View>
+            <Text className='page-title'>我的粉丝</Text>
+            <Text className='page-subtitle'>正在同步粉丝数据</Text>
+          </View>
+        </View>
         <View className='loading-state'>
           <Text>加载中...</Text>
         </View>
@@ -157,20 +163,23 @@ export default function MyFollowers() {
           <Text className='page-title'>我的粉丝</Text>
           <Text className='page-subtitle'>共 {total} 人，{unfollowedCount} 人待回关</Text>
         </View>
-        <View className='header-actions'>
-          <View className='primary-pill' onClick={followBackAll}>
-            <Text>一键回关</Text>
+        {followers.length ? (
+          <View className='header-actions'>
+            <View className='primary-pill' onClick={followBackAll}>
+              <Text>一键回关</Text>
+            </View>
+            <View className='outline-pill' onClick={() => Taro.showToast({ title: '可通过每条右侧 ... 管理关系', icon: 'none' })}>
+              <Text>管理</Text>
+            </View>
           </View>
-          <View className='outline-pill' onClick={() => Taro.showToast({ title: '可通过每条右侧 ... 管理关系', icon: 'none' })}>
-            <Text>管理</Text>
-          </View>
-        </View>
+        ) : null}
       </View>
 
       <View className='user-list'>
         {!followers.length && (
           <View className='empty-state'>
-            <Text>还没有粉丝</Text>
+            <Text className='empty-title'>还没有粉丝</Text>
+            <Text className='empty-desc'>有人关注你后，会在这里显示。</Text>
           </View>
         )}
         {followers.map((user) => (

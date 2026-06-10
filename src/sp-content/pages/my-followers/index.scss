@@ -18,6 +18,13 @@ page {
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 14px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.page-header > view:first-child {
+  flex: 1;
+  min-width: 0;
 }
 
 .page-title {
@@ -51,6 +58,7 @@ page {
   flex-direction: column;
   gap: 8px;
   flex-shrink: 0;
+  max-width: 96px;
 }
 
 .primary-pill text {
@@ -80,6 +88,36 @@ page {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.loading-state,
+.empty-state {
+  min-height: 220px;
+  border-radius: 18px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 18px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.loading-state text,
+.empty-title {
+  color: #1E293B;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.empty-desc {
+  display: block;
+  margin-top: 8px;
+  color: #94A3B8;
+  font-size: 13px;
+  line-height: 20px;
 }
 
 .user-card {

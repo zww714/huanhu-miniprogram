@@ -152,6 +152,12 @@ export default function MyFollowing() {
   if (loading) {
     return (
       <View className='following-page'>
+        <View className='page-header'>
+          <View>
+            <Text className='page-title'>我的关注</Text>
+            <Text className='page-subtitle'>正在同步关注数据</Text>
+          </View>
+        </View>
         <View className='loading-state'>
           <Text>加载中...</Text>
         </View>
@@ -166,9 +172,11 @@ export default function MyFollowing() {
           <Text className='page-title'>我的关注</Text>
           <Text className='page-subtitle'>共 {total} 人，{following.filter((u) => u.isSpecial).length} 位特别关注</Text>
         </View>
-        <View className={`outline-pill ${manageMode ? 'active' : ''}`} onClick={() => { setManageMode(!manageMode); setSelectedIds([]) }}>
-          <Text>{manageMode ? '完成' : '管理'}</Text>
-        </View>
+        {following.length ? (
+          <View className={`outline-pill ${manageMode ? 'active' : ''}`} onClick={() => { setManageMode(!manageMode); setSelectedIds([]) }}>
+            <Text>{manageMode ? '完成' : '管理'}</Text>
+          </View>
+        ) : null}
       </View>
 
       <View className='filter-row'>
@@ -190,9 +198,8 @@ export default function MyFollowing() {
       <View className='user-list'>
         {!visibleUsers.length && (
           <View className='empty-state'>
-            <Text>
-              {filter === 'special' ? '还没有特别关注的人' : '还没有关注的人'}
-            </Text>
+            <Text className='empty-title'>{filter === 'special' ? '还没有特别关注的人' : '还没有关注的人'}</Text>
+            <Text className='empty-desc'>关注同学后，会在这里显示。</Text>
           </View>
         )}
         {visibleUsers.map((user) => (
