@@ -1,48 +1,44 @@
 /**
- * API 用户模块 — 登录、注册、用户详情、关注
+ * User API. Formal pages read from cloud/database only; mock data is not used
+ * as a display fallback for public users, follows, or posts.
  */
 import {
-  initCloud, callCloudFunction, delay, apiWarn, getUseCloud,
+  callCloudFunction, delay, apiWarn, getUseCloud,
   getCloudCollection, getCloudDocument, updateCloudDocument,
-  LOGIN_USER_KEY
+  LOGIN_USER_KEY,
 } from './base'
-import { SKILL_USERS, PARTNER_USERS, USER_DETAILS, USER_DETAIL_PROFILE, MY_PROFILE } from '../utils/mock'
+import { MY_PROFILE } from '../utils/mock'
 import type { SkillUser } from '../utils/mock'
-import { getRelationForUser, upsertRelation } from '../utils/publicProfiles'
 
-// ============ 用户列表 ============
 export async function getUsers(params?: { category?: string; page?: number }) {
   if (getUseCloud()) {
     try {
       const res = await callCloudFunction('getUsers', params)
-      return res.data as SkillUser[]
+      return (res.data || []) as SkillUser[]
     } catch (e) { apiWarn('[API] getUsers cloud failed', e) }
+
     try {
-      let users = await getCloudCollection('users', 20, { seedTag: 'huanhu-initial-v1' })
+      let users = await getCloudCollection('users', 50)
       if (params?.category && params.category !== '全部' && params.category !== '热门') {
         users = users.filter((u: any) =>
-          (u.skills || u.can || []).some((s: any) => s.name?.includes(params.category!))
+          (u.skills || u.canTeach || u.can || []).some((s: any) => String(s.name || s).includes(params.category!))
         )
       }
       return users as SkillUser[]
     } catch (e) { apiWarn('[API] getUsers database failed', e) }
   }
-  await delay()
-  if (params?.category && params.category !== '全部' && params.category !== '热门') {
-    return SKILL_USERS.filter(u => (u.can || []).some(s => s.name.includes(params!.category!)))
-  }
-  return SKILL_USERS
+  return []
 }
 
-// ============ 兴趣搭子 ============
 export async function getPartners(params?: { category?: string }) {
   if (getUseCloud()) {
     try {
       const users = await getUsers()
       let partners = users.map((user: any) => ({
-        ...user, id: user.id || user._id,
+        ...user,
+        id: user.id || user._id,
         tags: user.interests || [],
-        lookingFor: user.lookingFor || (user.learnWants && user.learnWants[0]) || (user.want && user.want[0]) || '兴趣搭子',
+        lookingFor: user.lookingFor || (user.learnWants && user.learnWants[0]) || (user.wantToLearn && user.wantToLearn[0]) || '',
       }))
       if (params?.category && params.category !== '全部') {
         partners = partners.filter((user: any) =>
@@ -52,14 +48,9 @@ export async function getPartners(params?: { category?: string }) {
       return partners
     } catch (e) { apiWarn('[API] getPartners cloud failed', e) }
   }
-  await delay()
-  if (params?.category && params.category !== '全部') {
-    return PARTNER_USERS.filter(u => u.tags?.some(t => t.includes(params!.category!)))
-  }
-  return PARTNER_USERS
+  return []
 }
 
-// ============ 登录 ============
 export async function login() {
   if (getUseCloud()) {
     try {
@@ -101,7 +92,6 @@ export async function saveWechatProfile(params: { nickName?: string; avatarUrl?:
 
 export function getSavedLoginUser() { return wx.getStorageSync(LOGIN_USER_KEY) }
 
-// ============ 用户详情 ============
 export async function getUserDetail(params: { userId?: string; userName?: string }) {
   if (getUseCloud()) {
     try {
@@ -109,14 +99,14 @@ export async function getUserDetail(params: { userId?: string; userName?: string
       return res.userData
     } catch (e) { apiWarn('[API] getUserDetail cloud failed', e) }
   }
-  await delay()
-  if (params.userName && USER_DETAILS[params.userName]) return USER_DETAILS[params.userName]
-  return USER_DETAIL_PROFILE
+  return null
 }
 
-export async function getMyProfile() { await delay(); return MY_PROFILE }
+export async function getMyProfile() {
+  const current = await getCurrentUser()
+  return current || MY_PROFILE
+}
 
-// ============ 更新资料 ============
 export async function updateProfile(params: { field?: string; value?: any; profile?: Record<string, any> } | Record<string, any>) {
   if (getUseCloud()) {
     try {
@@ -131,18 +121,14 @@ export async function updateProfile(params: { field?: string; value?: any; profi
   return localUser
 }
 
-// ============ 关注系统 ============
 export async function followUser(params: { targetUserId: string }) {
   if (getUseCloud()) {
     try {
       const res = await callCloudFunction('followUser', params)
       return res.data || { isFollowing: true, isMutual: false }
-    } catch (e) { apiWarn('[API] followUser cloud failed', e) }
+    } catch (e) { apiWarn('[API] followUser cloud failed', e); throw e }
   }
-  const current = getRelationForUser(params.targetUserId)
-  const isMutual = !!current.isFollower
-  upsertRelation(params.targetUserId, { isFollowing: true, isMutual })
-  return { isFollowing: true, isMutual }
+  throw new Error('关注需要云端登录后使用')
 }
 
 export async function unfollowUser(params: { targetUserId: string }) {
@@ -150,10 +136,9 @@ export async function unfollowUser(params: { targetUserId: string }) {
     try {
       const res = await callCloudFunction('unfollowUser', params)
       return res.data || { isFollowing: false, isMutual: false }
-    } catch (e) { apiWarn('[API] unfollowUser cloud failed', e) }
+    } catch (e) { apiWarn('[API] unfollowUser cloud failed', e); throw e }
   }
-  upsertRelation(params.targetUserId, { isFollowing: false, isMutual: false, isSpecial: false })
-  return { isFollowing: false, isMutual: false }
+  throw new Error('取消关注需要云端登录后使用')
 }
 
 export async function getFollowStatus(params: { targetUserId: string }) {
@@ -163,7 +148,7 @@ export async function getFollowStatus(params: { targetUserId: string }) {
       return res.data
     } catch (e) { apiWarn('[API] getFollowStatus cloud failed', e) }
   }
-  return getRelationForUser(params.targetUserId)
+  return { isFollowing: false, isFollower: false, isMutual: false, isSpecial: false, isBlocked: false }
 }
 
 export async function getFollowers(params: { userId?: string; page?: number; pageSize?: number }) {
@@ -193,8 +178,7 @@ export async function setSpecialFollow(params: { targetUserId: string; isSpecial
       return res.data || { isSpecial: params.isSpecial }
     } catch (e) { apiWarn('[API] setSpecialFollow cloud failed', e); throw e }
   }
-  upsertRelation(params.targetUserId, { isSpecial: params.isSpecial, isFollowing: true })
-  return { isSpecial: params.isSpecial }
+  throw new Error('特别关注需要云端登录后使用')
 }
 
 export async function blockUser(params: { targetUserId: string; isBlocked?: boolean }) {
@@ -204,6 +188,5 @@ export async function blockUser(params: { targetUserId: string; isBlocked?: bool
       return res.data || { isBlocked: true, isFollowing: false }
     } catch (e) { apiWarn('[API] blockUser cloud failed', e); throw e }
   }
-  upsertRelation(params.targetUserId, { isBlocked: true, isFollowing: false, isMutual: false, isSpecial: false })
-  return { isBlocked: true, isFollowing: false }
+  throw new Error('拉黑需要云端登录后使用')
 }

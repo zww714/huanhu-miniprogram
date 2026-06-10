@@ -326,14 +326,6 @@ function itemMatchesCategory(item: FeedItem, category: string) {
   return item.category === category || item.tags.some((tag) => tag.includes(category))
 }
 
-function mergePendingPost(posts: Post[]) {
-  const pending = Taro.getStorageSync('pendingPost')
-  if (!pending?.title) return posts
-  const pendingId = getPostId(pending)
-  if (posts.some((post) => getPostId(post) === pendingId)) return posts
-  return [{ ...pending, id: pendingId }, ...posts]
-}
-
 export default function Discover() {
   const [activeCat, setActiveCat] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
@@ -348,9 +340,7 @@ export default function Discover() {
   const isFirstShow = useRef(true)
 
   useLoad(() => {
-    const pending = Taro.getStorageSync('pendingPost')
     const storedKeyword = Taro.getStorageSync('discoverKeyword')
-    if (pending?.title) setPosts((current) => mergePendingPost(current))
     if (storedKeyword) {
       setSearchQuery(String(storedKeyword).replace(/^#\s*/, '').trim())
       Taro.removeStorageSync('discoverKeyword')
@@ -366,11 +356,11 @@ export default function Discover() {
         getPosts({ page: 0, category: requestCategory, keyword: searchQuery.trim() }),
         getActivities({ page: 0, category: selected === '鎺ㄨ崘' ? undefined : selected, keyword: searchQuery.trim() }),
       ])
-      setPosts(mergePendingPost(postData || []))
+      setPosts(postData || [])
       setActivities(activityData || [])
     } catch (e) {
       console.warn('[Discover] load posts failed', e)
-      setPosts(mergePendingPost([]))
+      setPosts([])
       setActivities([])
     } finally {
       setLoading(false)

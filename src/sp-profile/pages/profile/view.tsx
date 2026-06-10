@@ -3,6 +3,7 @@ import Taro, { useLoad } from '@tarojs/taro'
 import { useEffect, useMemo, useState } from 'react'
 import {
   followUser as apiFollowUser,
+  getSavedLoginUser,
   getFollowStatus,
   getUserDetail,
   getUserPosts,
@@ -10,14 +11,8 @@ import {
   unfollowUser as apiUnfollowUser,
 } from '../../../api'
 import { getUserStats } from '../../../api/stats'
-import { CURRENT_USER } from '../../../utils/mock'
 import {
-  getPublicPosts,
-  getPublicSkills,
-  getPublicUser,
-  getRelationForUser,
   normalizePublicUserId,
-  upsertRelation,
   type PublicUser,
 } from '../../../utils/publicProfiles'
 import { getGenderSymbol, getGenderTone } from '../../../utils/gender'
@@ -110,9 +105,7 @@ export default function ProfileView() {
           isBlocked: !!status.isBlocked || !!status.blockedByTarget,
         })
       })
-      .catch(() => {
-        if (alive) setFollowState(getRelationForUser(userId))
-      })
+      .catch(() => undefined)
 
     getUserStats(userId)
       .then((stats) => {
@@ -141,24 +134,40 @@ export default function ProfileView() {
     return () => { alive = false }
   }, [userId])
 
-  const fallback = useMemo(() => getPublicUser(userId, routeUser.name), [routeUser.name, userId])
+  const fallback = useMemo<PublicUser>(() => ({
+    id: userId,
+    name: routeUser.name || '同学',
+    avatar: '',
+    verified: false,
+    school: '浙江大学',
+    college: '',
+    major: '',
+    grade: '',
+    campus: '',
+    intro: '',
+    canTeach: [],
+    wantToLearn: [],
+    interests: [],
+    followerCount: 0,
+    followingCount: 0,
+    gender: 'private',
+  } as PublicUser), [routeUser.name, userId])
 
   const skills = useMemo(() => {
     const source = remoteSkills.length
       ? remoteSkills
-      : remoteUser?.canTeach || remoteUser?.skills || getPublicSkills(fallback.id)
+      : remoteUser?.canTeach || remoteUser?.skills || []
     return (Array.isArray(source) ? source : []).map(normalizeSkillItem).filter((skill) => !!skill.name)
-  }, [fallback.id, remoteSkills, remoteUser])
+  }, [remoteSkills, remoteUser])
 
   const wants = useMemo(() => {
-    const source = remoteUser?.wantToLearn || remoteUser?.learnWants || remoteUser?.want || fallback.wantToLearn || []
+    const source = remoteUser?.wantToLearn || remoteUser?.learnWants || remoteUser?.want || []
     return (Array.isArray(source) ? source : []).map(String).filter(Boolean)
-  }, [fallback.wantToLearn, remoteUser])
+  }, [remoteUser])
 
   const posts = useMemo(() => {
-    const source = remotePosts.length ? remotePosts : getPublicPosts(fallback.id)
-    return (Array.isArray(source) ? source : []).map(normalizePostItem)
-  }, [fallback.id, remotePosts])
+    return remotePosts.map(normalizePostItem)
+  }, [remotePosts])
 
   const verifiedSkills = useMemo(() => skills.filter((skill) => Number(skill.proofCount || 0) > 0 || !!skill.verified), [skills])
 
@@ -182,7 +191,8 @@ export default function ProfileView() {
     gender: remoteUser?.gender || fallback.gender || 'private',
   }), [fallback, realStats.followerCount, realStats.followingCount, remoteUser, skills, wants])
 
-  const isSelf = user.id === CURRENT_USER.id || user.name === CURRENT_USER.name
+  const savedUser = getSavedLoginUser()
+  const isSelf = !!savedUser && (user.id === savedUser.id || user.id === savedUser._id || user.name === savedUser.name)
   const metaLine = [user.school, user.college, user.grade, user.campus].filter(Boolean).join(' · ')
   const displayedSkillCount = realStats.skillCount || skills.length + wants.length
   const displayedPostCount = realStats.postCount || posts.length
@@ -219,26 +229,29 @@ export default function ProfileView() {
       ...prev,
       followerCount: Math.max(0, prev.followerCount + (nextFollowing ? 1 : -1)),
     }))
-    upsertRelation(user.id, {
-      isFollowing: nextFollowing,
-      isMutual: nextFollowing ? followState.isMutual : false,
-    })
 
     setFollowLoading(true)
     try {
       if (wasFollowing) {
         await apiUnfollowUser({ targetUserId: user.id })
-        upsertRelation(user.id, { isFollowing: false, isMutual: false })
         Taro.showToast({ title: '已取消关注', icon: 'success' })
       } else {
         const res = await apiFollowUser({ targetUserId: user.id })
         setFollowState((prev) => ({ ...prev, isFollowing: true, isMutual: !!res?.isMutual }))
-        upsertRelation(user.id, { isFollowing: true, isMutual: !!res?.isMutual })
         Taro.showToast({ title: '关注成功', icon: 'success' })
       }
     } catch (e) {
       console.warn('[ProfileView] follow toggle failed', e)
-      Taro.showToast({ title: nextFollowing ? '已关注' : '已取消关注', icon: 'success' })
+      setFollowState((prev) => ({
+        ...prev,
+        isFollowing: wasFollowing,
+        isMutual: wasFollowing ? prev.isMutual : false,
+      }))
+      setRealStats((prev) => ({
+        ...prev,
+        followerCount: Math.max(0, prev.followerCount + (nextFollowing ? -1 : 1)),
+      }))
+      Taro.showToast({ title: '关注失败，请稍后重试', icon: 'none' })
     } finally {
       setFollowLoading(false)
     }

@@ -2,7 +2,7 @@ import { View, Text, ScrollView, Image } from '@tarojs/components'
 import Taro, { useDidShow, useLoad } from '@tarojs/taro'
 import { useCallback, useMemo, useState } from 'react'
 import { getFollowing } from '../../../api'
-import { getPublicUser, normalizePublicUserId, openUnifiedUserProfile } from '../../../utils/publicProfiles'
+import { normalizePublicUserId, openUnifiedUserProfile } from '../../../utils/publicProfiles'
 import '../user-followers/index.scss'
 
 function avatarColor(index: number) {
@@ -23,7 +23,7 @@ export default function UserFollowing() {
     setRouteUserId(normalizePublicUserId(String(options?.userId || options?.id || ''), String(options?.name || '')))
   })
 
-  const user = useMemo(() => getPublicUser(routeUserId), [routeUserId])
+  const user = useMemo(() => ({ id: routeUserId }), [routeUserId])
   const list = followingList
 
   const loadFollowing = useCallback(() => {

@@ -6,7 +6,7 @@ import FloatingPostButton from '../../components/common/FloatingPostButton'
 import SearchBar from '../../components/common/SearchBar'
 import { followUser, getPartners, getUsers, unfollowUser } from '../../api'
 import { getActivities } from '../../api/activity'
-import { getRelationForUser, openUnifiedUserProfile } from '../../utils/publicProfiles'
+import { openUnifiedUserProfile } from '../../utils/publicProfiles'
 import { getGenderSymbol, getGenderTone } from '../../utils/gender'
 import './index.scss'
 import {
@@ -18,7 +18,6 @@ import {
   normalizeSkill, userSkills, userWants, userInterestLabels,
   getUserName, getUserCampus, getUserCollege, getUserIntro,
   userMatchesKeyword, activityMatchesKeyword,
-  mergePendingSkill, mergePendingPartner, mergePendingActivity,
 } from './utils/helpers'
 import Skeleton from './components/Skeleton'
 import HeroBanner from './components/HeroBanner'
@@ -76,9 +75,9 @@ export default function Index() {
         getPartners(),
         getActivities({ page: 0 }),
       ])
-      setSkillUsers(mergePendingSkill(usersData || []))
-      setPartners(mergePendingPartner(partnersData || []))
-      setActivities(mergePendingActivity(activitiesData || []))
+      setSkillUsers(usersData || [])
+      setPartners(partnersData || [])
+      setActivities(activitiesData || [])
     } catch (e) {
       console.warn('[Home] loadHomeData failed:', e)
     } finally {
@@ -180,15 +179,15 @@ export default function Index() {
   const toggleFollow = useCallback(async (user: SkillUser) => {
     const id = getRecordId(user)
     if (!id) return
-    const wasFollowed = !!followedUsers[id] || getRelationForUser(id).isFollowing
+    const wasFollowed = !!followedUsers[id]
     setFollowedUsers((current) => ({ ...current, [id]: !wasFollowed }))
     try {
       if (wasFollowed) await unfollowUser({ targetUserId: id })
       else await followUser({ targetUserId: id })
       Taro.showToast({ title: wasFollowed ? '已取消关注' : '已关注', icon: 'success' })
     } catch (e) {
-      setFollowedUsers((current) => ({ ...current, [id]: !wasFollowed }))
-      Taro.showToast({ title: wasFollowed ? '已取消关注' : '已关注', icon: 'success' })
+      setFollowedUsers((current) => ({ ...current, [id]: wasFollowed }))
+      Taro.showToast({ title: '操作失败，请稍后重试', icon: 'none' })
     }
   }, [followedUsers])
 
@@ -229,7 +228,7 @@ export default function Index() {
     const id = getRecordId(user)
     const skills = userSkills(user)
     const wants = userWants(user)
-    const followed = !!followedUsers[id] || (!!id && getRelationForUser(id).isFollowing)
+    const followed = !!followedUsers[id]
     const name = getUserName(user)
     const genderSymbol = getGenderSymbol(user as any)
     const genderTone = getGenderTone(user as any)

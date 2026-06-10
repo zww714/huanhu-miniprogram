@@ -6,4 +6,4 @@
 export const MAX_RETRIES = 2
 
 /** 微信云开发环境 ID */
-export const CLOUD_ENV = 'cloud1-d3geudxpp50aa1802'
+export const CLOUD_ENV = 'huanhu-d7gvz7pe18171aad3'

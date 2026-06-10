@@ -2,8 +2,7 @@ import { View, Text, ScrollView, Image } from '@tarojs/components'
 import Taro, { useDidShow, useLoad } from '@tarojs/taro'
 import { useCallback, useMemo, useState } from 'react'
 import { getFollowers } from '../../../api'
-import { CURRENT_USER } from '../../../utils/mock'
-import { getPublicUser, getRelationForUser, normalizePublicUserId, openUnifiedUserProfile } from '../../../utils/publicProfiles'
+import { normalizePublicUserId, openUnifiedUserProfile } from '../../../utils/publicProfiles'
 import './index.scss'
 
 function avatarColor(index: number) {
@@ -24,24 +23,9 @@ export default function UserFollowers() {
     setRouteUserId(normalizePublicUserId(String(options?.userId || options?.id || ''), String(options?.name || '')))
   })
 
-  const user = useMemo(() => getPublicUser(routeUserId), [routeUserId])
-  const localFollower = useMemo(() => {
-    if (!routeUserId || followers.length) return null
-    const relation = getRelationForUser(routeUserId)
-    if (!relation.isFollowing) return null
-    return {
-      id: CURRENT_USER.id,
-      userId: CURRENT_USER.id,
-      name: CURRENT_USER.name || '我',
-      avatar: CURRENT_USER.avatar,
-      school: CURRENT_USER.school || '浙江大学',
-      college: CURRENT_USER.college,
-      grade: CURRENT_USER.grade,
-      intro: CURRENT_USER.bio || CURRENT_USER.intro || '当前用户',
-    }
-  }, [followers.length, routeUserId])
-  const list = localFollower ? [localFollower] : followers
-  const displayTotal = Math.max(total, list.length)
+  const user = useMemo(() => ({ id: routeUserId }), [routeUserId])
+  const list = followers
+  const displayTotal = total
 
   const loadFollowers = useCallback(() => {
     if (!routeUserId) return

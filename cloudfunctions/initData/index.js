@@ -267,6 +267,47 @@ function stamp(doc) {
   }
 }
 
+function normalizeSeedUser(user) {
+  const { stats, match, reviews, followers, following, ...rest } = user
+  return {
+    ...rest,
+    stats: {
+      skills: 0,
+      posts: 0,
+      followers: 0,
+      following: 0,
+    },
+  }
+}
+
+function normalizeSeedPost(post) {
+  const authorId = post.authorId || post.userId
+  return {
+    ...post,
+    authorId,
+    userId: authorId,
+    visibility: post.visibility || 'public',
+    status: post.status || 'normal',
+    likeCount: 0,
+    likes: 0,
+    commentCount: 0,
+    comments: 0,
+    favoriteCount: 0,
+    collectCount: 0,
+    viewCount: 0,
+  }
+}
+
+function normalizeSeedActivity(activity) {
+  return {
+    ...activity,
+    visibility: activity.visibility || 'public',
+    status: activity.status || 'normal',
+    participants: 0,
+    participantCount: 0,
+  }
+}
+
 async function upsert(collectionName, docs) {
   const collection = db.collection(collectionName)
   let written = 0
@@ -307,17 +348,20 @@ exports.main = async (event = {}) => {
       }
     }
 
-    const seedUsers = users.map((user) => {
+    const seedUsers = users.map((rawUser) => {
+      const user = normalizeSeedUser(rawUser)
       if (user._id === 'user_chen' && event.bindCurrentUser !== false && OPENID) {
         return { ...user, openid: OPENID }
       }
       return user
     })
+    const seedPosts = posts.map(normalizeSeedPost)
+    const seedActivities = activities.map(normalizeSeedActivity)
 
     const written = {
       users: await upsert('users', seedUsers),
-      posts: await upsert('posts', posts),
-      activities: await upsert('activities', activities),
+      posts: await upsert('posts', seedPosts),
+      activities: await upsert('activities', seedActivities),
       conversations: await upsert('conversations', conversations),
     }
 

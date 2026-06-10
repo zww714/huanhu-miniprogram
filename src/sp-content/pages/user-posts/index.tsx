@@ -3,73 +3,71 @@ import Taro, { useLoad } from '@tarojs/taro'
 import { useEffect, useMemo, useState } from 'react'
 import { getUserPosts } from '../../../api'
 import {
-  getPublicPosts,
-  getPublicUser,
   normalizePublicUserId,
   setPendingPublicPost,
   type PublicPost,
 } from '../../../utils/publicProfiles'
 import './index.scss'
 
-const FALLBACK_POSTS = [
-  { id: 'autumn', title: '浙大之秋：银杏大道的光影', summary: '午后的阳光洒在银杏叶上，整条路都变成了金色。随手一拍就是壁纸...', tags: ['摄影', '校园风景'], likeCount: 0, commentCount: 0, viewCount: '0', createdAt: '2天前', cover: '秋' },
-  { id: 'camera', title: '我的富士XT30使用体验', summary: '轻便复古的机身，胶片模拟直出真的很有味道。分享几个我常用的设置...', tags: ['摄影', '器材分享'], likeCount: 0, commentCount: 0, viewCount: '0', createdAt: '5天前', cover: '相' },
-  { id: 'design-note', title: '产品设计流程笔记分享', summary: '从用户调研到原型草图，再到打磨细节，记录一次完整的产品设计过程。', tags: ['产品设计', '方法分享'], likeCount: 0, commentCount: 0, viewCount: '0', createdAt: '1周前', cover: '设' },
-  { id: 'campus-life', title: '校园生活碎片', summary: '图书馆自习、社团活动、和朋友的晚饭时光。平凡日子里的小确幸。', tags: ['校园生活', '日常记录'], likeCount: 0, commentCount: 0, viewCount: '0', createdAt: '2周前', cover: '校' },
-]
-
-function normalizePost(post: any, index: number, userId: string, userName: string): PublicPost & { viewCount?: string; cover?: string } {
-  const fallback = FALLBACK_POSTS[index] || FALLBACK_POSTS[0]
+function normalizePost(post: any, index: number, userId: string, userName: string): PublicPost & { viewCount?: string | number; cover?: string } {
   return {
-    id: post.id || post._id || fallback.id,
+    id: post.id || post._id || `post-${index}`,
     authorId: post.authorId || post.userId || userId,
     authorName: post.authorName || post.author?.name || userName,
-    title: post.title || fallback.title,
-    summary: post.summary || post.excerpt || post.content || fallback.summary,
-    content: post.content || post.summary || post.excerpt || fallback.summary,
-    tags: Array.isArray(post.tags) && post.tags.length ? post.tags : fallback.tags,
+    title: post.title || '未命名内容',
+    summary: post.summary || post.excerpt || post.content || '',
+    content: post.content || post.summary || post.excerpt || '',
+    tags: Array.isArray(post.tags) ? post.tags : [],
     visibility: post.visibility || 'public',
-    likeCount: Number(post.likeCount ?? post.likes ?? fallback.likeCount),
-    commentCount: Number(post.commentCount ?? post.comments ?? fallback.commentCount),
-    createdAt: post.createdAt || post.time || fallback.createdAt,
-    viewCount: post.viewCount || fallback.viewCount,
-    cover: post.cover || fallback.cover,
+    likeCount: Number(post.likeCount ?? post.likes ?? 0),
+    commentCount: Number(post.commentCount ?? post.comments ?? 0),
+    createdAt: post.createdAt || post.time || '',
+    viewCount: Number(post.viewCount || 0),
+    cover: post.cover || '',
   }
 }
 
 export default function UserPosts() {
   const [userId, setUserId] = useState('')
+  const [userName, setUserName] = useState('同学')
   const [remotePosts, setRemotePosts] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
   useLoad((options) => {
     setUserId(normalizePublicUserId(String(options?.userId || options?.id || '')))
+    setUserName(decodeURIComponent(String(options?.name || '同学')))
   })
 
-  const user = useMemo(() => getPublicUser(userId), [userId])
-  const posts = useMemo(() => {
-    const source = remotePosts.length ? remotePosts : getPublicPosts(user.id)
-    return source.map((post, index) => normalizePost(post, index, user.id, user.name))
-  }, [remotePosts, user])
+  const posts = useMemo(() => (
+    remotePosts.map((post, index) => normalizePost(post, index, userId, userName))
+  ), [remotePosts, userId, userName])
 
   useEffect(() => {
-    if (!user.id) return
+    if (!userId) return
     let alive = true
-    getUserPosts({ userId: user.id })
+    setLoading(true)
+    getUserPosts({ userId })
       .then((data) => {
-        if (alive && Array.isArray(data)) setRemotePosts(data)
+        if (alive) setRemotePosts(Array.isArray(data) ? data : [])
       })
-      .catch((e) => console.warn('[UserPosts] getUserPosts failed, fallback mock', e))
+      .catch((e) => {
+        console.warn('[UserPosts] getUserPosts failed', e)
+        if (alive) setRemotePosts([])
+      })
+      .finally(() => {
+        if (alive) setLoading(false)
+      })
     return () => { alive = false }
-  }, [user.id])
+  }, [userId])
 
   const goBack = () => {
     const pages = getCurrentPages()
     if (pages.length > 1) Taro.navigateBack()
-    else Taro.navigateTo({ url: `/sp-profile/pages/profile/view?userId=${encodeURIComponent(user.id)}` })
+    else Taro.navigateTo({ url: `/sp-profile/pages/profile/view?userId=${encodeURIComponent(userId)}` })
   }
 
   const openPost = (post: PublicPost) => {
-    if (!(post as any).canManage) setPendingPublicPost(post, user)
+    if (!(post as any).canManage) setPendingPublicPost(post, { id: userId, name: userName } as any)
     Taro.navigateTo({ url: `/sp-content/pages/post-detail/index?postId=${encodeURIComponent(post.id)}&from=user-posts` })
   }
 
@@ -83,12 +81,13 @@ export default function UserPosts() {
         </View>
 
         <View className='private-line'>
-          <Text>▧</Text>
-          <Text>仅展示公开发布内容</Text>
+          <Text>只展示公开发布内容</Text>
         </View>
 
         <View className='post-list'>
-          {posts.map((post) => (
+          {loading ? (
+            <Text className='empty-text'>加载中...</Text>
+          ) : posts.length ? posts.map((post) => (
             <View className='post-card' key={post.id} onClick={() => openPost(post)}>
               <View className='post-top'>
                 <View className='post-cover'><Text>{(post as any).cover || post.title.slice(0, 1)}</Text></View>
@@ -102,17 +101,17 @@ export default function UserPosts() {
               </View>
               <View className='post-divider' />
               <View className='post-meta'>
-                <Text>◎ {(post as any).viewCount || '0'}</Text>
-                <Text>☰ {post.commentCount}</Text>
-                <Text>♡ {post.likeCount}</Text>
-                <Text>{post.createdAt}</Text>
+                <Text>浏览 {Number((post as any).viewCount || 0)}</Text>
+                <Text>评论 {post.commentCount}</Text>
+                <Text>点赞 {post.likeCount}</Text>
+                <Text>{String(post.createdAt || '')}</Text>
               </View>
             </View>
-          ))}
+          )) : (
+            <Text className='empty-text'>TA 还没有发布公开内容</Text>
+          )}
         </View>
       </View>
     </ScrollView>
   )
 }
-
-

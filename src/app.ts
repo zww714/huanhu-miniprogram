@@ -1,10 +1,11 @@
 ﻿import { PropsWithChildren } from 'react'
 import Taro, { useDidShow, useLaunch } from '@tarojs/taro'
 import { updateMessageTabUnread } from './utils/notifications'
+import { CLOUD_ENV } from './utils/config'
 import './app.scss'
 
 const APP_CONFIG = {
-  CLOUD_ENV: 'huanhu-d7gvz7pe18171aad3',
+  CLOUD_ENV,
   LOGIN_KEY: 'huanhuLoginUser',
   TOKEN_KEY: 'token',
   PRIVACY_AGREED_KEY: 'huanhuPrivacyAgreed',

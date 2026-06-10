@@ -56,10 +56,6 @@ export default function Publish() {
   useLoad((options) => {
     if (options?.mode === 'edit') {
       const postId = String(options?.postId || '')
-      const editedPosts = Taro.getStorageSync('editedPosts') || {}
-      const localPosts = Taro.getStorageSync('localMinePosts') || []
-      const found = localPosts.find((item: any) => item.id === postId || item._id === postId)
-      const post = found ? { ...found, ...(editedPosts[postId] || {}) } : null
       setMode('post')
       setIsEditMode(true)
       setEditPostId(postId)
@@ -76,14 +72,7 @@ export default function Publish() {
           setPostTags(Array.isArray(remotePost.tags) ? remotePost.tags : [])
           setPostImage(remotePost.images?.[0] || (remotePost.cover && !String(remotePost.cover).startsWith('linear-gradient') ? remotePost.cover : ''))
         })
-        .catch((e) => console.warn('[Publish] getPostDetail failed, fallback local', e))
-      if (post) {
-        setPostTitle(post.title || '')
-        setPostContent(post.content || post.excerpt || '')
-        setPostCategory(post.mainCategory || '科研')
-        setPostTags(Array.isArray(post.tags) ? post.tags : [])
-        setPostImage(post.images?.[0] || (post.cover && !String(post.cover).startsWith('linear-gradient') ? post.cover : ''))
-      }
+        .catch((e) => console.warn('[Publish] getPostDetail failed', e))
       return
     }
     if (options?.mode === 'partner' || options?.mode === 'activity' || options?.mode === 'skill' || options?.mode === 'post') {
@@ -213,7 +202,6 @@ export default function Publish() {
       mainCategory: postCategory,
       image: postImage,
     })
-    Taro.setStorageSync('pendingPost', post)
     Taro.showToast({ title: '发布成功', icon: 'success' })
     setTimeout(() => Taro.navigateBack(), 500)
   }

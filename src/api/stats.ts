@@ -21,11 +21,28 @@ async function countCollection(collectionName: string, where: Record<string, any
 async function firstCount(
   candidates: Array<{ collectionName: string; where: Record<string, any> }>
 ): Promise<OptionalNumber> {
+  let zeroSeen = false
   for (const candidate of candidates) {
     const total = await countCollection(candidate.collectionName, candidate.where)
-    if (typeof total === 'number') return total
+    if (typeof total === 'number' && total > 0) return total
+    if (total === 0) zeroSeen = true
   }
-  return undefined
+  return zeroSeen ? 0 : undefined
+}
+
+async function countEmbeddedUserSkills(userId: string): Promise<OptionalNumber> {
+  if (!getUseCloud()) return undefined
+  try {
+    await initCloud()
+    const res = await wx.cloud.database().collection('users').doc(userId).get()
+    const user = res.data || {}
+    const can = Array.isArray(user.canTeach) ? user.canTeach : Array.isArray(user.skills) ? user.skills : Array.isArray(user.can) ? user.can : []
+    const want = Array.isArray(user.wantToLearn) ? user.wantToLearn : Array.isArray(user.learnWants) ? user.learnWants : Array.isArray(user.want) ? user.want : []
+    return can.length + want.length
+  } catch (e) {
+    apiWarn('[API] count embedded user skills failed', e)
+    return undefined
+  }
 }
 
 export async function getPostStats(postId: string): Promise<{
@@ -59,11 +76,15 @@ export async function getUserStats(userId: string): Promise<{
   const [skillCount, postCount, followerCount, followingCount] = await Promise.all([
     firstCount([
       { collectionName: 'user_skills', where: { userId, status: 'active' } },
+      { collectionName: 'user_skills', where: { userId, status: 'normal' } },
       { collectionName: 'skills', where: { userId, status: 'active' } },
+      { collectionName: 'skills', where: { userId, status: 'normal' } },
     ]),
     firstCount([
       { collectionName: 'posts', where: { authorId: userId, status: 'active' } },
+      { collectionName: 'posts', where: { authorId: userId, status: 'normal' } },
       { collectionName: 'posts', where: { userId, status: 'active' } },
+      { collectionName: 'posts', where: { userId, status: 'normal' } },
     ]),
     firstCount([
       { collectionName: 'follows', where: { targetUserId: userId, status: 'active' } },
@@ -74,9 +95,10 @@ export async function getUserStats(userId: string): Promise<{
       { collectionName: 'follows', where: { followerId: userId, status: 'active' } },
     ]),
   ])
+  const embeddedSkillCount = typeof skillCount === 'number' && skillCount > 0 ? skillCount : await countEmbeddedUserSkills(userId)
   return {
-    hasRealStats: [skillCount, postCount, followerCount, followingCount].some((value) => typeof value === 'number'),
-    skillCount,
+    hasRealStats: [embeddedSkillCount, postCount, followerCount, followingCount].some((value) => typeof value === 'number'),
+    skillCount: embeddedSkillCount,
     postCount,
     followerCount,
     followingCount,

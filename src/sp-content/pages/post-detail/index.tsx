@@ -128,12 +128,9 @@ export default function PostDetail() {
 
   useLoad(async (options) => {
     const id = decodeURIComponent(String(options?.postId || options?.id || ''))
-    const pending = Taro.getStorageSync('pendingPost')
-    const editedPosts = Taro.getStorageSync('editedPosts') || {}
-    const localPosts = Taro.getStorageSync('localMinePosts') || []
 
     const applyPost = (found: Post) => {
-      const nextPost = { ...found, ...(editedPosts[id] || {}) }
+      const nextPost = { ...found }
       setPost(nextPost)
       setLikeCount(Number(nextPost.likeCount ?? nextPost.likes ?? 0))
       setFavoriteCount(Number(nextPost.favoriteCount ?? nextPost.collectCount ?? 0))
@@ -142,33 +139,25 @@ export default function PostDetail() {
       recordBrowse({ id: getRecordId(nextPost) || id, type: 'post', title: nextPost.title || '帖子', subtitle: nextPost.excerpt || nextPost.content?.slice(0, 30) })
     }
 
-    const localFound = pending && (pending.id === id || pending._id === id)
-      ? pending
-      : localPosts.find((item: Post) => getRecordId(item) === id)
-
-    if (localFound) applyPost(localFound)
 
     try {
       const remotePost = await getPostDetail({ postId: id })
       const posts = remotePost ? [remotePost] : await getPosts({ page: 0 })
       const found = posts.find((item: Post) => getRecordId(item) === id)
-        || localFound
 
       if (found) {
         applyPost(found)
       } else {
-        setPost(fallbackPost)
+        setPost(null)
         setLikeCount(0)
+        setFavoriteCount(0)
         setIsMissing(true)
       }
     } catch (e) {
-      if (localFound) {
-        applyPost(localFound)
-      } else {
-        setPost(fallbackPost)
-        setLikeCount(0)
-        setIsMissing(true)
-      }
+      setPost(null)
+      setLikeCount(0)
+      setFavoriteCount(0)
+      setIsMissing(true)
     }
 
     // Load interaction status (liked / bookmarked)
