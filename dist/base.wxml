@@ -103,6 +103,12 @@
   </image>
 </template>
 
+<template name="tmpl_0_83">
+  <web-view src="{{i.p0}}" bindmessage="eh" bindload="eh" binderror="eh" style="{{i.st}}" class="{{i.cl}}" bindtap="eh"  id="{{i.uid||i.sid}}" data-sid="{{i.sid}}">
+    <template is="{{xs.a(c, item.nn, l)}}" data="{{i:item,c:c+1,l:xs.f(l,item.nn)}}" wx:for="{{i.cn}}" wx:key="sid" />
+  </web-view>
+</template>
+
 <template name="tmpl_0_9">
   <block>{{i.v}}</block>
 </template>
